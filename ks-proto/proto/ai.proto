@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "ks-proto/pkg/pb";
+
+message ChatMessage {
+  string role = 1;
+  string content = 2;
+}
+
+message ChatHistory {
+  string user_id = 2;
+  string session_id = 3;
+  string title = 4;
+}
+
+message ChatRequest {
+  string user_id = 1;
+  string chat_session_id = 2;
+  string user_input = 3;
+}
+
+message ChatResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message SearchRequest {
+  string user_id = 1;
+  string query_id = 2;
+  int32 page = 3;
+  string query = 4;
+}
+
+message SearchResponse{
+  bool success = 1;
+  repeated string repo_ids = 2;
+  int32 page = 3;  // 页数(-1:查询失败 0:缓存命中 n:查询成功，共n页)
+}
+
+message GetChatSessionsRequest {
+  string user_id = 1;
+  int64 offset = 2;
+}
+
+message GetChatSessionsResponse {
+  bool success = 1;
+  int64 offset = 2;
+  repeated ChatHistory sessions = 3;
+}
+
+message GetChatMessagesRequest {
+  string user_id = 1;
+  string chat_session_id = 2;
+  int64 offset = 3;
+}
+
+message GetChatMessagesResponse {
+  bool success = 1;
+  int64 offset = 2;
+  repeated ChatMessage messages = 3;
+}
+
+message UpdateRepoVisibilityRequest {
+  string repo_id = 1;
+  bool is_public = 2;
+}
+
+message UpdateRepoVisibilityResponse {
+  bool success = 1;
+}
+
+service AIService {
+  rpc Chat(ChatRequest) returns (ChatResponse);
+  rpc Search(SearchRequest) returns (SearchResponse);
+  rpc GetChatSessions(GetChatSessionsRequest) returns (GetChatSessionsResponse);
+  rpc GetChatMessages(GetChatMessagesRequest) returns (GetChatMessagesResponse);
+  rpc UpdateRepoVisibility(UpdateRepoVisibilityRequest) returns (UpdateRepoVisibilityResponse);
+}

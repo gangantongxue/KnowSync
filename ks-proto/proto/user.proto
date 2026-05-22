@@ -1,0 +1,135 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "ks-proto/pkg/pb";
+
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  string avatar = 4;
+}
+
+message RegisterRequest {
+  string name = 1;
+  string email = 2;
+  string password = 3;
+  string verify_code = 5;
+}
+
+message RegisterResponse {
+  bool success = 1;
+  User user = 2;
+}
+
+message SetAvatarRequest {
+  string user_id = 1;
+  string avatar = 2;
+}
+
+message SetAvatarResponse {
+  bool success = 1;
+}
+
+message VerifyCodeRequest {
+  string email = 1;
+}
+
+message VerifyCodeResponse {
+  bool success = 1;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  bool success = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
+}
+
+message RefreshRequest {
+  string refresh_token = 1;
+}
+
+message RefreshResponse {
+  bool success = 1;
+  string user_id = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+}
+
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message GetUserResponse {
+  bool success = 1;
+  User user = 2;
+}
+
+message ForgetPasswordRequest {
+  string email = 1;
+  string password = 2;
+  string verify_code = 3;
+}
+
+message ForgetPasswordResponse {
+  bool success = 1;
+}
+
+message ResetPasswordRequest {
+  string user_id = 1;
+  string old_password = 2;
+  string new_password = 3;
+}
+
+message ResetPasswordResponse {
+  bool success = 1;
+}
+
+message UpdateUserInfoRequest {
+  User user = 1;
+}
+
+message UpdateUserInfoResponse {
+  bool success = 1;
+  User user = 2;
+}
+
+message UnregisterRequest {
+  string user_id = 1;
+  string email = 2;
+  string password = 3;
+  string verify_code = 4;
+}
+
+message UnregisterResponse {
+  bool success = 1;
+}
+
+service UserService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc SetAvatar(SetAvatarRequest) returns (SetAvatarResponse);
+  rpc VerifyCode(VerifyCodeRequest) returns (VerifyCodeResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc Refresh(RefreshRequest) returns (RefreshResponse);
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  rpc ForgetPassword(ForgetPasswordRequest) returns (ForgetPasswordResponse);
+  rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse);
+  rpc UpdateUserInfo(UpdateUserInfoRequest) returns (UpdateUserInfoResponse);
+  rpc Unregister(UnregisterRequest) returns (UnregisterResponse);
+}
+

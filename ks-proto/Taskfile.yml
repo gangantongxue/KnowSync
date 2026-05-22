@@ -1,0 +1,55 @@
+version: '3'
+
+vars:
+  PROTO_DIR: proto
+  OUTPUT_DIR: pkg/pb
+
+tasks:
+  default:
+    cmds:
+      - task: help
+
+  help:
+    desc: 显示帮助信息
+    silent: true
+    cmds:
+      - |
+        cat << 'EOF'
+        KnowSync Proto 构建工具
+
+        可用命令:
+          task build    - 编译 proto 文件生成 Go 代码
+          task clean    - 清除所有编译生成产物
+          task mod      - 整理 Go 模块依赖 (go mod tidy)
+          task modup    - 更新所有 Go 包到最新版本
+          task help     - 显示此帮助信息
+
+        使用方法:
+          task          - 默认显示帮助信息
+          task build    - 执行构建
+          task clean    - 清除编译产物
+          task mod      - 整理依赖
+          task modup    - 更新依赖
+        EOF
+
+  build:
+    desc: 编译 proto 文件生成 Go 代码
+    cmds:
+      - python3 scripts/build_proto.py {{.PROTO_DIR}} {{.OUTPUT_DIR}}
+
+  mod:
+    desc: 整理 Go 模块依赖
+    cmds:
+      - go mod tidy
+
+  modup:
+    desc: 更新所有 Go 包到最新版本
+    cmds:
+      - go get -u ./...
+      - go mod tidy
+
+  clean:
+    desc: 清除所有编译生成产物
+    cmds:
+      - rm -rf {{.OUTPUT_DIR}}/*.pb.go
+      - echo "已清除编译产物"

@@ -1,0 +1,143 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "ks-proto/pkg/pb";
+
+// RepoVisibility 仓库可见性枚举
+enum RepoVisibility {
+  UNSPECIFIED = 0;
+  PUBLIC = 1;
+  PRIVATE = 2;
+}
+
+message Repo {
+  string id = 1;
+  string owner_id = 2;
+  string name = 3;
+  RepoVisibility visibility = 4;
+  string description = 5;
+}
+
+message Node {
+  string id = 1;
+  string repo_id = 2;
+  string name = 3;
+  string value = 4;
+  int64 size = 5;
+}
+
+message CreateRepoRequest {
+  string owner_id = 1;
+  string name = 2;
+  RepoVisibility visibility = 3;
+  string description = 4;
+}
+
+message CreateRepoResponse {
+  bool success = 1;
+}
+
+message DeleteRepoRequest {
+  string repo_id = 1;
+}
+
+message DeleteRepoResponse {
+  bool success = 1;
+  repeated Node deleted_nodes = 2;
+}
+
+message GetMyReposRequest {
+  string owner_id = 1;
+}
+
+message GetMyReposResponse {
+  bool success = 1;
+  repeated Repo repos = 2;
+}
+
+message GetReposRequest {
+  repeated string repo_ids = 1;
+}
+
+message GetReposResponse {
+  bool success = 1;
+  repeated Repo repos = 2;
+}
+
+message CreateNodeRequest {
+  string repo_id = 1;
+  string name = 2;
+}
+
+message CreateNodeResponse {
+  bool success = 1;
+  Node node = 2;
+}
+
+message UploadArticleRequest {
+  string node_id = 1;
+  string value = 2;
+  int64 size = 3;
+}
+
+message UploadArticleResponse {
+  bool success = 1;
+  Node node = 2;
+  string old_value = 3;  // 旧文件路径，用于删除 MinIO 和 Milvus 中的旧数据
+}
+
+message GetNodesRequest {
+  string repo_id = 1;
+}
+
+message GetNodesResponse {
+  bool success = 1;
+  repeated Node nodes = 2;
+}
+
+message DeleteNodeRequest {
+  string repo_id = 1;
+  string node_id = 2;
+}
+
+message DeleteNodeResponse {
+  bool success = 1;
+  Node node = 2;
+}
+
+message RenameNodeRequest {
+  string repo_id = 1;
+  string node_id = 2;
+  string new_name = 3;
+}
+
+message RenameNodeResponse {
+  bool success = 1;
+  Node node = 2;
+}
+
+message UpdateRepoRequest {
+  string repo_id = 1;
+  string name = 2;           // 可选，不传则不修改
+  string description = 3;    // 可选，不传则不修改
+  RepoVisibility visibility = 4;  // 可选，不传则不修改
+}
+
+message UpdateRepoResponse {
+  bool success = 1;
+  Repo repo = 2;
+}
+
+service RepoService {
+  rpc CreateRepo(CreateRepoRequest) returns (CreateRepoResponse);
+  rpc DeleteRepo(DeleteRepoRequest) returns (DeleteRepoResponse);
+  rpc GetMyRepos(GetMyReposRequest) returns (GetMyReposResponse);
+  rpc GetRepos(GetReposRequest) returns (GetReposResponse);
+  rpc CreateNode(CreateNodeRequest) returns (CreateNodeResponse);
+  rpc UploadArticle(UploadArticleRequest) returns (UploadArticleResponse);
+  rpc GetNodes(GetNodesRequest) returns (GetNodesResponse);
+  rpc DeleteNode(DeleteNodeRequest) returns (DeleteNodeResponse);
+  rpc RenameNode(RenameNodeRequest) returns (RenameNodeResponse);
+  rpc UpdateRepo(UpdateRepoRequest) returns (UpdateRepoResponse);
+}
