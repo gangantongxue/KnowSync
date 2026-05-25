@@ -90,9 +90,10 @@ def compile_proto(proto_file: Path, proto_dir: Path, output_dir: Path) -> bool:
         f"--proto_path={proto_dir}",
         f"--go_out={output_dir}",
         f"--go_opt=paths=source_relative",
+        f"--go-grpc_out={output_dir}",
+        f"--go-grpc_opt=paths=source_relative",
         str(proto_file)
     ]
-
     try:
         result = subprocess.run(
             cmd,

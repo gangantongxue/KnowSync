@@ -4,7 +4,6 @@ package proto;
 
 option go_package = "ks-proto/pkg/pb";
 
-import "code.proto";
 
 // User 用户信息
 message User {
@@ -22,7 +21,7 @@ message RegisterRequest {
 }
 
 message RegisterResponse {
-  ErrorCode code = 1;
+  bool success = 1;
   string msg = 2;
   User user = 3;
 }
@@ -33,7 +32,7 @@ message SetAvatarRequest {
 }
 
 message SetAvatarResponse {
-  ErrorCode code = 1;
+  bool success = 1;
   string msg = 2;
 }
 
@@ -42,7 +41,7 @@ message VerifyCodeRequest {
 }
 
 message VerifyCodeResponse {
-  ErrorCode code = 1;
+  bool success = 1;
   string msg = 2;
 }
 
@@ -52,7 +51,7 @@ message LoginRequest {
 }
 
 message LoginResponse {
-  ErrorCode code = 1;
+  bool success = 1;
   string msg = 2;
   string access_token = 3;
   string refresh_token = 4;
@@ -63,7 +62,7 @@ message LogoutRequest {
 }
 
 message LogoutResponse {
-  ErrorCode code = 1;
+  bool success = 1;
   string msg = 2;
 }
 
@@ -72,7 +71,7 @@ message RefreshRequest {
 }
 
 message RefreshResponse {
-  ErrorCode code = 1;
+  bool success = 1;
   string msg = 2;
   string access_token = 3;
   string refresh_token = 4;
@@ -83,7 +82,7 @@ message GetUserRequest {
 }
 
 message GetUserResponse {
-  ErrorCode code = 1;
+  bool success = 1;
   string msg = 2;
   User user = 3;
 }
@@ -95,7 +94,7 @@ message ForgetPasswordRequest {
 }
 
 message ForgetPasswordResponse {
-  ErrorCode code = 1;
+  bool success = 1;
   string msg = 2;
 }
 
@@ -106,7 +105,7 @@ message ResetPasswordRequest {
 }
 
 message ResetPasswordResponse {
-  ErrorCode code = 1;
+  bool success = 1;
   string msg = 2;
 }
 
@@ -115,7 +114,7 @@ message UpdateUserInfoRequest {
 }
 
 message UpdateUserInfoResponse {
-  ErrorCode code = 1;
+  bool success = 1;
   string msg = 2;
   User user = 3;
 }
@@ -128,7 +127,7 @@ message UnregisterRequest {
 }
 
 message UnregisterResponse {
-  ErrorCode code = 1;
+  bool success = 1;
   string msg = 2;
 }
 

@@ -160,7 +160,7 @@ func (x *RegisterRequest) GetVerifyCode() string {
 
 type RegisterResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          ErrorCode              `protobuf:"varint,1,opt,name=code,proto3,enum=proto.ErrorCode" json:"code,omitempty"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	User          *User                  `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -197,11 +197,11 @@ func (*RegisterResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *RegisterResponse) GetCode() ErrorCode {
+func (x *RegisterResponse) GetSuccess() bool {
 	if x != nil {
-		return x.Code
+		return x.Success
 	}
-	return ErrorCode_SUCCESS
+	return false
 }
 
 func (x *RegisterResponse) GetMsg() string {
@@ -272,7 +272,7 @@ func (x *SetAvatarRequest) GetAvatar() string {
 
 type SetAvatarResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          ErrorCode              `protobuf:"varint,1,opt,name=code,proto3,enum=proto.ErrorCode" json:"code,omitempty"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -308,11 +308,11 @@ func (*SetAvatarResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *SetAvatarResponse) GetCode() ErrorCode {
+func (x *SetAvatarResponse) GetSuccess() bool {
 	if x != nil {
-		return x.Code
+		return x.Success
 	}
-	return ErrorCode_SUCCESS
+	return false
 }
 
 func (x *SetAvatarResponse) GetMsg() string {
@@ -368,7 +368,7 @@ func (x *VerifyCodeRequest) GetEmail() string {
 
 type VerifyCodeResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          ErrorCode              `protobuf:"varint,1,opt,name=code,proto3,enum=proto.ErrorCode" json:"code,omitempty"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -404,11 +404,11 @@ func (*VerifyCodeResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *VerifyCodeResponse) GetCode() ErrorCode {
+func (x *VerifyCodeResponse) GetSuccess() bool {
 	if x != nil {
-		return x.Code
+		return x.Success
 	}
-	return ErrorCode_SUCCESS
+	return false
 }
 
 func (x *VerifyCodeResponse) GetMsg() string {
@@ -472,7 +472,7 @@ func (x *LoginRequest) GetPassword() string {
 
 type LoginResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          ErrorCode              `protobuf:"varint,1,opt,name=code,proto3,enum=proto.ErrorCode" json:"code,omitempty"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	AccessToken   string                 `protobuf:"bytes,3,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
 	RefreshToken  string                 `protobuf:"bytes,4,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
@@ -510,11 +510,11 @@ func (*LoginResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *LoginResponse) GetCode() ErrorCode {
+func (x *LoginResponse) GetSuccess() bool {
 	if x != nil {
-		return x.Code
+		return x.Success
 	}
-	return ErrorCode_SUCCESS
+	return false
 }
 
 func (x *LoginResponse) GetMsg() string {
@@ -584,7 +584,7 @@ func (x *LogoutRequest) GetRefreshToken() string {
 
 type LogoutResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          ErrorCode              `protobuf:"varint,1,opt,name=code,proto3,enum=proto.ErrorCode" json:"code,omitempty"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -620,11 +620,11 @@ func (*LogoutResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *LogoutResponse) GetCode() ErrorCode {
+func (x *LogoutResponse) GetSuccess() bool {
 	if x != nil {
-		return x.Code
+		return x.Success
 	}
-	return ErrorCode_SUCCESS
+	return false
 }
 
 func (x *LogoutResponse) GetMsg() string {
@@ -680,7 +680,7 @@ func (x *RefreshRequest) GetRefreshToken() string {
 
 type RefreshResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          ErrorCode              `protobuf:"varint,1,opt,name=code,proto3,enum=proto.ErrorCode" json:"code,omitempty"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	AccessToken   string                 `protobuf:"bytes,3,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
 	RefreshToken  string                 `protobuf:"bytes,4,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
@@ -718,11 +718,11 @@ func (*RefreshResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *RefreshResponse) GetCode() ErrorCode {
+func (x *RefreshResponse) GetSuccess() bool {
 	if x != nil {
-		return x.Code
+		return x.Success
 	}
-	return ErrorCode_SUCCESS
+	return false
 }
 
 func (x *RefreshResponse) GetMsg() string {
@@ -792,7 +792,7 @@ func (x *GetUserRequest) GetUserId() string {
 
 type GetUserResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          ErrorCode              `protobuf:"varint,1,opt,name=code,proto3,enum=proto.ErrorCode" json:"code,omitempty"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	User          *User                  `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -829,11 +829,11 @@ func (*GetUserResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{14}
 }
 
-func (x *GetUserResponse) GetCode() ErrorCode {
+func (x *GetUserResponse) GetSuccess() bool {
 	if x != nil {
-		return x.Code
+		return x.Success
 	}
-	return ErrorCode_SUCCESS
+	return false
 }
 
 func (x *GetUserResponse) GetMsg() string {
@@ -912,7 +912,7 @@ func (x *ForgetPasswordRequest) GetVerifyCode() string {
 
 type ForgetPasswordResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          ErrorCode              `protobuf:"varint,1,opt,name=code,proto3,enum=proto.ErrorCode" json:"code,omitempty"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -948,11 +948,11 @@ func (*ForgetPasswordResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{16}
 }
 
-func (x *ForgetPasswordResponse) GetCode() ErrorCode {
+func (x *ForgetPasswordResponse) GetSuccess() bool {
 	if x != nil {
-		return x.Code
+		return x.Success
 	}
-	return ErrorCode_SUCCESS
+	return false
 }
 
 func (x *ForgetPasswordResponse) GetMsg() string {
@@ -1024,7 +1024,7 @@ func (x *ResetPasswordRequest) GetNewPassword() string {
 
 type ResetPasswordResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          ErrorCode              `protobuf:"varint,1,opt,name=code,proto3,enum=proto.ErrorCode" json:"code,omitempty"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1060,11 +1060,11 @@ func (*ResetPasswordResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{18}
 }
 
-func (x *ResetPasswordResponse) GetCode() ErrorCode {
+func (x *ResetPasswordResponse) GetSuccess() bool {
 	if x != nil {
-		return x.Code
+		return x.Success
 	}
-	return ErrorCode_SUCCESS
+	return false
 }
 
 func (x *ResetPasswordResponse) GetMsg() string {
@@ -1120,7 +1120,7 @@ func (x *UpdateUserInfoRequest) GetUser() *User {
 
 type UpdateUserInfoResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          ErrorCode              `protobuf:"varint,1,opt,name=code,proto3,enum=proto.ErrorCode" json:"code,omitempty"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	User          *User                  `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -1157,11 +1157,11 @@ func (*UpdateUserInfoResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{20}
 }
 
-func (x *UpdateUserInfoResponse) GetCode() ErrorCode {
+func (x *UpdateUserInfoResponse) GetSuccess() bool {
 	if x != nil {
-		return x.Code
+		return x.Success
 	}
-	return ErrorCode_SUCCESS
+	return false
 }
 
 func (x *UpdateUserInfoResponse) GetMsg() string {
@@ -1248,7 +1248,7 @@ func (x *UnregisterRequest) GetVerifyCode() string {
 
 type UnregisterResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          ErrorCode              `protobuf:"varint,1,opt,name=code,proto3,enum=proto.ErrorCode" json:"code,omitempty"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1284,11 +1284,11 @@ func (*UnregisterResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{22}
 }
 
-func (x *UnregisterResponse) GetCode() ErrorCode {
+func (x *UnregisterResponse) GetSuccess() bool {
 	if x != nil {
-		return x.Code
+		return x.Success
 	}
-	return ErrorCode_SUCCESS
+	return false
 }
 
 func (x *UnregisterResponse) GetMsg() string {
@@ -1303,8 +1303,7 @@ var File_user_proto protoreflect.FileDescriptor
 const file_user_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"user.proto\x12\x05proto\x1a\n" +
-	"code.proto\"X\n" +
+	"user.proto\x12\x05proto\"X\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
@@ -1315,67 +1314,67 @@ const file_user_proto_rawDesc = "" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x03 \x01(\tR\bpassword\x12\x1f\n" +
 	"\vverify_code\x18\x05 \x01(\tR\n" +
-	"verifyCode\"k\n" +
-	"\x10RegisterResponse\x12$\n" +
-	"\x04code\x18\x01 \x01(\x0e2\x10.proto.ErrorCodeR\x04code\x12\x10\n" +
+	"verifyCode\"_\n" +
+	"\x10RegisterResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
 	"\x04user\x18\x03 \x01(\v2\v.proto.UserR\x04user\"C\n" +
 	"\x10SetAvatarRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x16\n" +
-	"\x06avatar\x18\x02 \x01(\tR\x06avatar\"K\n" +
-	"\x11SetAvatarResponse\x12$\n" +
-	"\x04code\x18\x01 \x01(\x0e2\x10.proto.ErrorCodeR\x04code\x12\x10\n" +
+	"\x06avatar\x18\x02 \x01(\tR\x06avatar\"?\n" +
+	"\x11SetAvatarResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\")\n" +
 	"\x11VerifyCodeRequest\x12\x14\n" +
-	"\x05email\x18\x01 \x01(\tR\x05email\"L\n" +
-	"\x12VerifyCodeResponse\x12$\n" +
-	"\x04code\x18\x01 \x01(\x0e2\x10.proto.ErrorCodeR\x04code\x12\x10\n" +
+	"\x05email\x18\x01 \x01(\tR\x05email\"@\n" +
+	"\x12VerifyCodeResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\"@\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x8f\x01\n" +
-	"\rLoginResponse\x12$\n" +
-	"\x04code\x18\x01 \x01(\x0e2\x10.proto.ErrorCodeR\x04code\x12\x10\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x83\x01\n" +
+	"\rLoginResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\x12!\n" +
 	"\faccess_token\x18\x03 \x01(\tR\vaccessToken\x12#\n" +
 	"\rrefresh_token\x18\x04 \x01(\tR\frefreshToken\"4\n" +
 	"\rLogoutRequest\x12#\n" +
-	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"H\n" +
-	"\x0eLogoutResponse\x12$\n" +
-	"\x04code\x18\x01 \x01(\x0e2\x10.proto.ErrorCodeR\x04code\x12\x10\n" +
+	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"<\n" +
+	"\x0eLogoutResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\"5\n" +
 	"\x0eRefreshRequest\x12#\n" +
-	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"\x91\x01\n" +
-	"\x0fRefreshResponse\x12$\n" +
-	"\x04code\x18\x01 \x01(\x0e2\x10.proto.ErrorCodeR\x04code\x12\x10\n" +
+	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"\x85\x01\n" +
+	"\x0fRefreshResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\x12!\n" +
 	"\faccess_token\x18\x03 \x01(\tR\vaccessToken\x12#\n" +
 	"\rrefresh_token\x18\x04 \x01(\tR\frefreshToken\")\n" +
 	"\x0eGetUserRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\"j\n" +
-	"\x0fGetUserResponse\x12$\n" +
-	"\x04code\x18\x01 \x01(\x0e2\x10.proto.ErrorCodeR\x04code\x12\x10\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"^\n" +
+	"\x0fGetUserResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
 	"\x04user\x18\x03 \x01(\v2\v.proto.UserR\x04user\"j\n" +
 	"\x15ForgetPasswordRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x1f\n" +
 	"\vverify_code\x18\x03 \x01(\tR\n" +
-	"verifyCode\"P\n" +
-	"\x16ForgetPasswordResponse\x12$\n" +
-	"\x04code\x18\x01 \x01(\x0e2\x10.proto.ErrorCodeR\x04code\x12\x10\n" +
+	"verifyCode\"D\n" +
+	"\x16ForgetPasswordResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\"u\n" +
 	"\x14ResetPasswordRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
 	"\fold_password\x18\x02 \x01(\tR\voldPassword\x12!\n" +
-	"\fnew_password\x18\x03 \x01(\tR\vnewPassword\"O\n" +
-	"\x15ResetPasswordResponse\x12$\n" +
-	"\x04code\x18\x01 \x01(\x0e2\x10.proto.ErrorCodeR\x04code\x12\x10\n" +
+	"\fnew_password\x18\x03 \x01(\tR\vnewPassword\"C\n" +
+	"\x15ResetPasswordResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\"8\n" +
 	"\x15UpdateUserInfoRequest\x12\x1f\n" +
-	"\x04user\x18\x01 \x01(\v2\v.proto.UserR\x04user\"q\n" +
-	"\x16UpdateUserInfoResponse\x12$\n" +
-	"\x04code\x18\x01 \x01(\x0e2\x10.proto.ErrorCodeR\x04code\x12\x10\n" +
+	"\x04user\x18\x01 \x01(\v2\v.proto.UserR\x04user\"e\n" +
+	"\x16UpdateUserInfoResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
 	"\x04user\x18\x03 \x01(\v2\v.proto.UserR\x04user\"\x7f\n" +
 	"\x11UnregisterRequest\x12\x17\n" +
@@ -1383,9 +1382,9 @@ const file_user_proto_rawDesc = "" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x03 \x01(\tR\bpassword\x12\x1f\n" +
 	"\vverify_code\x18\x04 \x01(\tR\n" +
-	"verifyCode\"L\n" +
-	"\x12UnregisterResponse\x12$\n" +
-	"\x04code\x18\x01 \x01(\x0e2\x10.proto.ErrorCodeR\x04code\x12\x10\n" +
+	"verifyCode\"@\n" +
+	"\x12UnregisterResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg2\xd9\x05\n" +
 	"\vUserService\x12;\n" +
 	"\bRegister\x12\x16.proto.RegisterRequest\x1a\x17.proto.RegisterResponse\x12>\n" +
@@ -1439,51 +1438,39 @@ var file_user_proto_goTypes = []any{
 	(*UpdateUserInfoResponse)(nil), // 20: proto.UpdateUserInfoResponse
 	(*UnregisterRequest)(nil),      // 21: proto.UnregisterRequest
 	(*UnregisterResponse)(nil),     // 22: proto.UnregisterResponse
-	(ErrorCode)(0),                 // 23: proto.ErrorCode
 }
 var file_user_proto_depIdxs = []int32{
-	23, // 0: proto.RegisterResponse.code:type_name -> proto.ErrorCode
-	0,  // 1: proto.RegisterResponse.user:type_name -> proto.User
-	23, // 2: proto.SetAvatarResponse.code:type_name -> proto.ErrorCode
-	23, // 3: proto.VerifyCodeResponse.code:type_name -> proto.ErrorCode
-	23, // 4: proto.LoginResponse.code:type_name -> proto.ErrorCode
-	23, // 5: proto.LogoutResponse.code:type_name -> proto.ErrorCode
-	23, // 6: proto.RefreshResponse.code:type_name -> proto.ErrorCode
-	23, // 7: proto.GetUserResponse.code:type_name -> proto.ErrorCode
-	0,  // 8: proto.GetUserResponse.user:type_name -> proto.User
-	23, // 9: proto.ForgetPasswordResponse.code:type_name -> proto.ErrorCode
-	23, // 10: proto.ResetPasswordResponse.code:type_name -> proto.ErrorCode
-	0,  // 11: proto.UpdateUserInfoRequest.user:type_name -> proto.User
-	23, // 12: proto.UpdateUserInfoResponse.code:type_name -> proto.ErrorCode
-	0,  // 13: proto.UpdateUserInfoResponse.user:type_name -> proto.User
-	23, // 14: proto.UnregisterResponse.code:type_name -> proto.ErrorCode
-	1,  // 15: proto.UserService.Register:input_type -> proto.RegisterRequest
-	3,  // 16: proto.UserService.SetAvatar:input_type -> proto.SetAvatarRequest
-	5,  // 17: proto.UserService.VerifyCode:input_type -> proto.VerifyCodeRequest
-	7,  // 18: proto.UserService.Login:input_type -> proto.LoginRequest
-	9,  // 19: proto.UserService.Logout:input_type -> proto.LogoutRequest
-	11, // 20: proto.UserService.Refresh:input_type -> proto.RefreshRequest
-	13, // 21: proto.UserService.GetUser:input_type -> proto.GetUserRequest
-	15, // 22: proto.UserService.ForgetPassword:input_type -> proto.ForgetPasswordRequest
-	17, // 23: proto.UserService.ResetPassword:input_type -> proto.ResetPasswordRequest
-	19, // 24: proto.UserService.UpdateUserInfo:input_type -> proto.UpdateUserInfoRequest
-	21, // 25: proto.UserService.Unregister:input_type -> proto.UnregisterRequest
-	2,  // 26: proto.UserService.Register:output_type -> proto.RegisterResponse
-	4,  // 27: proto.UserService.SetAvatar:output_type -> proto.SetAvatarResponse
-	6,  // 28: proto.UserService.VerifyCode:output_type -> proto.VerifyCodeResponse
-	8,  // 29: proto.UserService.Login:output_type -> proto.LoginResponse
-	10, // 30: proto.UserService.Logout:output_type -> proto.LogoutResponse
-	12, // 31: proto.UserService.Refresh:output_type -> proto.RefreshResponse
-	14, // 32: proto.UserService.GetUser:output_type -> proto.GetUserResponse
-	16, // 33: proto.UserService.ForgetPassword:output_type -> proto.ForgetPasswordResponse
-	18, // 34: proto.UserService.ResetPassword:output_type -> proto.ResetPasswordResponse
-	20, // 35: proto.UserService.UpdateUserInfo:output_type -> proto.UpdateUserInfoResponse
-	22, // 36: proto.UserService.Unregister:output_type -> proto.UnregisterResponse
-	26, // [26:37] is the sub-list for method output_type
-	15, // [15:26] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	0,  // 0: proto.RegisterResponse.user:type_name -> proto.User
+	0,  // 1: proto.GetUserResponse.user:type_name -> proto.User
+	0,  // 2: proto.UpdateUserInfoRequest.user:type_name -> proto.User
+	0,  // 3: proto.UpdateUserInfoResponse.user:type_name -> proto.User
+	1,  // 4: proto.UserService.Register:input_type -> proto.RegisterRequest
+	3,  // 5: proto.UserService.SetAvatar:input_type -> proto.SetAvatarRequest
+	5,  // 6: proto.UserService.VerifyCode:input_type -> proto.VerifyCodeRequest
+	7,  // 7: proto.UserService.Login:input_type -> proto.LoginRequest
+	9,  // 8: proto.UserService.Logout:input_type -> proto.LogoutRequest
+	11, // 9: proto.UserService.Refresh:input_type -> proto.RefreshRequest
+	13, // 10: proto.UserService.GetUser:input_type -> proto.GetUserRequest
+	15, // 11: proto.UserService.ForgetPassword:input_type -> proto.ForgetPasswordRequest
+	17, // 12: proto.UserService.ResetPassword:input_type -> proto.ResetPasswordRequest
+	19, // 13: proto.UserService.UpdateUserInfo:input_type -> proto.UpdateUserInfoRequest
+	21, // 14: proto.UserService.Unregister:input_type -> proto.UnregisterRequest
+	2,  // 15: proto.UserService.Register:output_type -> proto.RegisterResponse
+	4,  // 16: proto.UserService.SetAvatar:output_type -> proto.SetAvatarResponse
+	6,  // 17: proto.UserService.VerifyCode:output_type -> proto.VerifyCodeResponse
+	8,  // 18: proto.UserService.Login:output_type -> proto.LoginResponse
+	10, // 19: proto.UserService.Logout:output_type -> proto.LogoutResponse
+	12, // 20: proto.UserService.Refresh:output_type -> proto.RefreshResponse
+	14, // 21: proto.UserService.GetUser:output_type -> proto.GetUserResponse
+	16, // 22: proto.UserService.ForgetPassword:output_type -> proto.ForgetPasswordResponse
+	18, // 23: proto.UserService.ResetPassword:output_type -> proto.ResetPasswordResponse
+	20, // 24: proto.UserService.UpdateUserInfo:output_type -> proto.UpdateUserInfoResponse
+	22, // 25: proto.UserService.Unregister:output_type -> proto.UnregisterResponse
+	15, // [15:26] is the sub-list for method output_type
+	4,  // [4:15] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_user_proto_init() }
@@ -1491,7 +1478,6 @@ func file_user_proto_init() {
 	if File_user_proto != nil {
 		return
 	}
-	file_code_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
