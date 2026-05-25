@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "ks-proto/pkg/pb";
+
+// ErrorCode 错误码枚举
+// 错误码定义规范：
+// 0xx - 成功
+// 4xx - 客户端错误（仿 HTTP 4xx）
+// 5xx - 服务端错误（仿 HTTP 5xx）
+// 6xx - 业务错误
+// 9xx - 系统级错误
+enum ErrorCode {
+  // 成功
+  SUCCESS = 0;
+
+  // ========== 客户端错误 (4xx) ==========
+  BAD_REQUEST = 400;           // 通用请求错误
+  UNAUTHORIZED = 401;          // 未认证
+  FORBIDDEN = 403;             // 无权限
+  NOT_FOUND = 404;             // 资源不存在
+  METHOD_NOT_ALLOWED = 405;    // 方法不允许
+  CONFLICT = 409;              // 资源冲突
+  GONE = 410;                  // 资源已删除
+  UNPROCESSABLE_ENTITY = 422;  // 参数校验失败
+  TOO_MANY_REQUESTS = 429;     // 请求过于频繁
+
+  // ========== 服务端错误 (5xx) ==========
+  INTERNAL_ERROR = 500;        // 内部服务器错误
+  NOT_IMPLEMENTED = 501;       // 功能未实现
+  BAD_GATEWAY = 502;           // 网关错误
+  SERVICE_UNAVAILABLE = 503;   // 服务不可用
+  GATEWAY_TIMEOUT = 504;       // 网关超时
+
+  // ========== 业务错误 (6xx) ==========
+  // 用户相关 (600-619)
+  USER_NOT_FOUND = 600;
+  USER_DISABLED = 601;
+  USER_LOCKED = 602;
+  USER_ALREADY_EXISTS = 603;
+
+  // 认证相关 (620-639)
+  PASSWORD_ERROR = 620;
+  TOKEN_EXPIRED = 621;
+  TOKEN_INVALID = 622;
+  TOKEN_MISSING = 623;
+  PERMISSION_DENIED = 624;
+
+  // 资源相关 (640-659)
+  RESOURCE_NOT_FOUND = 640;
+  RESOURCE_ALREADY_EXISTS = 641;
+  RESOURCE_BUSY = 642;
+  RESOURCE_EXHAUSTED = 643;
+
+  // 操作相关 (660-679)
+  OPERATION_FAILED = 660;
+  OPERATION_TIMEOUT = 661;
+  OPERATION_CANCELED = 662;
+
+  // ========== 系统级错误 (9xx) ==========
+  DATABASE_ERROR = 900;
+  CACHE_ERROR = 901;
+  MQ_ERROR = 902;
+  THIRD_PARTY_ERROR = 903;
+  CONFIG_ERROR = 904;
+  NETWORK_ERROR = 905;
+}

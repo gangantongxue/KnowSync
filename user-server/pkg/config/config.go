@@ -15,7 +15,7 @@ type Config struct {
 }
 
 // NewConfig 创建一个新的配置项
-func NewConfig() *Config {
+func NewConfig() (*Config, error) {
 	v := viper.New()
 	v.SetConfigName("config")
 	v.AddConfigPath("./configs")
@@ -26,13 +26,13 @@ func NewConfig() *Config {
 	v.AutomaticEnv()
 
 	if err := v.ReadInConfig(); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var cfg Config
 	if err := v.Unmarshal(&cfg); err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return &cfg
+	return &cfg, nil
 }

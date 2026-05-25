@@ -17,3 +17,6 @@ database:
   user: root
   password: 123456
   dbname: knowsync
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: 5m

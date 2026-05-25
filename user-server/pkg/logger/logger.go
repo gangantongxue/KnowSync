@@ -11,12 +11,13 @@ import (
 )
 
 type Logger struct {
-	Logger *slog.Logger
-	Cfg    *config.Config
+	Logger       *slog.Logger
+	MultiHandler *MultiHandler
+	Cfg          *config.Config
 }
 
 // NewLogger 创建一个新的日志记录器
-func NewLogger(cfg *config.Config) *Logger {
+func NewLogger(cfg *config.Config) (*Logger, error) {
 	fileWriter := &lumberjack.Logger{
 		Filename:   filepath.Join(cfg.Logger.Dir, "user-server.log"),
 		MaxSize:    cfg.Logger.MaxSize,
@@ -26,25 +27,30 @@ func NewLogger(cfg *config.Config) *Logger {
 		LocalTime:  cfg.Logger.LocalTime,
 	}
 
+	// 控制台输出为文本格式，包含文件名和行号
 	consoleHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level:     cfg.Logger.GetLevel(),
 		AddSource: true,
 	})
 
+	// 文件志输出为 JSON 格式，包含文件名和行号
 	fileHandler := slog.NewJSONHandler(fileWriter, &slog.HandlerOptions{
 		Level:     cfg.Logger.GetLevel(),
 		AddSource: true,
 	})
 
-	logger := slog.New(newMultiHandler(consoleHandler, fileHandler))
+	multiHandler := newMultiHandler(consoleHandler, fileHandler)
+	logger := slog.New(multiHandler)
 
 	logger = logger.With(
 		slog.String("project", cfg.Project.Name),
 	)
 
+	// 设置为默认日志记录器
+	// 后续可直接使用 slog.Info() 等方法记录日志
 	slog.SetDefault(logger)
 
-	return &Logger{Logger: logger, Cfg: cfg}
+	return &Logger{Logger: logger, MultiHandler: multiHandler, Cfg: cfg}, nil
 }
 
 // MultiHandler 实现同时向多个 Handler 输出
@@ -52,6 +58,7 @@ type MultiHandler struct {
 	handlers []slog.Handler
 }
 
+// newMultiHandler 创建一个新的 MultiHandler
 func newMultiHandler(handlers ...slog.Handler) *MultiHandler {
 	return &MultiHandler{handlers: handlers}
 }
