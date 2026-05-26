@@ -23,8 +23,8 @@ type RedisClient interface {
 
 // Redis Redis 连接
 type Redis struct {
-	RDB RedisClient
-	Cfg *config.Config
+	RDB    RedisClient
+	Cfg    *config.Config
 	Logger *logger.Logger
 }
 
@@ -35,7 +35,7 @@ func NewRedis(cfg *config.Config, logger *logger.Logger) (*Redis, error) {
 	}
 
 	r := &Redis{
-		Cfg: cfg,
+		Cfg:    cfg,
 		Logger: logger,
 	}
 
@@ -46,19 +46,19 @@ func NewRedis(cfg *config.Config, logger *logger.Logger) (*Redis, error) {
 	if len(cfg.Redis.Addrs) == 1 {
 		// 单点 Redis
 		rdb := redis.NewClient(&redis.Options{
-			Addr:     cfg.Redis.Addrs[0],
-			Password: cfg.Redis.Password,
-			DB:       cfg.Redis.DB,
-			PoolSize: cfg.Redis.PoolSize,
+			Addr:         cfg.Redis.Addrs[0],
+			Password:     cfg.Redis.Password,
+			DB:           cfg.Redis.DB,
+			PoolSize:     cfg.Redis.PoolSize,
 			MinIdleConns: cfg.Redis.MinIdleConns,
 		})
 		r.RDB = rdb
-	}else {
+	} else {
 		// 集群 Redis
 		rdb := redis.NewClusterClient(&redis.ClusterOptions{
-			Addrs: cfg.Redis.Addrs,
-			Password: cfg.Redis.Password,
-			PoolSize: cfg.Redis.PoolSize,
+			Addrs:        cfg.Redis.Addrs,
+			Password:     cfg.Redis.Password,
+			PoolSize:     cfg.Redis.PoolSize,
 			MinIdleConns: cfg.Redis.MinIdleConns,
 		})
 		r.RDB = rdb

@@ -7,6 +7,7 @@ vars:
 
 tasks:
   default:
+    silent: true
     cmds:
       - task: help
 
@@ -73,23 +74,27 @@ tasks:
 
   fmt:
     desc: 格式化 Go 代码
+    silent: true
     cmds:
       - go fmt ./...
       - echo "Go 代码格式化完成"
 
   mod:
     desc: 整理 Go 模块依赖
+    silent: true
     cmds:
       - go mod tidy
 
   modup:
     desc: 更新所有 Go 包到最新版本
+    silent: true
     cmds:
       - go get -u ./...
       - go mod tidy
 
   clean:
     desc: 清除所有编译产物
+    silent: true
     cmds:
       - rm -rf {{.BIN_DIR}}
       - echo "已清除编译产物"
