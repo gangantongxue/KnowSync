@@ -13,6 +13,7 @@ type Config struct {
 	Logger   model.LoggerCfg   `yaml:"logger"`
 	Database model.DatabaseCfg `yaml:"database"`
 	Redis    model.RedisCfg    `yaml:"redis"`
+	GRPC     model.GRPCCfg     `yaml:"grpc"`
 }
 
 // NewConfig 创建一个新的配置项

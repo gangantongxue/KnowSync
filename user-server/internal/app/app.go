@@ -1,7 +1,13 @@
 package app
 
 import (
+	"fmt"
 	"log/slog"
+	"net"
+
+	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	"github.com/gangantongxue/knowsync/user-server/internal/handler"
 	"github.com/gangantongxue/knowsync/user-server/internal/repository"
@@ -9,6 +15,7 @@ import (
 	"github.com/gangantongxue/knowsync/user-server/pkg/config"
 	"github.com/gangantongxue/knowsync/user-server/pkg/database"
 	"github.com/gangantongxue/knowsync/user-server/pkg/logger"
+	"github.com/gangantongxue/knowsync/user-server/pkg/redis"
 )
 
 func NewApp() error {
@@ -31,8 +38,14 @@ func NewApp() error {
 		slog.Error("初始化数据库失败", "error", err)
 		return err
 	}
+	// 初始化 Redis 连接
+	r, err := redis.NewRedis(cfg, logger)
+	if err != nil {
+		slog.Error("初始化 Redis 连接失败", "error", err)
+		return err
+	}
 	// 初始化仓库
-	repo, err := repository.NewRepository(db)
+	repo, err := repository.NewRepository(db, r)
 	if err != nil {
 		slog.Error("初始化仓库失败", "error", err)
 		return err
@@ -44,12 +57,26 @@ func NewApp() error {
 		return err
 	}
 	// 初始化处理程序
-	_, err = handler.NewHandler(service)
+	handler, err := handler.NewHandler(service)
 	if err != nil {
 		slog.Error("初始化处理程序失败", "error", err)
 		return err
 	}
 
 	slog.Info("=====应用初始化完成=====")
-	return nil
+
+	// 启动 gRPC 服务
+	addr := fmt.Sprintf(":%d", cfg.GRPC.Port)
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		slog.Error("监听端口失败", "address", addr, "error", err)
+		return err
+	}
+
+	srv := grpc.NewServer()
+	pb.RegisterUserServiceServer(srv, handler)
+	reflection.Register(srv)
+
+	slog.Info("gRPC 服务启动成功", "address", addr)
+	return srv.Serve(lis)
 }

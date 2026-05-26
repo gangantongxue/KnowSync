@@ -20,3 +20,14 @@ database:
   max_idle_conns: 10
   max_open_conns: 100
   conn_max_lifetime: 5m
+
+redis:
+  addrs:
+    - "localhost:6379"
+  password: ""
+  db: 0
+  pool_size: 10
+  min_idle_conns: 1
+
+grpc:
+  port: 50051
