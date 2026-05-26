@@ -1,0 +1,95 @@
+version: '3'
+
+vars:
+  SERVICE_NAME: gateway
+  BIN_DIR: bin
+  CONFIGS_DIR: configs
+
+tasks:
+  default:
+    cmds:
+      - task: help
+
+  help:
+    desc: 显示帮助信息
+    silent: true
+    cmds:
+      - |
+        cat << 'EOF'
+        {{.SERVICE_NAME}} 构建工具
+
+        可用命令:
+          task build        - 跨平台编译二进制文件到 ./bin
+          task build:image  - 构建 Docker 镜像
+          task fmt          - 格式化 Go 代码
+          task mod          - 整理 Go 模块依赖 (go mod tidy)
+          task modup        - 更新所有 Go 包到最新版本
+          task clean        - 清除编译产物
+          task help         - 显示此帮助信息
+
+        使用方法:
+          task                    - 默认显示帮助信息
+          task build              - 执行编译
+          task build -- v1.0.0    - 指定版本号编译
+          task build:image        - 构建 Docker 镜像
+          task build:image -- v1.0.0  - 指定版本号构建镜像
+          task fmt                - 格式化代码
+          task clean              - 清除编译产物
+          task mod                - 整理依赖
+          task modup              - 更新依赖
+        EOF
+
+  build:
+    desc: 跨平台编译二进制文件
+    silent: true
+    cmds:
+      - |
+        PYTHON_CMD=""
+        if command -v python3 &> /dev/null; then
+          PYTHON_CMD="python3"
+        elif command -v python &> /dev/null; then
+          PYTHON_CMD="python"
+        else
+          echo "错误: 未找到 python3 或 python 命令"
+          exit 1
+        fi
+        $PYTHON_CMD scripts/build.py {{.CLI_ARGS}}
+
+  build:image:
+    desc: 构建 Docker 镜像
+    silent: true
+    cmds:
+      - |
+        PYTHON_CMD=""
+        if command -v python3 &> /dev/null; then
+          PYTHON_CMD="python3"
+        elif command -v python &> /dev/null; then
+          PYTHON_CMD="python"
+        else
+          echo "错误: 未找到 python3 或 python 命令"
+          exit 1
+        fi
+        $PYTHON_CMD scripts/build_image.py {{.CLI_ARGS}}
+
+  fmt:
+    desc: 格式化 Go 代码
+    cmds:
+      - go fmt ./...
+      - echo "Go 代码格式化完成"
+
+  mod:
+    desc: 整理 Go 模块依赖
+    cmds:
+      - go mod tidy
+
+  modup:
+    desc: 更新所有 Go 包到最新版本
+    cmds:
+      - go get -u ./...
+      - go mod tidy
+
+  clean:
+    desc: 清除所有编译产物
+    cmds:
+      - rm -rf {{.BIN_DIR}}
+      - echo "已清除编译产物"

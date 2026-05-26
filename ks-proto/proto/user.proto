@@ -4,7 +4,6 @@ package proto;
 
 option go_package = "ks-proto/pkg/pb";
 
-
 // User 用户信息
 message User {
   string id = 1;
@@ -144,4 +143,3 @@ service UserService {
   rpc UpdateUserInfo(UpdateUserInfoRequest) returns (UpdateUserInfoResponse);
   rpc Unregister(UnregisterRequest) returns (UnregisterResponse);
 }
-

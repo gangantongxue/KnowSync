@@ -33,10 +33,10 @@ message SearchRequest {
   string query = 4;
 }
 
-message SearchResponse{
+message SearchResponse {
   bool success = 1;
   repeated string repo_ids = 2;
-  int32 page = 3;  // 页数(-1:查询失败 0:缓存命中 n:查询成功，共n页)
+  int32 page = 3; // 页数(-1:查询失败 0:缓存命中 n:查询成功，共n页)
 }
 
 message GetChatSessionsRequest {

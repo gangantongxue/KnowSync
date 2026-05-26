@@ -12,6 +12,7 @@ type Config struct {
 	Project  model.ProjectCfg  `yaml:"project"`
 	Logger   model.LoggerCfg   `yaml:"logger"`
 	Database model.DatabaseCfg `yaml:"database"`
+	Redis    model.RedisCfg    `yaml:"redis"`
 }
 
 // NewConfig 创建一个新的配置项

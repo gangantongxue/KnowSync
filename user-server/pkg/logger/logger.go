@@ -2,9 +2,11 @@ package logger
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/gangantongxue/knowsync/user-server/pkg/config"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -51,6 +53,16 @@ func NewLogger(cfg *config.Config) (*Logger, error) {
 	slog.SetDefault(logger)
 
 	return &Logger{Logger: logger, MultiHandler: multiHandler, Cfg: cfg}, nil
+}
+
+// Printf 格式化输出日志，Redis 日志适配方法
+func (l *Logger) Printf(ctx context.Context, format string, v ...interface{}) {
+	msg := fmt.Sprintf(format, v...)
+	// 过滤 Redis 日志中的 ping 消息
+	if strings.Contains(msg, "ping") {
+		return
+	}
+	l.Logger.InfoContext(ctx, msg)
 }
 
 // MultiHandler 实现同时向多个 Handler 输出

@@ -6,6 +6,7 @@ vars:
 
 tasks:
   default:
+    silent: true
     cmds:
       - task: help
 
@@ -19,6 +20,7 @@ tasks:
 
         可用命令:
           task build    - 编译 proto 文件生成 Go 代码
+          task fmt      - 格式化 proto 文件 (需要安装 buf)
           task clean    - 清除所有编译生成产物
           task mod      - 整理 Go 模块依赖 (go mod tidy)
           task modup    - 更新所有 Go 包到最新版本
@@ -27,6 +29,7 @@ tasks:
         使用方法:
           task          - 默认显示帮助信息
           task build    - 执行构建
+          task fmt      - 格式化 proto 文件
           task clean    - 清除编译产物
           task mod      - 整理依赖
           task modup    - 更新依赖
@@ -34,22 +37,52 @@ tasks:
 
   build:
     desc: 编译 proto 文件生成 Go 代码
+    silent: true
     cmds:
-      - python3 scripts/build_proto.py {{.PROTO_DIR}} {{.OUTPUT_DIR}}
+      - |
+        PYTHON_CMD=""
+        if command -v python3 &> /dev/null; then
+          PYTHON_CMD="python3"
+        elif command -v python &> /dev/null; then
+          PYTHON_CMD="python"
+        else
+          echo "错误: 未找到 python3 或 python 命令"
+          exit 1
+        fi
+        $PYTHON_CMD scripts/build_proto.py {{.PROTO_DIR}} {{.OUTPUT_DIR}}
+
+  fmt:
+    desc: 格式化 proto 文件
+    silent: true
+    cmds:
+      - |
+        if command -v buf &> /dev/null; then
+          buf format -w {{.PROTO_DIR}}
+          echo "proto 文件格式化完成 (buf)"
+        elif command -v clang-format &> /dev/null; then
+          find {{.PROTO_DIR}} -name "*.proto" -exec clang-format -i {} \;
+          echo "proto 文件格式化完成 (clang-format)"
+        else
+          echo "警告: 未找到 buf 或 clang-format，跳过 proto 格式化"
+          echo "建议安装 buf: https://buf.build/docs/installation"
+        fi
 
   mod:
     desc: 整理 Go 模块依赖
+    silent: true
     cmds:
       - go mod tidy
 
   modup:
     desc: 更新所有 Go 包到最新版本
+    silent: true
     cmds:
       - go get -u ./...
       - go mod tidy
 
   clean:
     desc: 清除所有编译生成产物
+    silent: true
     cmds:
       - rm -rf {{.OUTPUT_DIR}}/*.pb.go
       - echo "已清除编译产物"

@@ -1,0 +1,54 @@
+# Git
+.git
+.gitignore
+
+# Go
+vendor/
+*.go
+!go.mod
+!go.sum
+go.work
+
+# Build artifacts
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test
+*_test.go
+.test/
+coverage.out
+coverage.html
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Documentation
+*.md
+LICENSE
+
+# Scripts (不需要复制到镜像中)
+scripts/
+Taskfile.yml
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Local configs (避免覆盖容器内的配置)
+# configs/ 需要保留，因为运行时需要配置

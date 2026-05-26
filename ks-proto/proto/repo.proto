@@ -84,7 +84,7 @@ message UploadArticleRequest {
 message UploadArticleResponse {
   bool success = 1;
   Node node = 2;
-  string old_value = 3;  // 旧文件路径，用于删除 MinIO 和 Milvus 中的旧数据
+  string old_value = 3; // 旧文件路径，用于删除 MinIO 和 Milvus 中的旧数据
 }
 
 message GetNodesRequest {
@@ -119,9 +119,9 @@ message RenameNodeResponse {
 
 message UpdateRepoRequest {
   string repo_id = 1;
-  string name = 2;           // 可选，不传则不修改
-  string description = 3;    // 可选，不传则不修改
-  RepoVisibility visibility = 4;  // 可选，不传则不修改
+  string name = 2; // 可选，不传则不修改
+  string description = 3; // 可选，不传则不修改
+  RepoVisibility visibility = 4; // 可选，不传则不修改
 }
 
 message UpdateRepoResponse {
