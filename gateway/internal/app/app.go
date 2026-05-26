@@ -14,6 +14,7 @@ import (
 	"github.com/gangantongxue/knowsync/gateway/pkg/config"
 	"github.com/gangantongxue/knowsync/gateway/pkg/grpcclient"
 	"github.com/gangantongxue/knowsync/gateway/pkg/logger"
+	"github.com/gangantongxue/knowsync/gateway/pkg/storage"
 )
 
 // NewApp 初始化并启动网关服务
@@ -41,10 +42,16 @@ func NewApp() error {
 		return err
 	}
 
+	store, err := storage.NewStore(cfg)
+	if err != nil {
+		slog.Error("初始化文件存储失败", "error", err)
+		return err
+	}
+
 	addr := fmt.Sprintf(":%d", cfg.HTTP.Port)
 	h := server.New(server.WithHostPorts(addr))
 
-	router.Register(h, cfg, grpcClient)
+	router.Register(h, cfg, grpcClient, store)
 
 	slog.Info("=====应用初始化完成=====")
 

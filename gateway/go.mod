@@ -4,7 +4,6 @@ go 1.26.0
 
 require (
 	github.com/cloudwego/hertz v0.10.4
-	github.com/gangantongxue/knowsync/ks-proto v0.0.0-00010101000000-000000000000
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/hertz-contrib/cors v0.1.0
 	github.com/spf13/viper v1.21.0

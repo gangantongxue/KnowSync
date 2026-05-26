@@ -14,6 +14,7 @@ type Config struct {
 	HTTP        model.HTTPCfg        `yaml:"http"`
 	Auth        model.AuthCfg        `yaml:"auth"`
 	GRPCClients model.GRPCClientsCfg `yaml:"grpc_clients"`
+	Storage     model.StorageCfg     `yaml:"storage"`
 }
 
 // NewConfig 读取 configs/config.yaml 并返回解析后的配置

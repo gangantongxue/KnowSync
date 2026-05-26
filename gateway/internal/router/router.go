@@ -6,12 +6,13 @@ import (
 	"github.com/gangantongxue/knowsync/gateway/pkg/config"
 	"github.com/gangantongxue/knowsync/gateway/pkg/grpcclient"
 	"github.com/gangantongxue/knowsync/gateway/pkg/middleware"
+	"github.com/gangantongxue/knowsync/gateway/pkg/storage"
 )
 
 // Register 注册所有 HTTP 路由及中间件
 // 全局中间件：Logging（请求日志）、CORS（跨域）
 // /api/v1 分组下，需要认证的路由使用 Auth 中间件
-func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client) {
+func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client, store *storage.Store) {
 	_ = grpcClient
 	h.Use(middleware.Logging())
 	h.Use(middleware.CORS())
@@ -41,4 +42,7 @@ func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client
 			users.PUT("/:user_id/password", handler.ResetPassword)
 		}
 	}
+
+	h.GET("/files/public/*filepath", handler.FileHandler(store))
+	h.GET("/files/auth/:token", handler.FileHandler(store))
 }

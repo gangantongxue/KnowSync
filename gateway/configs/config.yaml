@@ -17,6 +17,10 @@ http:
 auth:
   jwt_secret: "your-jwt-secret-key"
 
+storage:
+  root_dir: "./data"
+  jwt_ttl: 30m
+
 grpc_clients:
   targets:
     user_server: "localhost:50051"
