@@ -1,11 +1,15 @@
 package cmd
 
-import "github.com/gangantongxue/knowsync/user-server/internal/app"
+import (
+	"log/slog"
+	"os"
+
+	"github.com/gangantongxue/knowsync/user-server/internal/app"
+)
 
 func main() {
-	// 初始化应用
-	err := app.NewApp()
-	if err != nil {
-		panic(err)
+	if err := app.NewApp(); err != nil {
+		slog.Error("应用启动失败", "error", err)
+		os.Exit(1)
 	}
 }

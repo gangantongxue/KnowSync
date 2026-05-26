@@ -1,0 +1,556 @@
+{
+  // KnowSync 网关 - 用户服务 HTTP API 接口文档
+  // 基础路径（所有接口均以此开头）: /api/v1
+  //
+  // 统一响应格式:
+  //   code    - 业务状态码，0 表示成功，非 0 表示各类错误
+  //   message - 提示信息
+  //   data    - 响应数据（成功时携带），可能为 null
+
+  "base_url": "/api/v1",
+
+  "response_schema": {
+    "code":    { "type": "integer", "desc": "业务状态码，0 成功，非 0 失败" },
+    "message": { "type": "string",  "desc": "提示信息" },
+    "data":    { "type": "object",  "desc": "响应数据，失败时为 null" }
+  },
+
+  "error_codes": {
+    "0":     { "desc": "成功" },
+    "40000": { "desc": "请求参数错误" },
+    "40100": { "desc": "未授权，令牌无效或已过期" },
+    "40400": { "desc": "资源不存在" },
+    "42900": { "desc": "请求频率过快" }
+  },
+
+  "apis": [
+
+    //==============================================================================
+    // 一、认证相关（/auth/*）
+    //==============================================================================
+
+    //==============================================================================
+    // 注册
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/auth/register",
+      "auth_required": false,
+      "request": {
+        "content_type": "application/json",
+        "body": {
+          "name":        { "type": "string", "required": true, "desc": "用户名" },
+          "email":       { "type": "string", "required": true, "desc": "邮箱地址" },
+          "password":    { "type": "string", "required": true, "desc": "密码（至少 6 位）" },
+          "verify_code": { "type": "string", "required": true, "desc": "邮箱验证码" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "注册成功",
+          "body": {
+            "code":     { "type": "integer", "desc": "0" },
+            "message":  { "type": "string",  "desc": "提示信息" },
+            "data": {
+              "type": "object",
+              "desc": "用户信息",
+              "fields": {
+                "id":     { "type": "string", "desc": "用户 ID" },
+                "name":   { "type": "string", "desc": "用户名" },
+                "email":  { "type": "string", "desc": "邮箱" },
+                "avatar": { "type": "string", "desc": "头像 URL" }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 验证码错误 / 邮箱已注册",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 登录
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "auth_required": false,
+      "request": {
+        "content_type": "application/json",
+        "body": {
+          "email":    { "type": "string", "required": true, "desc": "邮箱" },
+          "password": { "type": "string", "required": true, "desc": "密码" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "登录成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "0" },
+            "message": { "type": "string",  "desc": "登录成功" },
+            "data": {
+              "type": "object",
+              "desc": "令牌信息",
+              "fields": {
+                "access_token":  { "type": "string", "desc": "访问令牌（Bearer Token，短期有效，默认 15 分钟）" },
+                "refresh_token": { "type": "string", "desc": "刷新令牌（用于续期 access_token，长期有效，默认 30 天）" }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "邮箱或密码错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "邮箱或密码错误" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 登出
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/auth/logout",
+      "auth_required": true,
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "body": {
+          "refresh_token": { "type": "string", "required": true, "desc": "当前会话的刷新令牌，用于服务端清理" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "登出成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "0" },
+            "message": { "type": "string",  "desc": "登出成功" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "令牌无效或已过期",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "令牌无效或已过期" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 刷新令牌
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/auth/refresh",
+      "auth_required": false,
+      "request": {
+        "content_type": "application/json",
+        "body": {
+          "refresh_token": { "type": "string", "required": true, "desc": "登录时获取的刷新令牌" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "刷新成功，返回新的令牌对",
+          "body": {
+            "code":    { "type": "integer", "desc": "0" },
+            "message": { "type": "string",  "desc": "令牌刷新成功" },
+            "data": {
+              "type": "object",
+              "desc": "新的令牌对",
+              "fields": {
+                "access_token":  { "type": "string", "desc": "新的访问令牌" },
+                "refresh_token": { "type": "string", "desc": "新的刷新令牌（旧令牌同时失效）" }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "refresh_token 无效或已过期",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "refresh_token 无效或已过期" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 二、用户相关（/users/*）
+    //==============================================================================
+
+    //==============================================================================
+    // 获取用户信息
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/users/:user_id",
+      "auth_required": true,
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "user_id": { "type": "string", "required": true, "in": "path", "desc": "用户 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "0" },
+            "message": { "type": "string",  "desc": "查询成功" },
+            "data": {
+              "type": "object",
+              "desc": "用户信息",
+              "fields": {
+                "id":     { "type": "string", "desc": "用户 ID" },
+                "name":   { "type": "string", "desc": "用户名" },
+                "email":  { "type": "string", "desc": "邮箱" },
+                "avatar": { "type": "string", "desc": "头像 URL" }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "未提供或提供了无效的访问令牌",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "404": {
+          "desc": "用户不存在",
+          "body": {
+            "code":    { "type": "integer", "desc": "40400" },
+            "message": { "type": "string",  "desc": "用户不存在" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 更新用户信息
+    //==============================================================================
+
+    {
+      "method": "PUT",
+      "path": "/users/:user_id",
+      "auth_required": true,
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "user_id": { "type": "string", "required": true, "in": "path", "desc": "用户 ID" }
+        },
+        "body": {
+          "user": {
+            "type": "object",
+            "required": true,
+            "desc": "需要更新的用户字段",
+            "fields": {
+              "name":   { "type": "string", "required": false, "desc": "新用户名" },
+              "email":  { "type": "string", "required": false, "desc": "新邮箱" },
+              "avatar": { "type": "string", "required": false, "desc": "新头像 URL" }
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "更新成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "0" },
+            "message": { "type": "string",  "desc": "更新成功" },
+            "data": {
+              "type": "object",
+              "desc": "更新后的用户信息",
+              "fields": {
+                "id":     { "type": "string", "desc": "用户 ID" },
+                "name":   { "type": "string", "desc": "用户名" },
+                "email":  { "type": "string", "desc": "邮箱" },
+                "avatar": { "type": "string", "desc": "头像 URL" }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "请求参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "请求参数错误" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权，令牌无效",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 设置头像
+    //==============================================================================
+
+    {
+      "method": "PUT",
+      "path": "/users/:user_id/avatar",
+      "auth_required": true,
+      "request": {
+        "content_type": "multipart/form-data",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "user_id": { "type": "string", "required": true, "in": "path", "desc": "用户 ID" }
+        },
+        "body": {
+          "file": { "type": "file", "required": true, "desc": "头像图片文件，支持 jpg / png / webp 格式，最大 2MB" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "头像设置成功，返回头像 URL",
+          "body": {
+            "code":    { "type": "integer", "desc": "0" },
+            "message": { "type": "string",  "desc": "头像设置成功" },
+            "data": {
+              "type": "object",
+              "desc": "头像信息",
+              "fields": {
+                "avatar": { "type": "string", "desc": "上传成功后生成的头像 URL" }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 文件格式不支持 / 文件过大",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权，令牌无效",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 注销账户
+    //==============================================================================
+
+    {
+      "method": "DELETE",
+      "path": "/users/:user_id",
+      "auth_required": true,
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "user_id": { "type": "string", "required": true, "in": "path", "desc": "用户 ID" }
+        },
+        "body": {
+          "email":       { "type": "string", "required": true, "desc": "邮箱，用于二次确认" },
+          "password":    { "type": "string", "required": true, "desc": "密码验证" },
+          "verify_code": { "type": "string", "required": true, "desc": "邮箱验证码" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "账户注销成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "0" },
+            "message": { "type": "string",  "desc": "账户注销成功" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 验证码错误 / 密码错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权，令牌无效",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 三、密码相关（/verify-codes、/password/*）
+    //==============================================================================
+
+    //==============================================================================
+    // 发送验证码
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/verify-codes",
+      "auth_required": false,
+      "request": {
+        "content_type": "application/json",
+        "body": {
+          "email": { "type": "string", "required": true, "desc": "接收验证码的邮箱地址" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "验证码发送成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "0" },
+            "message": { "type": "string",  "desc": "验证码已发送" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "邮箱格式错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "邮箱格式错误" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "429": {
+          "desc": "发送频率过快，请稍后再试",
+          "body": {
+            "code":    { "type": "integer", "desc": "42900" },
+            "message": { "type": "string",  "desc": "发送频率过快，请稍后再试" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 忘记密码
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/password/forget",
+      "auth_required": false,
+      "request": {
+        "content_type": "application/json",
+        "body": {
+          "email":       { "type": "string", "required": true, "desc": "邮箱地址" },
+          "password":    { "type": "string", "required": true, "desc": "新密码" },
+          "verify_code": { "type": "string", "required": true, "desc": "邮箱验证码" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "密码重置成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "0" },
+            "message": { "type": "string",  "desc": "密码重置成功" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 验证码错误 / 邮箱不存在",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 重置密码（已登录状态修改密码）
+    //==============================================================================
+
+    {
+      "method": "PUT",
+      "path": "/users/:user_id/password",
+      "auth_required": true,
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "user_id": { "type": "string", "required": true, "in": "path", "desc": "用户 ID" }
+        },
+        "body": {
+          "old_password": { "type": "string", "required": true, "desc": "当前密码，用于验证身份" },
+          "new_password": { "type": "string", "required": true, "desc": "新密码" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "密码修改成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "0" },
+            "message": { "type": "string",  "desc": "密码修改成功" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 旧密码错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权，令牌无效",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    }
+  ]
+}

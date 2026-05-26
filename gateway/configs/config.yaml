@@ -1,0 +1,22 @@
+project:
+  name: gateway
+  version: v0.0.0
+
+logger:
+  level: info
+  dir: "./logs"
+  max_size: 100
+  max_backups: 3
+  max_age: 7
+  compress: true
+  local_time: true
+
+http:
+  port: 8080
+
+auth:
+  jwt_secret: "your-jwt-secret-key"
+
+grpc_clients:
+  targets:
+    user_server: "localhost:50051"
