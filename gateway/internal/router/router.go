@@ -13,33 +13,32 @@ import (
 // 全局中间件：Logging（请求日志）、CORS（跨域）
 // /api/v1 分组下，需要认证的路由使用 Auth 中间件
 func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client, store *storage.Store) {
-	_ = grpcClient
 	h.Use(middleware.Logging())
 	h.Use(middleware.CORS())
 
+	hdl := handler.NewHandler(grpcClient, store)
+
 	v1 := h.Group("/api/v1")
 	{
-		// 无需认证的接口
 		auth := v1.Group("/auth")
-		auth.POST("/register", handler.Register)
-		auth.POST("/login", handler.Login)
-		auth.POST("/refresh", handler.Refresh)
+		auth.POST("/register", hdl.Register())
+		auth.POST("/login", hdl.Login())
+		auth.POST("/refresh", hdl.Refresh())
 
-		v1.POST("/verify-codes", handler.SendVerifyCode)
-		v1.POST("/password/forget", handler.ForgetPassword)
+		v1.POST("/verify-codes", hdl.SendVerifyCode())
+		v1.POST("/password/forget", hdl.ForgetPassword())
 
-		// 需要认证的接口
 		authorized := v1.Group("")
 		authorized.Use(middleware.Auth(cfg.Auth.JWTSecret))
 		{
-			authorized.POST("/auth/logout", handler.Logout)
+			authorized.POST("/auth/logout", hdl.Logout())
 
 			users := authorized.Group("/users")
-			users.GET("/:user_id", handler.GetUser)
-			users.PUT("/:user_id", handler.UpdateUser)
-			users.PUT("/:user_id/avatar", handler.SetAvatar)
-			users.DELETE("/:user_id", handler.DeleteUser)
-			users.PUT("/:user_id/password", handler.ResetPassword)
+			users.GET("/:user_id", hdl.GetUser())
+			users.PUT("/:user_id", hdl.UpdateUser())
+			users.PUT("/:user_id/avatar", hdl.SetAvatar())
+			users.DELETE("/:user_id", hdl.DeleteUser())
+			users.PUT("/:user_id/password", hdl.ResetPassword())
 		}
 	}
 

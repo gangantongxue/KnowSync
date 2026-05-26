@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/gangantongxue/knowsync/gateway/pkg/errcode"
 	"github.com/gangantongxue/knowsync/gateway/pkg/response"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -21,7 +22,7 @@ func Auth(jwtSecret string) app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		authHeader := string(ctx.GetHeader("Authorization"))
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-			response.Error(c, ctx, 401, 40100, "未授权")
+			response.Error(c, ctx, 401, errcode.ErrUnauth, "未授权")
 			ctx.Abort()
 			return
 		}
@@ -34,14 +35,14 @@ func Auth(jwtSecret string) app.HandlerFunc {
 			return []byte(jwtSecret), nil
 		})
 		if err != nil {
-			response.Error(c, ctx, 401, 40100, "令牌无效或已过期")
+			response.Error(c, ctx, 401, errcode.ErrUnauth, "令牌无效或已过期")
 			ctx.Abort()
 			return
 		}
 
 		claims, ok := token.Claims.(*AccessTokenClaims)
 		if !ok || !token.Valid {
-			response.Error(c, ctx, 401, 40100, "令牌无效或已过期")
+			response.Error(c, ctx, 401, errcode.ErrUnauth, "令牌无效或已过期")
 			ctx.Abort()
 			return
 		}

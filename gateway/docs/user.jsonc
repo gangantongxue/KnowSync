@@ -17,10 +17,10 @@
 
   "error_codes": {
     "0":     { "desc": "成功" },
-    "40000": { "desc": "请求参数错误" },
-    "40100": { "desc": "未授权，令牌无效或已过期" },
-    "40400": { "desc": "资源不存在" },
-    "42900": { "desc": "请求频率过快" }
+    "400": { "desc": "请求参数错误" },
+    "401": { "desc": "未授权，令牌无效或已过期" },
+    "404": { "desc": "资源不存在" },
+    "429": { "desc": "请求频率过快" }
   },
 
   "apis": [
@@ -38,12 +38,13 @@
       "path": "/auth/register",
       "auth_required": false,
       "request": {
-        "content_type": "application/json",
+        "content_type": "multipart/form-data",
         "body": {
           "name":        { "type": "string", "required": true, "desc": "用户名" },
           "email":       { "type": "string", "required": true, "desc": "邮箱地址" },
           "password":    { "type": "string", "required": true, "desc": "密码（至少 6 位）" },
-          "verify_code": { "type": "string", "required": true, "desc": "邮箱验证码" }
+          "verify_code": { "type": "string", "required": true, "desc": "邮箱验证码" },
+          "avatar":      { "type": "file",   "required": true, "desc": "头像图片文件，支持 jpg / png / webp，最大 2MB" }
         }
       },
       "responses": {
