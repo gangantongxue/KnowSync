@@ -34,7 +34,6 @@ func (h *Handler) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Re
 
 // Login 用户登录
 func (h *Handler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
-	// TODO: implement me
 	clientIP := getClientIP(ctx)
 	accessToken, refreshToken, err := h.Service.Login(ctx, req.GetEmail(), req.GetPassword(), clientIP)
 	if err != nil {
@@ -53,7 +52,6 @@ func (h *Handler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRes
 
 // Logout 用户退出登录
 func (h *Handler) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.LogoutResponse, error) {
-	// TODO: implement me
 	clientIP := getClientIP(ctx)
 	err := h.Service.Logout(ctx, req.GetRefreshToken(), clientIP)
 	if err != nil {
@@ -70,7 +68,6 @@ func (h *Handler) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.Logout
 
 // Refresh 刷新登录凭证
 func (h *Handler) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.RefreshResponse, error) {
-	// TODO: implement me
 	clientIP := getClientIP(ctx)
 	accessToken, refreshToken, err := h.Service.Refresh(ctx, req.GetRefreshToken(), clientIP)
 	if err != nil {

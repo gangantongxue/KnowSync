@@ -14,6 +14,7 @@ type Config struct {
 	Database model.DatabaseCfg `yaml:"database"`
 	Redis    model.RedisCfg    `yaml:"redis"`
 	Email    model.EmailCfg    `yaml:"email"`
+	Auth     model.AuthCfg     `yaml:"auth"`
 	GRPC     model.GRPCCfg     `yaml:"grpc"`
 }
 

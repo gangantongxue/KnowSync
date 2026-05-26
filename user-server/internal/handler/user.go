@@ -8,7 +8,6 @@ import (
 
 // GetUser 获取用户信息
 func (h *Handler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
-	// TODO: implement me
 	user, err := h.Service.GetUser(ctx, req.GetUserId())
 	if err != nil {
 		return &pb.GetUserResponse{
@@ -36,7 +35,6 @@ func (h *Handler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetU
 
 // UpdateUserInfo 更新用户信息
 func (h *Handler) UpdateUserInfo(ctx context.Context, req *pb.UpdateUserInfoRequest) (*pb.UpdateUserInfoResponse, error) {
-	// TODO: implement me
 	user, err := h.Service.UpdateUserInfo(ctx, req.GetUser().GetId(), req.GetUser().GetName(), req.GetUser().GetEmail(), req.GetUser().GetAvatar())
 	if err != nil {
 		return &pb.UpdateUserInfoResponse{
@@ -64,7 +62,6 @@ func (h *Handler) UpdateUserInfo(ctx context.Context, req *pb.UpdateUserInfoRequ
 
 // SetAvatar 设置用户头像
 func (h *Handler) SetAvatar(ctx context.Context, req *pb.SetAvatarRequest) (*pb.SetAvatarResponse, error) {
-	// TODO: implement me
 	err := h.Service.SetAvatar(ctx, req.GetUserId(), req.GetAvatar())
 	if err != nil {
 		return &pb.SetAvatarResponse{
@@ -80,7 +77,6 @@ func (h *Handler) SetAvatar(ctx context.Context, req *pb.SetAvatarRequest) (*pb.
 
 // Unregister 注销用户
 func (h *Handler) Unregister(ctx context.Context, req *pb.UnregisterRequest) (*pb.UnregisterResponse, error) {
-	// TODO: implement me
 	err := h.Service.Unregister(ctx, req.GetUserId(), req.GetEmail(), req.GetPassword(), req.GetVerifyCode())
 	if err != nil {
 		return &pb.UnregisterResponse{

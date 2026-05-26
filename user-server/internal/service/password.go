@@ -50,14 +50,83 @@ func generateVerifyCode() (string, error) {
 	return fmt.Sprintf("%04d", n.Int64()), nil
 }
 
-// ForgetPassword 忘记密码
+// ForgetPassword 忘记密码（通过邮箱验证码重置密码）
 func (s *Service) ForgetPassword(ctx context.Context, email, password, verifyCode string) error {
-	// TODO: implement me
+	// 1. 验证码校验
+	storedCode, err := s.Repository.GetVerifyCode(ctx, email)
+	if err != nil {
+		return fmt.Errorf("验证码已过期或不存在")
+	}
+	if storedCode != verifyCode {
+		return fmt.Errorf("验证码错误")
+	}
+
+	// 2. 根据邮箱查找用户
+	user, err := s.Repository.GetUserByEmail(ctx, email)
+	if err != nil {
+		return fmt.Errorf("该邮箱未注册")
+	}
+
+	// 3. 对新密码进行哈希处理
+	hashedPassword, err := HashPassword(password)
+	if err != nil {
+		s.Logger.Logger.Error("密码加密失败", "email", email, "error", err)
+		return fmt.Errorf("密码加密失败: %w", err)
+	}
+
+	// 4. 更新密码
+	user.Password = hashedPassword
+	if err := s.Repository.UpdateUser(ctx, user); err != nil {
+		s.Logger.Logger.Error("重置密码失败", "email", email, "error", err)
+		return fmt.Errorf("重置密码失败: %w", err)
+	}
+
+	// 5. 清理该用户的所有会话，强制重新登录
+	if err := s.Repository.InvalidateUserSessions(ctx, user.ID); err != nil {
+		s.Logger.Logger.Warn("重置密码时清理会话失败", "user_id", user.ID, "error", err)
+	}
+
+	// 6. 删除已使用的验证码
+	if err := s.Repository.DeleteVerifyCode(ctx, email); err != nil {
+		s.Logger.Logger.Warn("删除验证码失败", "email", email, "error", err)
+	}
+
+	s.Logger.Logger.Info("密码重置成功", "email", email)
 	return nil
 }
 
-// ResetPassword 重置密码
+// ResetPassword 重置密码（通过旧密码验证）
 func (s *Service) ResetPassword(ctx context.Context, userID, oldPassword, newPassword string) error {
-	// TODO: implement me
+	// 1. 查找用户
+	user, err := s.Repository.GetUser(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("用户不存在")
+	}
+
+	// 2. 校验旧密码
+	if err := CheckPassword(oldPassword, user.Password); err != nil {
+		return fmt.Errorf("原密码错误")
+	}
+
+	// 3. 对新密码进行哈希处理
+	hashedPassword, err := HashPassword(newPassword)
+	if err != nil {
+		s.Logger.Logger.Error("密码加密失败", "user_id", userID, "error", err)
+		return fmt.Errorf("密码加密失败: %w", err)
+	}
+
+	// 4. 更新密码
+	user.Password = hashedPassword
+	if err := s.Repository.UpdateUser(ctx, user); err != nil {
+		s.Logger.Logger.Error("修改密码失败", "user_id", userID, "error", err)
+		return fmt.Errorf("修改密码失败: %w", err)
+	}
+
+	// 5. 清理该用户的所有会话，强制重新登录
+	if err := s.Repository.InvalidateUserSessions(ctx, userID); err != nil {
+		s.Logger.Logger.Warn("修改密码时清理会话失败", "user_id", userID, "error", err)
+	}
+
+	s.Logger.Logger.Info("密码修改成功", "user_id", userID)
 	return nil
 }

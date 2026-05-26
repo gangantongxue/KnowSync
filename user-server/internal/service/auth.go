@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/gangantongxue/knowsync/user-server/pkg/auth"
 	"github.com/gangantongxue/knowsync/user-server/pkg/database/schema"
 	"gorm.io/gorm"
 )
@@ -67,18 +69,109 @@ func (s *Service) Register(ctx context.Context, name, email, password, verifyCod
 
 // Login 用户登录
 func (s *Service) Login(ctx context.Context, email, password, clientIP string) (string, string, error) {
-	// TODO: implement me
-	return "", "", nil
+	// 1. 根据邮箱查找用户
+	user, err := s.Repository.GetUserByEmail(ctx, email)
+	if err != nil {
+		return "", "", fmt.Errorf("邮箱或密码错误")
+	}
+
+	// 2. 校验密码
+	if err := CheckPassword(password, user.Password); err != nil {
+		return "", "", fmt.Errorf("邮箱或密码错误")
+	}
+
+	// 3. 清理该用户所有旧会话，保证一个用户至多一个活跃会话
+	if err := s.Repository.InvalidateUserSessions(ctx, user.ID); err != nil {
+		s.Logger.Logger.Error("清理旧会话失败", "user_id", user.ID, "error", err)
+	}
+
+	// 4. 生成 JWT access token
+	accessToken, err := auth.GenerateAccessToken(user.ID, s.Cfg.Auth.JWTSecret, s.Cfg.Auth.AccessTTL)
+	if err != nil {
+		s.Logger.Logger.Error("生成 access token 失败", "user_id", user.ID, "error", err)
+		return "", "", fmt.Errorf("生成访问凭证失败")
+	}
+
+	// 5. 生成随机 refresh token
+	refreshToken, err := generateRefreshToken()
+	if err != nil {
+		s.Logger.Logger.Error("生成 refresh token 失败", "user_id", user.ID, "error", err)
+		return "", "", fmt.Errorf("生成刷新凭证失败")
+	}
+
+	// 6. 创建新会话
+	session := &schema.UserSession{
+		UserID:           user.ID,
+		ClientIP:         clientIP,
+		RefreshTokenHash: hashRefreshToken(refreshToken),
+		ExpireAt:         time.Now().Add(s.Cfg.Auth.RefreshTTL),
+		LoginAt:          time.Now(),
+	}
+	if err := s.Repository.CreateSession(ctx, session); err != nil {
+		s.Logger.Logger.Error("创建会话失败", "user_id", user.ID, "error", err)
+		return "", "", fmt.Errorf("创建会话失败")
+	}
+
+	s.Logger.Logger.Info("用户登录成功", "user_id", user.ID, "client_ip", clientIP)
+	return accessToken, refreshToken, nil
 }
 
-// Logout 用户退出登录
+// Logout 用户退出登录，清空该用户全部活跃会话
 func (s *Service) Logout(ctx context.Context, refreshToken, clientIP string) error {
-	// TODO: implement me
+	// 1. 通过 refresh token 哈希值查找会话，获取 user_id
+	session, err := s.Repository.GetSessionByRefreshToken(ctx, hashRefreshToken(refreshToken))
+	if err == nil && session != nil {
+		// 2. 清空该用户所有活跃会话
+		if err := s.Repository.InvalidateUserSessions(ctx, session.UserID); err != nil {
+			s.Logger.Logger.Error("退出登录时清理会话失败", "user_id", session.UserID, "error", err)
+			return fmt.Errorf("退出登录失败: %w", err)
+		}
+		s.Logger.Logger.Info("用户退出登录成功", "user_id", session.UserID)
+	}
+	// 即使 refresh token 查不到也返回成功（幂等设计）
 	return nil
 }
 
 // Refresh 刷新登录凭证
 func (s *Service) Refresh(ctx context.Context, refreshToken, clientIP string) (string, string, error) {
-	// TODO: implement me
-	return "", "", nil
+	// 1. 通过 refresh token 哈希值查找会话
+	session, err := s.Repository.GetSessionByRefreshToken(ctx, hashRefreshToken(refreshToken))
+	if err != nil {
+		return "", "", fmt.Errorf("刷新凭证无效或已过期")
+	}
+
+	// 2. 检查会话是否已退出
+	if session.LogoutAt != nil {
+		return "", "", fmt.Errorf("刷新凭证已失效")
+	}
+
+	// 3. 检查 refresh token 是否过期
+	if time.Now().After(session.ExpireAt) {
+		return "", "", fmt.Errorf("刷新凭证已过期")
+	}
+
+	// 4. 生成新的 access token
+	accessToken, err := auth.GenerateAccessToken(session.UserID, s.Cfg.Auth.JWTSecret, s.Cfg.Auth.AccessTTL)
+	if err != nil {
+		s.Logger.Logger.Error("刷新时生成 access token 失败", "user_id", session.UserID, "error", err)
+		return "", "", fmt.Errorf("生成访问凭证失败")
+	}
+
+	// 5. 生成新的 refresh token
+	newRefreshToken, err := generateRefreshToken()
+	if err != nil {
+		s.Logger.Logger.Error("刷新时生成 refresh token 失败", "user_id", session.UserID, "error", err)
+		return "", "", fmt.Errorf("生成刷新凭证失败")
+	}
+
+	// 6. 更新会话
+	session.RefreshTokenHash = hashRefreshToken(newRefreshToken)
+	session.ClientIP = clientIP
+	if err := s.Repository.UpdateSession(ctx, session); err != nil {
+		s.Logger.Logger.Error("刷新时更新会话失败", "user_id", session.UserID, "error", err)
+		return "", "", fmt.Errorf("更新会话失败")
+	}
+
+	s.Logger.Logger.Info("刷新凭证成功", "user_id", session.UserID)
+	return accessToken, newRefreshToken, nil
 }

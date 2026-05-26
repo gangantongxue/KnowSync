@@ -1,6 +1,9 @@
 package service
 
 import (
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"regexp"
 
@@ -24,6 +27,23 @@ func CheckPassword(password, hash string) error {
 		return fmt.Errorf("密码错误")
 	}
 	return nil
+}
+
+// generateRefreshToken 生成安全的随机 refresh token（64 位十六进制字符串）
+// 返回原始 token（给客户端），不存储数据库中
+func generateRefreshToken() (string, error) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", fmt.Errorf("生成 refresh token 失败: %w", err)
+	}
+	return hex.EncodeToString(b), nil
+}
+
+// hashRefreshToken 对 refresh token 做 SHA-256 哈希，用于数据库存储和查询。
+// 数据库中只存哈希值，原始 token 仅在客户端和内存中短暂存在，防止数据库泄露导致会话凭证泄露。
+func hashRefreshToken(token string) string {
+	h := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(h[:])
 }
 
 // validateRegisterParams 校验注册参数

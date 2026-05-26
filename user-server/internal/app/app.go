@@ -53,8 +53,8 @@ func NewApp() error {
 	}
 	// 初始化邮件发送器
 	mailer := mail.NewMailer(&cfg.Email, logger)
-	// 初始化服务
-	service, err := service.NewService(repo, mailer, logger)
+	// 初始化服务（传入配置）
+	service, err := service.NewService(cfg, repo, mailer, logger)
 	if err != nil {
 		slog.Error("初始化服务失败", "error", err)
 		return err

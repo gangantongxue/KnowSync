@@ -23,7 +23,6 @@ func (h *Handler) VerifyCode(ctx context.Context, req *pb.VerifyCodeRequest) (*p
 
 // ForgetPassword 忘记密码
 func (h *Handler) ForgetPassword(ctx context.Context, req *pb.ForgetPasswordRequest) (*pb.ForgetPasswordResponse, error) {
-	// TODO: implement me
 	err := h.Service.ForgetPassword(ctx, req.GetEmail(), req.GetPassword(), req.GetVerifyCode())
 	if err != nil {
 		return &pb.ForgetPasswordResponse{
@@ -39,7 +38,6 @@ func (h *Handler) ForgetPassword(ctx context.Context, req *pb.ForgetPasswordRequ
 
 // ResetPassword 重置密码
 func (h *Handler) ResetPassword(ctx context.Context, req *pb.ResetPasswordRequest) (*pb.ResetPasswordResponse, error) {
-	// TODO: implement me
 	err := h.Service.ResetPassword(ctx, req.GetUserId(), req.GetOldPassword(), req.GetNewPassword())
 	if err != nil {
 		return &pb.ResetPasswordResponse{
