@@ -8,7 +8,6 @@ import (
 
 // VerifyCode 发送邮箱验证码
 func (h *Handler) VerifyCode(ctx context.Context, req *pb.VerifyCodeRequest) (*pb.VerifyCodeResponse, error) {
-	// TODO: implement me
 	err := h.Service.VerifyCode(ctx, req.GetEmail())
 	if err != nil {
 		return &pb.VerifyCodeResponse{

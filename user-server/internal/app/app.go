@@ -15,6 +15,7 @@ import (
 	"github.com/gangantongxue/knowsync/user-server/pkg/config"
 	"github.com/gangantongxue/knowsync/user-server/pkg/database"
 	"github.com/gangantongxue/knowsync/user-server/pkg/logger"
+	"github.com/gangantongxue/knowsync/user-server/pkg/mail"
 	"github.com/gangantongxue/knowsync/user-server/pkg/redis"
 )
 
@@ -50,8 +51,10 @@ func NewApp() error {
 		slog.Error("初始化仓库失败", "error", err)
 		return err
 	}
+	// 初始化邮件发送器
+	mailer := mail.NewMailer(&cfg.Email, logger)
 	// 初始化服务
-	service, err := service.NewService(repo)
+	service, err := service.NewService(repo, mailer, logger)
 	if err != nil {
 		slog.Error("初始化服务失败", "error", err)
 		return err

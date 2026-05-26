@@ -13,6 +13,7 @@ type Config struct {
 	Logger   model.LoggerCfg   `yaml:"logger"`
 	Database model.DatabaseCfg `yaml:"database"`
 	Redis    model.RedisCfg    `yaml:"redis"`
+	Email    model.EmailCfg    `yaml:"email"`
 	GRPC     model.GRPCCfg     `yaml:"grpc"`
 }
 

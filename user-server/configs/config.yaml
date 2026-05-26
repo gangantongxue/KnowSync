@@ -29,5 +29,13 @@ redis:
   pool_size: 10
   min_idle_conns: 1
 
+email:
+  smtp_host: "smtp.163.com"
+  smtp_port: 465
+  username: "your_email@163.com"
+  password: "your_auth_code"
+  from_address: "your_email@163.com"
+  from_name: "KnowSync"
+
 grpc:
   port: 50051
