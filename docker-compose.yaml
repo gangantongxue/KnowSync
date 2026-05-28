@@ -8,8 +8,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: knowsync
-    ports:
-      - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
@@ -17,13 +15,13 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
+    networks:
+      - knowsync-net
 
   redis:
     image: redis:7-alpine
     container_name: knowsync-redis
     restart: unless-stopped
-    ports:
-      - "6379:6379"
     volumes:
       - redis-data:/data
     healthcheck:
@@ -31,13 +29,13 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
+    networks:
+      - knowsync-net
 
   user-server:
     image: knowsync/user-server:latest
     container_name: knowsync-user-server
     restart: unless-stopped
-    ports:
-      - "50051:50051"
     environment:
       CONFIG_PATH: /app/configs/config.yaml
       DATABASE_HOST: mysql
@@ -54,6 +52,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - knowsync-net
 
   gateway:
     image: knowsync/gateway:latest
@@ -67,6 +67,12 @@ services:
     depends_on:
       user-server:
         condition: service_started
+    networks:
+      - knowsync-net
+
+networks:
+  knowsync-net:
+    driver: bridge
 
 volumes:
   mysql-data:
