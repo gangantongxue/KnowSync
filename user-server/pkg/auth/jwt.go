@@ -1,20 +1,20 @@
 package auth
 
 import (
+	"crypto/rsa"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// AccessTokenClaims JWT access token 声明
 type AccessTokenClaims struct {
 	UserID string `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
-// GenerateAccessToken 生成 JWT access token
-func GenerateAccessToken(userID, secret string, ttl time.Duration) (string, error) {
+func GenerateAccessToken(userID string, key *rsa.PrivateKey, ttl time.Duration) (string, error) {
 	claims := AccessTokenClaims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -24,21 +24,20 @@ func GenerateAccessToken(userID, secret string, ttl time.Duration) (string, erro
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(secret))
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	tokenString, err := token.SignedString(key)
 	if err != nil {
 		return "", fmt.Errorf("生成 JWT 失败: %w", err)
 	}
 	return tokenString, nil
 }
 
-// ValidateAccessToken 校验并解析 JWT access token，返回 user_id
-func ValidateAccessToken(tokenString, secret string) (string, error) {
+func ValidateAccessToken(tokenString string, key *rsa.PublicKey) (string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &AccessTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("非预期的签名算法: %v", token.Header["alg"])
 		}
-		return []byte(secret), nil
+		return key, nil
 	})
 	if err != nil {
 		return "", fmt.Errorf("JWT 校验失败: %w", err)
@@ -50,4 +49,20 @@ func ValidateAccessToken(tokenString, secret string) (string, error) {
 	}
 
 	return claims.UserID, nil
+}
+
+func LoadPrivateKeyFromFile(path string) (*rsa.PrivateKey, error) {
+	keyData, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("读取 RSA 私钥文件失败: %w", err)
+	}
+	return jwt.ParseRSAPrivateKeyFromPEM(keyData)
+}
+
+func LoadPublicKeyFromFile(path string) (*rsa.PublicKey, error) {
+	keyData, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("读取 RSA 公钥文件失败: %w", err)
+	}
+	return jwt.ParseRSAPublicKeyFromPEM(keyData)
 }

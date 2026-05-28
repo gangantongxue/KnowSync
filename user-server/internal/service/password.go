@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"log/slog"
 	"math/big"
 )
 
@@ -12,7 +13,7 @@ func (s *Service) VerifyCode(ctx context.Context, email string) error {
 	// 检查发送频率限制，防止频繁请求
 	allowed, err := s.Repository.SetVerifyCodeRateLimit(ctx, email)
 	if err != nil {
-		s.Logger.Logger.Error("检查发送频率限制失败", "email", email, "error", err)
+		slog.Error("检查发送频率限制失败", "email", email, "error", err)
 		return fmt.Errorf("检查发送频率失败: %w", err)
 	}
 	if !allowed {
@@ -22,13 +23,13 @@ func (s *Service) VerifyCode(ctx context.Context, email string) error {
 	// 生成 4 位随机验证码
 	code, err := generateVerifyCode()
 	if err != nil {
-		s.Logger.Logger.Error("生成验证码失败", "email", email, "error", err)
+		slog.Error("生成验证码失败", "email", email, "error", err)
 		return fmt.Errorf("生成验证码失败: %w", err)
 	}
 
 	// 存入 Redis，有效期 5 分钟
 	if err := s.Repository.SetVerifyCode(ctx, email, code); err != nil {
-		s.Logger.Logger.Error("存储验证码到 Redis 失败", "email", email, "error", err)
+		slog.Error("存储验证码到 Redis 失败", "email", email, "error", err)
 		return fmt.Errorf("存储验证码失败: %w", err)
 	}
 
@@ -37,7 +38,7 @@ func (s *Service) VerifyCode(ctx context.Context, email string) error {
 		return fmt.Errorf("发送验证码失败: %w", err)
 	}
 
-	s.Logger.Logger.Info("验证码发送成功", "email", email)
+	slog.Info("验证码发送成功", "email", email)
 	return nil
 }
 
@@ -70,28 +71,28 @@ func (s *Service) ForgetPassword(ctx context.Context, email, password, verifyCod
 	// 3. 对新密码进行哈希处理
 	hashedPassword, err := HashPassword(password)
 	if err != nil {
-		s.Logger.Logger.Error("密码加密失败", "email", email, "error", err)
+		slog.Error("密码加密失败", "email", email, "error", err)
 		return fmt.Errorf("密码加密失败: %w", err)
 	}
 
 	// 4. 更新密码
 	user.Password = hashedPassword
 	if err := s.Repository.UpdateUser(ctx, user); err != nil {
-		s.Logger.Logger.Error("重置密码失败", "email", email, "error", err)
+		slog.Error("重置密码失败", "email", email, "error", err)
 		return fmt.Errorf("重置密码失败: %w", err)
 	}
 
 	// 5. 清理该用户的所有会话，强制重新登录
 	if err := s.Repository.InvalidateUserSessions(ctx, user.ID); err != nil {
-		s.Logger.Logger.Warn("重置密码时清理会话失败", "user_id", user.ID, "error", err)
+		slog.Warn("重置密码时清理会话失败", "user_id", user.ID, "error", err)
 	}
 
 	// 6. 删除已使用的验证码
 	if err := s.Repository.DeleteVerifyCode(ctx, email); err != nil {
-		s.Logger.Logger.Warn("删除验证码失败", "email", email, "error", err)
+		slog.Warn("删除验证码失败", "email", email, "error", err)
 	}
 
-	s.Logger.Logger.Info("密码重置成功", "email", email)
+	slog.Info("密码重置成功", "email", email)
 	return nil
 }
 
@@ -111,22 +112,22 @@ func (s *Service) ResetPassword(ctx context.Context, userID, oldPassword, newPas
 	// 3. 对新密码进行哈希处理
 	hashedPassword, err := HashPassword(newPassword)
 	if err != nil {
-		s.Logger.Logger.Error("密码加密失败", "user_id", userID, "error", err)
+		slog.Error("密码加密失败", "user_id", userID, "error", err)
 		return fmt.Errorf("密码加密失败: %w", err)
 	}
 
 	// 4. 更新密码
 	user.Password = hashedPassword
 	if err := s.Repository.UpdateUser(ctx, user); err != nil {
-		s.Logger.Logger.Error("修改密码失败", "user_id", userID, "error", err)
+		slog.Error("修改密码失败", "user_id", userID, "error", err)
 		return fmt.Errorf("修改密码失败: %w", err)
 	}
 
 	// 5. 清理该用户的所有会话，强制重新登录
 	if err := s.Repository.InvalidateUserSessions(ctx, userID); err != nil {
-		s.Logger.Logger.Warn("修改密码时清理会话失败", "user_id", userID, "error", err)
+		slog.Warn("修改密码时清理会话失败", "user_id", userID, "error", err)
 	}
 
-	s.Logger.Logger.Info("密码修改成功", "user_id", userID)
+	slog.Info("密码修改成功", "user_id", userID)
 	return nil
 }

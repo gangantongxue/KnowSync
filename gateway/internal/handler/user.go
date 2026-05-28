@@ -38,17 +38,39 @@ type ResetPasswordRequest struct {
 }
 
 // GetUser 获取用户信息
-// TODO: 调用 user-server gRPC 实现
 func (h *Handler) GetUser() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		userID := ctx.Param("user_id")
-		_ = userID
-		response.Success(c, ctx, nil)
+
+		conn := h.grpcClient.GetConn("user_server")
+		if conn == nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "服务连接失败")
+			return
+		}
+
+		userClient := pb.NewUserServiceClient(conn)
+		getUserResp, err := userClient.GetUser(c, &pb.GetUserRequest{UserId: userID})
+		if err != nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取用户信息失败")
+			return
+		}
+		if !getUserResp.Success || getUserResp.User == nil {
+			response.Error(c, ctx, 404, errcode.ErrNotFound, "用户不存在")
+			return
+		}
+
+		response.Success(c, ctx, map[string]interface{}{
+			"user": map[string]interface{}{
+				"id":     getUserResp.User.Id,
+				"name":   getUserResp.User.Name,
+				"email":  getUserResp.User.Email,
+				"avatar": getUserResp.User.Avatar,
+			},
+		})
 	}
 }
 
 // UpdateUser 更新用户信息
-// TODO: 调用 user-server gRPC 实现
 func (h *Handler) UpdateUser() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		var req UpdateUserRequest
@@ -56,7 +78,41 @@ func (h *Handler) UpdateUser() app.HandlerFunc {
 			response.Error(c, ctx, 400, errcode.ErrBadReq, "请求参数错误")
 			return
 		}
-		response.Success(c, ctx, nil)
+
+		userID := ctx.Param("user_id")
+
+		conn := h.grpcClient.GetConn("user_server")
+		if conn == nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "服务连接失败")
+			return
+		}
+
+		userClient := pb.NewUserServiceClient(conn)
+		updateResp, err := userClient.UpdateUserInfo(c, &pb.UpdateUserInfoRequest{
+			User: &pb.User{
+				Id:     userID,
+				Name:   req.User.Name,
+				Email:  req.User.Email,
+				Avatar: req.User.Avatar,
+			},
+		})
+		if err != nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "更新用户信息失败")
+			return
+		}
+		if !updateResp.Success || updateResp.User == nil {
+			response.Error(c, ctx, 400, errcode.ErrBadReq, updateResp.Msg)
+			return
+		}
+
+		response.Success(c, ctx, map[string]interface{}{
+			"user": map[string]interface{}{
+				"id":     updateResp.User.Id,
+				"name":   updateResp.User.Name,
+				"email":  updateResp.User.Email,
+				"avatar": updateResp.User.Avatar,
+			},
+		})
 	}
 }
 
@@ -172,7 +228,6 @@ func (h *Handler) SetAvatar() app.HandlerFunc {
 }
 
 // DeleteUser 注销账户
-// TODO: 调用 user-server gRPC 实现
 func (h *Handler) DeleteUser() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		var req DeleteUserRequest
@@ -180,12 +235,36 @@ func (h *Handler) DeleteUser() app.HandlerFunc {
 			response.Error(c, ctx, 400, errcode.ErrBadReq, "请求参数错误")
 			return
 		}
+
+		userID := ctx.Param("user_id")
+
+		conn := h.grpcClient.GetConn("user_server")
+		if conn == nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "服务连接失败")
+			return
+		}
+
+		userClient := pb.NewUserServiceClient(conn)
+		unregResp, err := userClient.Unregister(c, &pb.UnregisterRequest{
+			UserId:     userID,
+			Email:      req.Email,
+			Password:   req.Password,
+			VerifyCode: req.VerifyCode,
+		})
+		if err != nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "注销账户失败")
+			return
+		}
+		if !unregResp.Success {
+			response.Error(c, ctx, 400, errcode.ErrBadReq, unregResp.Msg)
+			return
+		}
+
 		response.Success(c, ctx, nil)
 	}
 }
 
 // ResetPassword 重置密码（已登录状态）
-// TODO: 调用 user-server gRPC 实现
 func (h *Handler) ResetPassword() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		var req ResetPasswordRequest
@@ -193,6 +272,30 @@ func (h *Handler) ResetPassword() app.HandlerFunc {
 			response.Error(c, ctx, 400, errcode.ErrBadReq, "请求参数错误")
 			return
 		}
+
+		userID := ctx.Param("user_id")
+
+		conn := h.grpcClient.GetConn("user_server")
+		if conn == nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "服务连接失败")
+			return
+		}
+
+		userClient := pb.NewUserServiceClient(conn)
+		resetResp, err := userClient.ResetPassword(c, &pb.ResetPasswordRequest{
+			UserId:      userID,
+			OldPassword: req.OldPassword,
+			NewPassword: req.NewPassword,
+		})
+		if err != nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "重置密码失败")
+			return
+		}
+		if !resetResp.Success {
+			response.Error(c, ctx, 400, errcode.ErrBadReq, resetResp.Msg)
+			return
+		}
+
 		response.Success(c, ctx, nil)
 	}
 }

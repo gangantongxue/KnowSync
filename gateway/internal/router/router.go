@@ -1,6 +1,8 @@
 package router
 
 import (
+	"crypto/rsa"
+
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/gangantongxue/knowsync/gateway/internal/handler"
 	"github.com/gangantongxue/knowsync/gateway/pkg/config"
@@ -9,10 +11,7 @@ import (
 	"github.com/gangantongxue/knowsync/gateway/pkg/storage"
 )
 
-// Register 注册所有 HTTP 路由及中间件
-// 全局中间件：Logging（请求日志）、CORS（跨域）
-// /api/v1 分组下，需要认证的路由使用 Auth 中间件
-func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client, store *storage.Store) {
+func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client, store *storage.Store, publicKey *rsa.PublicKey) {
 	h.Use(middleware.Logging())
 	h.Use(middleware.CORS())
 
@@ -29,7 +28,7 @@ func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client
 		v1.POST("/password/forget", hdl.ForgetPassword())
 
 		authorized := v1.Group("")
-		authorized.Use(middleware.Auth(cfg.Auth.JWTSecret))
+		authorized.Use(middleware.Auth(publicKey))
 		{
 			authorized.POST("/auth/logout", hdl.Logout())
 

@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"crypto/rsa"
 	"fmt"
 	"log/slog"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/gangantongxue/knowsync/gateway/internal/router"
+	"github.com/gangantongxue/knowsync/gateway/pkg/auth"
 	"github.com/gangantongxue/knowsync/gateway/pkg/config"
 	"github.com/gangantongxue/knowsync/gateway/pkg/grpcclient"
 	"github.com/gangantongxue/knowsync/gateway/pkg/logger"
@@ -48,10 +50,19 @@ func NewApp() error {
 		return err
 	}
 
+	var publicKey *rsa.PublicKey
+	if cfg.Auth.RSAPublicKeyPath != "" {
+		publicKey, err = auth.LoadPublicKeyFromFile(cfg.Auth.RSAPublicKeyPath)
+		if err != nil {
+			slog.Error("加载 RSA 公钥失败", "error", err)
+			return err
+		}
+	}
+
 	addr := fmt.Sprintf(":%d", cfg.HTTP.Port)
 	h := server.New(server.WithHostPorts(addr))
 
-	router.Register(h, cfg, grpcClient, store)
+	router.Register(h, cfg, grpcClient, store, publicKey)
 
 	slog.Info("=====应用初始化完成=====")
 

@@ -3,6 +3,7 @@ package mail
 import (
 	_ "embed"
 	"fmt"
+	"log/slog"
 
 	gomail "gopkg.in/gomail.v2"
 
@@ -43,10 +44,10 @@ func (m *Mailer) SendVerifyCode(to, code string) error {
 	msg.SetBody("text/html", body)
 
 	if err := m.dialer.DialAndSend(msg); err != nil {
-		m.logger.Logger.Error("发送验证码邮件失败", "to", to, "error", err)
+		slog.Error("发送验证码邮件失败", "to", to, "error", err)
 		return fmt.Errorf("发送验证码邮件失败: %w", err)
 	}
 
-	m.logger.Logger.Info("验证码邮件发送成功", "to", to)
+	slog.Info("验证码邮件发送成功", "to", to)
 	return nil
 }

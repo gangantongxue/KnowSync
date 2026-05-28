@@ -146,7 +146,6 @@ func (h *Handler) Register() app.HandlerFunc {
 }
 
 // Login 用户登录
-// TODO: 调用 user-server gRPC 实现登录逻辑
 func (h *Handler) Login() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		var req LoginRequest
@@ -154,12 +153,35 @@ func (h *Handler) Login() app.HandlerFunc {
 			response.Error(c, ctx, 400, errcode.ErrBadReq, "请求参数错误")
 			return
 		}
-		response.Success(c, ctx, nil)
+
+		conn := h.grpcClient.GetConn("user_server")
+		if conn == nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "服务连接失败")
+			return
+		}
+
+		userClient := pb.NewUserServiceClient(conn)
+		loginResp, err := userClient.Login(c, &pb.LoginRequest{
+			Email:    req.Email,
+			Password: req.Password,
+		})
+		if err != nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "登录失败")
+			return
+		}
+		if !loginResp.Success {
+			response.Error(c, ctx, 400, errcode.ErrBadReq, loginResp.Msg)
+			return
+		}
+
+		response.Success(c, ctx, map[string]interface{}{
+			"access_token":  loginResp.AccessToken,
+			"refresh_token": loginResp.RefreshToken,
+		})
 	}
 }
 
 // Logout 用户登出
-// TODO: 调用 user-server gRPC 实现登出逻辑
 func (h *Handler) Logout() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		var req LogoutRequest
@@ -167,12 +189,31 @@ func (h *Handler) Logout() app.HandlerFunc {
 			response.Error(c, ctx, 400, errcode.ErrBadReq, "请求参数错误")
 			return
 		}
+
+		conn := h.grpcClient.GetConn("user_server")
+		if conn == nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "服务连接失败")
+			return
+		}
+
+		userClient := pb.NewUserServiceClient(conn)
+		logoutResp, err := userClient.Logout(c, &pb.LogoutRequest{
+			RefreshToken: req.RefreshToken,
+		})
+		if err != nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "登出失败")
+			return
+		}
+		if !logoutResp.Success {
+			response.Error(c, ctx, 400, errcode.ErrBadReq, logoutResp.Msg)
+			return
+		}
+
 		response.Success(c, ctx, nil)
 	}
 }
 
 // Refresh 刷新 access token
-// TODO: 调用 user-server gRPC 实现令牌刷新逻辑
 func (h *Handler) Refresh() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		var req RefreshRequest
@@ -180,6 +221,29 @@ func (h *Handler) Refresh() app.HandlerFunc {
 			response.Error(c, ctx, 400, errcode.ErrBadReq, "请求参数错误")
 			return
 		}
-		response.Success(c, ctx, nil)
+
+		conn := h.grpcClient.GetConn("user_server")
+		if conn == nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "服务连接失败")
+			return
+		}
+
+		userClient := pb.NewUserServiceClient(conn)
+		refreshResp, err := userClient.Refresh(c, &pb.RefreshRequest{
+			RefreshToken: req.RefreshToken,
+		})
+		if err != nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "刷新令牌失败")
+			return
+		}
+		if !refreshResp.Success {
+			response.Error(c, ctx, 400, errcode.ErrBadReq, refreshResp.Msg)
+			return
+		}
+
+		response.Success(c, ctx, map[string]interface{}{
+			"access_token":  refreshResp.AccessToken,
+			"refresh_token": refreshResp.RefreshToken,
+		})
 	}
 }

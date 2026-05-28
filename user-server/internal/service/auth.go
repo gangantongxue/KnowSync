@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/gangantongxue/knowsync/user-server/pkg/auth"
@@ -14,36 +15,36 @@ import (
 func (s *Service) Register(ctx context.Context, name, email, password, verifyCode string) (*schema.User, error) {
 	// 1. 参数校验
 	if err := validateRegisterParams(name, email, password, verifyCode); err != nil {
-		s.Logger.Logger.Warn("注册参数校验失败", "email", email, "error", err)
+		slog.Warn("注册参数校验失败", "email", email, "error", err)
 		return nil, err
 	}
 
 	// 2. 验证码校验
 	storedCode, err := s.Repository.GetVerifyCode(ctx, email)
 	if err != nil {
-		s.Logger.Logger.Error("获取验证码失败", "email", email, "error", err)
+		slog.Error("获取验证码失败", "email", email, "error", err)
 		return nil, fmt.Errorf("验证码已过期或不存在")
 	}
 	if storedCode != verifyCode {
-		s.Logger.Logger.Warn("验证码错误", "email", email)
+		slog.Warn("验证码错误", "email", email)
 		return nil, fmt.Errorf("验证码错误")
 	}
 
 	// 3. 检查邮箱是否已被注册
 	existingUser, err := s.Repository.GetUserByEmail(ctx, email)
 	if err != nil && err != gorm.ErrRecordNotFound {
-		s.Logger.Logger.Error("检查邮箱是否已注册失败", "email", email, "error", err)
+		slog.Error("检查邮箱是否已注册失败", "email", email, "error", err)
 		return nil, fmt.Errorf("检查邮箱失败: %w", err)
 	}
 	if existingUser != nil {
-		s.Logger.Logger.Warn("邮箱已被注册", "email", email)
+		slog.Warn("邮箱已被注册", "email", email)
 		return nil, fmt.Errorf("该邮箱已被注册")
 	}
 
 	// 4. 密码加密
 	hashedPassword, err := HashPassword(password)
 	if err != nil {
-		s.Logger.Logger.Error("密码加密失败", "email", email, "error", err)
+		slog.Error("密码加密失败", "email", email, "error", err)
 		return nil, fmt.Errorf("密码加密失败: %w", err)
 	}
 
@@ -54,16 +55,16 @@ func (s *Service) Register(ctx context.Context, name, email, password, verifyCod
 		Password: hashedPassword,
 	}
 	if err := s.Repository.CreateUser(user); err != nil {
-		s.Logger.Logger.Error("创建用户失败", "email", email, "error", err)
+		slog.Error("创建用户失败", "email", email, "error", err)
 		return nil, fmt.Errorf("创建用户失败: %w", err)
 	}
 
 	// 6. 删除已使用的验证码
 	if err := s.Repository.DeleteVerifyCode(ctx, email); err != nil {
-		s.Logger.Logger.Warn("删除验证码失败", "email", email, "error", err)
+		slog.Warn("删除验证码失败", "email", email, "error", err)
 	}
 
-	s.Logger.Logger.Info("用户注册成功", "user_id", user.ID, "email", email)
+	slog.Info("用户注册成功", "user_id", user.ID, "email", email)
 	return user, nil
 }
 
@@ -82,20 +83,20 @@ func (s *Service) Login(ctx context.Context, email, password, clientIP string) (
 
 	// 3. 清理该用户所有旧会话，保证一个用户至多一个活跃会话
 	if err := s.Repository.InvalidateUserSessions(ctx, user.ID); err != nil {
-		s.Logger.Logger.Error("清理旧会话失败", "user_id", user.ID, "error", err)
+		slog.Error("清理旧会话失败", "user_id", user.ID, "error", err)
 	}
 
 	// 4. 生成 JWT access token
-	accessToken, err := auth.GenerateAccessToken(user.ID, s.Cfg.Auth.JWTSecret, s.Cfg.Auth.AccessTTL)
+	accessToken, err := auth.GenerateAccessToken(user.ID, s.privateKey, s.Cfg.Auth.AccessTTL)
 	if err != nil {
-		s.Logger.Logger.Error("生成 access token 失败", "user_id", user.ID, "error", err)
+		slog.Error("生成 access token 失败", "user_id", user.ID, "error", err)
 		return "", "", fmt.Errorf("生成访问凭证失败")
 	}
 
 	// 5. 生成随机 refresh token
 	refreshToken, err := generateRefreshToken()
 	if err != nil {
-		s.Logger.Logger.Error("生成 refresh token 失败", "user_id", user.ID, "error", err)
+		slog.Error("生成 refresh token 失败", "user_id", user.ID, "error", err)
 		return "", "", fmt.Errorf("生成刷新凭证失败")
 	}
 
@@ -108,11 +109,11 @@ func (s *Service) Login(ctx context.Context, email, password, clientIP string) (
 		LoginAt:          time.Now(),
 	}
 	if err := s.Repository.CreateSession(ctx, session); err != nil {
-		s.Logger.Logger.Error("创建会话失败", "user_id", user.ID, "error", err)
+		slog.Error("创建会话失败", "user_id", user.ID, "error", err)
 		return "", "", fmt.Errorf("创建会话失败")
 	}
 
-	s.Logger.Logger.Info("用户登录成功", "user_id", user.ID, "client_ip", clientIP)
+	slog.Info("用户登录成功", "user_id", user.ID, "client_ip", clientIP)
 	return accessToken, refreshToken, nil
 }
 
@@ -123,10 +124,10 @@ func (s *Service) Logout(ctx context.Context, refreshToken, clientIP string) err
 	if err == nil && session != nil {
 		// 2. 清空该用户所有活跃会话
 		if err := s.Repository.InvalidateUserSessions(ctx, session.UserID); err != nil {
-			s.Logger.Logger.Error("退出登录时清理会话失败", "user_id", session.UserID, "error", err)
+			slog.Error("退出登录时清理会话失败", "user_id", session.UserID, "error", err)
 			return fmt.Errorf("退出登录失败: %w", err)
 		}
-		s.Logger.Logger.Info("用户退出登录成功", "user_id", session.UserID)
+		slog.Info("用户退出登录成功", "user_id", session.UserID)
 	}
 	// 即使 refresh token 查不到也返回成功（幂等设计）
 	return nil
@@ -151,16 +152,16 @@ func (s *Service) Refresh(ctx context.Context, refreshToken, clientIP string) (s
 	}
 
 	// 4. 生成新的 access token
-	accessToken, err := auth.GenerateAccessToken(session.UserID, s.Cfg.Auth.JWTSecret, s.Cfg.Auth.AccessTTL)
+		accessToken, err := auth.GenerateAccessToken(session.UserID, s.privateKey, s.Cfg.Auth.AccessTTL)
 	if err != nil {
-		s.Logger.Logger.Error("刷新时生成 access token 失败", "user_id", session.UserID, "error", err)
+		slog.Error("刷新时生成 access token 失败", "user_id", session.UserID, "error", err)
 		return "", "", fmt.Errorf("生成访问凭证失败")
 	}
 
 	// 5. 生成新的 refresh token
 	newRefreshToken, err := generateRefreshToken()
 	if err != nil {
-		s.Logger.Logger.Error("刷新时生成 refresh token 失败", "user_id", session.UserID, "error", err)
+		slog.Error("刷新时生成 refresh token 失败", "user_id", session.UserID, "error", err)
 		return "", "", fmt.Errorf("生成刷新凭证失败")
 	}
 
@@ -168,10 +169,10 @@ func (s *Service) Refresh(ctx context.Context, refreshToken, clientIP string) (s
 	session.RefreshTokenHash = hashRefreshToken(newRefreshToken)
 	session.ClientIP = clientIP
 	if err := s.Repository.UpdateSession(ctx, session); err != nil {
-		s.Logger.Logger.Error("刷新时更新会话失败", "user_id", session.UserID, "error", err)
+		slog.Error("刷新时更新会话失败", "user_id", session.UserID, "error", err)
 		return "", "", fmt.Errorf("更新会话失败")
 	}
 
-	s.Logger.Logger.Info("刷新凭证成功", "user_id", session.UserID)
+	slog.Info("刷新凭证成功", "user_id", session.UserID)
 	return accessToken, newRefreshToken, nil
 }

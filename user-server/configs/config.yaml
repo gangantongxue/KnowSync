@@ -38,7 +38,7 @@ email:
   from_name: "KnowSync"
 
 auth:
-  jwt_secret: "your-jwt-secret-key"
+  rsa_private_key_path: "./configs/jwt-private.pem"
   access_ttl: 15m
   refresh_ttl: 720h
 

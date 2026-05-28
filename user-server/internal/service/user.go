@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/gangantongxue/knowsync/user-server/pkg/database/schema"
 	"gorm.io/gorm"
@@ -16,7 +17,7 @@ func (s *Service) GetUser(ctx context.Context, userID string) (*schema.User, err
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		s.Logger.Logger.Error("获取用户信息失败", "user_id", userID, "error", err)
+		slog.Error("获取用户信息失败", "user_id", userID, "error", err)
 		return nil, fmt.Errorf("获取用户信息失败: %w", err)
 	}
 	return user, nil
@@ -40,11 +41,11 @@ func (s *Service) UpdateUserInfo(ctx context.Context, userID, name, email, avata
 	}
 
 	if err := s.Repository.UpdateUser(ctx, user); err != nil {
-		s.Logger.Logger.Error("更新用户信息失败", "user_id", userID, "error", err)
+		slog.Error("更新用户信息失败", "user_id", userID, "error", err)
 		return nil, fmt.Errorf("更新用户信息失败: %w", err)
 	}
 
-	s.Logger.Logger.Info("更新用户信息成功", "user_id", userID)
+	slog.Info("更新用户信息成功", "user_id", userID)
 	return user, nil
 }
 
@@ -57,11 +58,11 @@ func (s *Service) SetAvatar(ctx context.Context, userID, avatar string) error {
 
 	user.Avatar = avatar
 	if err := s.Repository.UpdateUser(ctx, user); err != nil {
-		s.Logger.Logger.Error("设置头像失败", "user_id", userID, "error", err)
+		slog.Error("设置头像失败", "user_id", userID, "error", err)
 		return fmt.Errorf("设置头像失败: %w", err)
 	}
 
-	s.Logger.Logger.Info("设置头像成功", "user_id", userID)
+	slog.Info("设置头像成功", "user_id", userID)
 	return nil
 }
 
@@ -87,20 +88,20 @@ func (s *Service) Unregister(ctx context.Context, userID, email, password, verif
 
 	// 3. 删除用户
 	if err := s.Repository.DeleteUser(ctx, userID); err != nil {
-		s.Logger.Logger.Error("注销用户失败", "user_id", userID, "error", err)
+		slog.Error("注销用户失败", "user_id", userID, "error", err)
 		return fmt.Errorf("注销用户失败: %w", err)
 	}
 
 	// 4. 清理该用户的所有会话
 	if err := s.Repository.InvalidateUserSessions(ctx, userID); err != nil {
-		s.Logger.Logger.Warn("注销时清理会话失败", "user_id", userID, "error", err)
+		slog.Warn("注销时清理会话失败", "user_id", userID, "error", err)
 	}
 
 	// 5. 删除已使用的验证码
 	if err := s.Repository.DeleteVerifyCode(ctx, email); err != nil {
-		s.Logger.Logger.Warn("删除验证码失败", "email", email, "error", err)
+		slog.Warn("删除验证码失败", "email", email, "error", err)
 	}
 
-	s.Logger.Logger.Info("用户注销成功", "user_id", userID)
+	slog.Info("用户注销成功", "user_id", userID)
 	return nil
 }
