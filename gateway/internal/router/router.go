@@ -65,4 +65,7 @@ func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client
 
 	h.GET("/files/public/*filepath", handler.FileHandler(store))
 	h.GET("/files/auth/:token", handler.FileHandler(store))
+
+	internal := h.Group("/internal")
+	internal.GET("/file", handler.InternalFileHandler(store))
 }

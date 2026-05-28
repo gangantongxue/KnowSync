@@ -1,0 +1,40 @@
+grpc:
+  port: 8082
+
+log:
+  level: info
+  dir: ./logs
+
+redis:
+  addrs:
+    - localhost:6379
+  password: ""
+  db: 0
+
+database:
+  dsn: "root:password@tcp(localhost:3306)/knowsync?charset=utf8mb4&parseTime=True&loc=Local"
+
+repo_server:
+  addr: localhost:8081
+
+gateway:
+  addr: http://localhost:8080
+
+embedder:
+  base_url: https://api.siliconflow.cn/v1
+  api_key: ""
+  model: Qwen/Qwen3-Embedding-8B
+  dimensions: 1536
+
+llm:
+  base_url: https://api.deepseek.com/v1
+  api_key: ""
+  model: deepseek-chat
+  thinking_intensity: max
+
+chromem:
+  path: ./data/vectors
+
+worker:
+  concurrency: 3
+  max_retries: 3

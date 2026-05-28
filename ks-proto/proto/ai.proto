@@ -4,27 +4,111 @@ package proto;
 
 option go_package = "ks-proto/pkg/pb";
 
-message ChatMessage {
-  string role = 1;
-  string content = 2;
+// ========== 会话 ==========
+
+// ChatSession 会话
+message ChatSession {
+  string id = 1;
+  string user_id = 2;
+  string title = 3;
+  int64 created_at = 4;
+  int64 updated_at = 5;
 }
 
-message ChatHistory {
-  string user_id = 2;
-  string session_id = 3;
-  string title = 4;
+// ========== 消息 ==========
+
+// ChatMessage 聊天消息
+message ChatMessage {
+  string id = 1;
+  string session_id = 2;
+  string role = 3;      // "user" / "assistant"
+  string content = 4;   // 正式回复内容
+  string thinking = 5;  // 思考过程（与内容分开存储和返回）
+  int64 created_at = 6;
 }
+
+// ChatMessageMeta 消息摘要（列表用，不含 thinking 和完整 content）
+message ChatMessageMeta {
+  string id = 1;
+  string role = 2;
+  string content = 3; // 摘要或截断后的内容
+  int64 created_at = 4;
+}
+
+// ========== 流式对话 ==========
 
 message ChatRequest {
   string user_id = 1;
-  string chat_session_id = 2;
-  string user_input = 3;
+  string session_id = 2;  // 新会话传空，服务端自动创建
+  string message = 3;     // 用户输入
 }
 
-message ChatResponse {
-  bool success = 1;
-  string message = 2;
+// AskUserEvent 反问用户事件
+message AskUserEvent {
+  string question = 1;           // 问题内容
+  string type = 2;               // "single" / "multiple"
+  repeated string options = 3;   // 选项列表
+  bool has_other = 4;            // 是否包含"其他"自定义选项
 }
+
+// ChatResponse 流式对话响应
+message ChatResponse {
+  string session_id = 1;
+  string message_id = 2;  // 最终的消息ID（finished 时设置）
+
+  oneof event {
+    string thinking_chunk = 3;  // 思考过程片段
+    string content_chunk = 4;   // 正式回答片段
+    AskUserEvent ask_user_event = 9;  // 反问用户
+  }
+
+  bool thinking_finished = 5;  // 思考结束标记
+  bool finished = 6;           // 全部结束标记
+
+  string title = 7;            // 会话标题（finished 时可能有更新）
+  bool title_updated = 8;      // 标题是否更新
+}
+
+// ========== 会话管理 ==========
+
+message GetChatSessionsRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+message GetChatSessionsResponse {
+  bool success = 1;
+  string msg = 2;
+  repeated ChatSession sessions = 3;
+  int32 total = 4;
+}
+
+message GetChatMessagesRequest {
+  string user_id = 1;
+  string session_id = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message GetChatMessagesResponse {
+  bool success = 1;
+  string msg = 2;
+  repeated ChatMessage messages = 3;
+  int32 total = 4;
+}
+
+message DeleteChatSessionRequest {
+  string user_id = 1;
+  string session_id = 2;
+}
+
+message DeleteChatSessionResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
+// ========== 已有的（保持不变） ==========
 
 message SearchRequest {
   string user_id = 1;
@@ -39,29 +123,6 @@ message SearchResponse {
   int32 page = 3; // 页数(-1:查询失败 0:缓存命中 n:查询成功，共n页)
 }
 
-message GetChatSessionsRequest {
-  string user_id = 1;
-  int64 offset = 2;
-}
-
-message GetChatSessionsResponse {
-  bool success = 1;
-  int64 offset = 2;
-  repeated ChatHistory sessions = 3;
-}
-
-message GetChatMessagesRequest {
-  string user_id = 1;
-  string chat_session_id = 2;
-  int64 offset = 3;
-}
-
-message GetChatMessagesResponse {
-  bool success = 1;
-  int64 offset = 2;
-  repeated ChatMessage messages = 3;
-}
-
 message UpdateRepoVisibilityRequest {
   string repo_id = 1;
   bool is_public = 2;
@@ -71,10 +132,36 @@ message UpdateRepoVisibilityResponse {
   bool success = 1;
 }
 
+// VectorizeArticleRequest 向量化文章请求
+message VectorizeArticleRequest {
+  string user_id = 1;
+  string repo_id = 2;
+  string node_id = 3;
+}
+
+// VectorizeArticleResponse 向量化文章响应
+message VectorizeArticleResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
+// ========== Service ==========
+
 service AIService {
-  rpc Chat(ChatRequest) returns (ChatResponse);
+  // Chat 流式对话（主要入口）
+  rpc Chat(ChatRequest) returns (stream ChatResponse);
+
+  // Search 全文搜索
   rpc Search(SearchRequest) returns (SearchResponse);
+
+  // 会话管理
   rpc GetChatSessions(GetChatSessionsRequest) returns (GetChatSessionsResponse);
   rpc GetChatMessages(GetChatMessagesRequest) returns (GetChatMessagesResponse);
+  rpc DeleteChatSession(DeleteChatSessionRequest) returns (DeleteChatSessionResponse);
+
+  // UpdateRepoVisibility 更新仓库可见性
   rpc UpdateRepoVisibility(UpdateRepoVisibilityRequest) returns (UpdateRepoVisibilityResponse);
+
+  // VectorizeArticle 向量化文章（异步）
+  rpc VectorizeArticle(VectorizeArticleRequest) returns (VectorizeArticleResponse);
 }

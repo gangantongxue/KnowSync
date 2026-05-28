@@ -23,18 +23,27 @@ const (
 	AIService_Search_FullMethodName               = "/proto.AIService/Search"
 	AIService_GetChatSessions_FullMethodName      = "/proto.AIService/GetChatSessions"
 	AIService_GetChatMessages_FullMethodName      = "/proto.AIService/GetChatMessages"
+	AIService_DeleteChatSession_FullMethodName    = "/proto.AIService/DeleteChatSession"
 	AIService_UpdateRepoVisibility_FullMethodName = "/proto.AIService/UpdateRepoVisibility"
+	AIService_VectorizeArticle_FullMethodName     = "/proto.AIService/VectorizeArticle"
 )
 
 // AIServiceClient is the client API for AIService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AIServiceClient interface {
-	Chat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatResponse, error)
+	// Chat 流式对话（主要入口）
+	Chat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ChatResponse], error)
+	// Search 全文搜索
 	Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*SearchResponse, error)
+	// 会话管理
 	GetChatSessions(ctx context.Context, in *GetChatSessionsRequest, opts ...grpc.CallOption) (*GetChatSessionsResponse, error)
 	GetChatMessages(ctx context.Context, in *GetChatMessagesRequest, opts ...grpc.CallOption) (*GetChatMessagesResponse, error)
+	DeleteChatSession(ctx context.Context, in *DeleteChatSessionRequest, opts ...grpc.CallOption) (*DeleteChatSessionResponse, error)
+	// UpdateRepoVisibility 更新仓库可见性
 	UpdateRepoVisibility(ctx context.Context, in *UpdateRepoVisibilityRequest, opts ...grpc.CallOption) (*UpdateRepoVisibilityResponse, error)
+	// VectorizeArticle 向量化文章（异步）
+	VectorizeArticle(ctx context.Context, in *VectorizeArticleRequest, opts ...grpc.CallOption) (*VectorizeArticleResponse, error)
 }
 
 type aIServiceClient struct {
@@ -45,15 +54,24 @@ func NewAIServiceClient(cc grpc.ClientConnInterface) AIServiceClient {
 	return &aIServiceClient{cc}
 }
 
-func (c *aIServiceClient) Chat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatResponse, error) {
+func (c *aIServiceClient) Chat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ChatResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ChatResponse)
-	err := c.cc.Invoke(ctx, AIService_Chat_FullMethodName, in, out, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &AIService_ServiceDesc.Streams[0], AIService_Chat_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &grpc.GenericClientStream[ChatRequest, ChatResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AIService_ChatClient = grpc.ServerStreamingClient[ChatResponse]
 
 func (c *aIServiceClient) Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*SearchResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -85,6 +103,16 @@ func (c *aIServiceClient) GetChatMessages(ctx context.Context, in *GetChatMessag
 	return out, nil
 }
 
+func (c *aIServiceClient) DeleteChatSession(ctx context.Context, in *DeleteChatSessionRequest, opts ...grpc.CallOption) (*DeleteChatSessionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteChatSessionResponse)
+	err := c.cc.Invoke(ctx, AIService_DeleteChatSession_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *aIServiceClient) UpdateRepoVisibility(ctx context.Context, in *UpdateRepoVisibilityRequest, opts ...grpc.CallOption) (*UpdateRepoVisibilityResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UpdateRepoVisibilityResponse)
@@ -95,15 +123,32 @@ func (c *aIServiceClient) UpdateRepoVisibility(ctx context.Context, in *UpdateRe
 	return out, nil
 }
 
+func (c *aIServiceClient) VectorizeArticle(ctx context.Context, in *VectorizeArticleRequest, opts ...grpc.CallOption) (*VectorizeArticleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(VectorizeArticleResponse)
+	err := c.cc.Invoke(ctx, AIService_VectorizeArticle_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AIServiceServer is the server API for AIService service.
 // All implementations must embed UnimplementedAIServiceServer
 // for forward compatibility.
 type AIServiceServer interface {
-	Chat(context.Context, *ChatRequest) (*ChatResponse, error)
+	// Chat 流式对话（主要入口）
+	Chat(*ChatRequest, grpc.ServerStreamingServer[ChatResponse]) error
+	// Search 全文搜索
 	Search(context.Context, *SearchRequest) (*SearchResponse, error)
+	// 会话管理
 	GetChatSessions(context.Context, *GetChatSessionsRequest) (*GetChatSessionsResponse, error)
 	GetChatMessages(context.Context, *GetChatMessagesRequest) (*GetChatMessagesResponse, error)
+	DeleteChatSession(context.Context, *DeleteChatSessionRequest) (*DeleteChatSessionResponse, error)
+	// UpdateRepoVisibility 更新仓库可见性
 	UpdateRepoVisibility(context.Context, *UpdateRepoVisibilityRequest) (*UpdateRepoVisibilityResponse, error)
+	// VectorizeArticle 向量化文章（异步）
+	VectorizeArticle(context.Context, *VectorizeArticleRequest) (*VectorizeArticleResponse, error)
 	mustEmbedUnimplementedAIServiceServer()
 }
 
@@ -114,8 +159,8 @@ type AIServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAIServiceServer struct{}
 
-func (UnimplementedAIServiceServer) Chat(context.Context, *ChatRequest) (*ChatResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method Chat not implemented")
+func (UnimplementedAIServiceServer) Chat(*ChatRequest, grpc.ServerStreamingServer[ChatResponse]) error {
+	return status.Error(codes.Unimplemented, "method Chat not implemented")
 }
 func (UnimplementedAIServiceServer) Search(context.Context, *SearchRequest) (*SearchResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Search not implemented")
@@ -126,8 +171,14 @@ func (UnimplementedAIServiceServer) GetChatSessions(context.Context, *GetChatSes
 func (UnimplementedAIServiceServer) GetChatMessages(context.Context, *GetChatMessagesRequest) (*GetChatMessagesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetChatMessages not implemented")
 }
+func (UnimplementedAIServiceServer) DeleteChatSession(context.Context, *DeleteChatSessionRequest) (*DeleteChatSessionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteChatSession not implemented")
+}
 func (UnimplementedAIServiceServer) UpdateRepoVisibility(context.Context, *UpdateRepoVisibilityRequest) (*UpdateRepoVisibilityResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateRepoVisibility not implemented")
+}
+func (UnimplementedAIServiceServer) VectorizeArticle(context.Context, *VectorizeArticleRequest) (*VectorizeArticleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method VectorizeArticle not implemented")
 }
 func (UnimplementedAIServiceServer) mustEmbedUnimplementedAIServiceServer() {}
 func (UnimplementedAIServiceServer) testEmbeddedByValue()                   {}
@@ -150,23 +201,16 @@ func RegisterAIServiceServer(s grpc.ServiceRegistrar, srv AIServiceServer) {
 	s.RegisterService(&AIService_ServiceDesc, srv)
 }
 
-func _AIService_Chat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChatRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _AIService_Chat_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ChatRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(AIServiceServer).Chat(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AIService_Chat_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AIServiceServer).Chat(ctx, req.(*ChatRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(AIServiceServer).Chat(m, &grpc.GenericServerStream[ChatRequest, ChatResponse]{ServerStream: stream})
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AIService_ChatServer = grpc.ServerStreamingServer[ChatResponse]
 
 func _AIService_Search_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SearchRequest)
@@ -222,6 +266,24 @@ func _AIService_GetChatMessages_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AIService_DeleteChatSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteChatSessionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AIServiceServer).DeleteChatSession(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AIService_DeleteChatSession_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AIServiceServer).DeleteChatSession(ctx, req.(*DeleteChatSessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AIService_UpdateRepoVisibility_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateRepoVisibilityRequest)
 	if err := dec(in); err != nil {
@@ -240,6 +302,24 @@ func _AIService_UpdateRepoVisibility_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AIService_VectorizeArticle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VectorizeArticleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AIServiceServer).VectorizeArticle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AIService_VectorizeArticle_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AIServiceServer).VectorizeArticle(ctx, req.(*VectorizeArticleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AIService_ServiceDesc is the grpc.ServiceDesc for AIService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -247,10 +327,6 @@ var AIService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.AIService",
 	HandlerType: (*AIServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Chat",
-			Handler:    _AIService_Chat_Handler,
-		},
 		{
 			MethodName: "Search",
 			Handler:    _AIService_Search_Handler,
@@ -264,10 +340,24 @@ var AIService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AIService_GetChatMessages_Handler,
 		},
 		{
+			MethodName: "DeleteChatSession",
+			Handler:    _AIService_DeleteChatSession_Handler,
+		},
+		{
 			MethodName: "UpdateRepoVisibility",
 			Handler:    _AIService_UpdateRepoVisibility_Handler,
 		},
+		{
+			MethodName: "VectorizeArticle",
+			Handler:    _AIService_VectorizeArticle_Handler,
+		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Chat",
+			Handler:       _AIService_Chat_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "ai.proto",
 }

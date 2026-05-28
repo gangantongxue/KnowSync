@@ -44,6 +44,24 @@ func FileHandler(store *storage.Store) app.HandlerFunc {
 	}
 }
 
+// InternalFileHandler 创建内部文件读取 HTTP 处理器
+// 用于内部服务间调用（如 ai-server 读取文章内容），不经过 JWT 认证
+// 路由: GET /internal/file?path=repo/{rid}/{nid}/{filename}.md
+func InternalFileHandler(store *storage.Store) app.HandlerFunc {
+	return func(c context.Context, ctx *app.RequestContext) {
+		path := ctx.Query("path")
+		if path == "" {
+			ctx.JSON(consts.StatusBadRequest, map[string]string{
+				"code":    "MISSING_PATH",
+				"message": "path is required",
+			})
+			return
+		}
+
+		serveFile(ctx, store, storage.BucketAuth, path)
+	}
+}
+
 // serveFile 校验路径并返回文件内容
 func serveFile(ctx *app.RequestContext, store *storage.Store, bucket storage.Bucket, key string) {
 	fullPath, err := store.ResolvePath(bucket, key)
