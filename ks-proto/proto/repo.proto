@@ -4,11 +4,23 @@ package proto;
 
 option go_package = "ks-proto/pkg/pb";
 
-// RepoVisibility 仓库可见性枚举
 enum RepoVisibility {
-  UNSPECIFIED = 0;
+  REPO_VISIBILITY_UNSPECIFIED = 0;
   PUBLIC = 1;
   PRIVATE = 2;
+}
+
+enum NodeType {
+  NODE_TYPE_UNSPECIFIED = 0;
+  FOLDER = 1;
+  ARTICLE = 2;
+}
+
+enum CollaboratorRole {
+  COLLABORATOR_ROLE_UNSPECIFIED = 0;
+  ADMIN = 1;
+  DEVELOPER = 2;
+  VIEWER = 3;
 }
 
 message Repo {
@@ -17,14 +29,27 @@ message Repo {
   string name = 3;
   RepoVisibility visibility = 4;
   string description = 5;
+  int64 article_count = 6;
+  string created_at = 7;
+  string updated_at = 8;
 }
 
 message Node {
   string id = 1;
   string repo_id = 2;
-  string name = 3;
-  string value = 4;
-  int64 size = 5;
+  string parent_id = 3;
+  string name = 4;
+  NodeType type = 5;
+  string file_path = 6;
+  int64 size = 7;
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+message Collaborator {
+  string repo_id = 1;
+  string user_id = 2;
+  CollaboratorRole role = 3;
 }
 
 message CreateRepoRequest {
@@ -36,108 +61,195 @@ message CreateRepoRequest {
 
 message CreateRepoResponse {
   bool success = 1;
+  string msg = 2;
+  Repo repo = 3;
+}
+
+message GetRepoRequest {
+  string repo_id = 1;
+  string user_id = 2;
+}
+
+message GetRepoResponse {
+  bool success = 1;
+  string msg = 2;
+  Repo repo = 3;
+  CollaboratorRole my_role = 4;
+}
+
+message UpdateRepoRequest {
+  string repo_id = 1;
+  string user_id = 2;
+  string name = 3;
+  string description = 4;
+  RepoVisibility visibility = 5;
+}
+
+message UpdateRepoResponse {
+  bool success = 1;
+  string msg = 2;
+  Repo repo = 3;
 }
 
 message DeleteRepoRequest {
   string repo_id = 1;
+  string user_id = 2;
 }
 
 message DeleteRepoResponse {
   bool success = 1;
-  repeated Node deleted_nodes = 2;
+  string msg = 2;
 }
 
-message GetMyReposRequest {
-  string owner_id = 1;
+message ListUserReposRequest {
+  string user_id = 1;
 }
 
-message GetMyReposResponse {
-  bool success = 1;
-  repeated Repo repos = 2;
-}
-
-message GetReposRequest {
-  repeated string repo_ids = 1;
-}
-
-message GetReposResponse {
+message ListUserReposResponse {
   bool success = 1;
   repeated Repo repos = 2;
 }
 
 message CreateNodeRequest {
   string repo_id = 1;
-  string name = 2;
+  string user_id = 2;
+  string parent_id = 3;
+  string name = 4;
+  NodeType type = 5;
 }
 
 message CreateNodeResponse {
   bool success = 1;
-  Node node = 2;
+  string msg = 2;
+  Node node = 3;
 }
 
-message UploadArticleRequest {
-  string node_id = 1;
-  string value = 2;
-  int64 size = 3;
-}
-
-message UploadArticleResponse {
-  bool success = 1;
-  Node node = 2;
-  string old_value = 3; // 旧文件路径，用于删除 MinIO 和 Milvus 中的旧数据
-}
-
-message GetNodesRequest {
+message GetNodeRequest {
   string repo_id = 1;
+  string node_id = 2;
+  string user_id = 3;
 }
 
-message GetNodesResponse {
+message GetNodeResponse {
   bool success = 1;
-  repeated Node nodes = 2;
+  string msg = 2;
+  Node node = 3;
+}
+
+message UpdateNodeRequest {
+  string repo_id = 1;
+  string user_id = 2;
+  string node_id = 3;
+  string name = 4;
+  string parent_id = 5;
+}
+
+message UpdateNodeResponse {
+  bool success = 1;
+  string msg = 2;
+  Node node = 3;
 }
 
 message DeleteNodeRequest {
   string repo_id = 1;
-  string node_id = 2;
+  string user_id = 2;
+  string node_id = 3;
 }
 
 message DeleteNodeResponse {
   bool success = 1;
-  Node node = 2;
+  string msg = 2;
+  repeated string deleted_node_ids = 3;
+  repeated string deleted_file_paths = 4;
 }
 
-message RenameNodeRequest {
+message ListNodesRequest {
   string repo_id = 1;
-  string node_id = 2;
-  string new_name = 3;
+  string user_id = 2;
+  string parent_id = 3;
 }
 
-message RenameNodeResponse {
+message ListNodesResponse {
   bool success = 1;
-  Node node = 2;
+  repeated Node nodes = 2;
 }
 
-message UpdateRepoRequest {
+message SetArticleContentRequest {
   string repo_id = 1;
-  string name = 2; // 可选，不传则不修改
-  string description = 3; // 可选，不传则不修改
-  RepoVisibility visibility = 4; // 可选，不传则不修改
+  string user_id = 2;
+  string node_id = 3;
+  string file_path = 4;
+  int64 size = 5;
 }
 
-message UpdateRepoResponse {
+message SetArticleContentResponse {
   bool success = 1;
-  Repo repo = 2;
+  string msg = 2;
+  Node node = 3;
+}
+
+message AddCollaboratorRequest {
+  string repo_id = 1;
+  string operator_id = 2;
+  string user_id = 3;
+  CollaboratorRole role = 4;
+}
+
+message AddCollaboratorResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
+message UpdateCollaboratorRequest {
+  string repo_id = 1;
+  string operator_id = 2;
+  string user_id = 3;
+  CollaboratorRole role = 4;
+}
+
+message UpdateCollaboratorResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
+message RemoveCollaboratorRequest {
+  string repo_id = 1;
+  string operator_id = 2;
+  string user_id = 3;
+}
+
+message RemoveCollaboratorResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
+message ListCollaboratorsRequest {
+  string repo_id = 1;
+  string user_id = 2;
+}
+
+message ListCollaboratorsResponse {
+  bool success = 1;
+  repeated Collaborator collaborators = 2;
 }
 
 service RepoService {
   rpc CreateRepo(CreateRepoRequest) returns (CreateRepoResponse);
-  rpc DeleteRepo(DeleteRepoRequest) returns (DeleteRepoResponse);
-  rpc GetMyRepos(GetMyReposRequest) returns (GetMyReposResponse);
-  rpc GetRepos(GetReposRequest) returns (GetReposResponse);
-  rpc CreateNode(CreateNodeRequest) returns (CreateNodeResponse);
-  rpc UploadArticle(UploadArticleRequest) returns (UploadArticleResponse);
-  rpc GetNodes(GetNodesRequest) returns (GetNodesResponse);
-  rpc DeleteNode(DeleteNodeRequest) returns (DeleteNodeResponse);
-  rpc RenameNode(RenameNodeRequest) returns (RenameNodeResponse);
+  rpc GetRepo(GetRepoRequest) returns (GetRepoResponse);
   rpc UpdateRepo(UpdateRepoRequest) returns (UpdateRepoResponse);
+  rpc DeleteRepo(DeleteRepoRequest) returns (DeleteRepoResponse);
+  rpc ListUserRepos(ListUserReposRequest) returns (ListUserReposResponse);
+
+  rpc CreateNode(CreateNodeRequest) returns (CreateNodeResponse);
+  rpc GetNode(GetNodeRequest) returns (GetNodeResponse);
+  rpc UpdateNode(UpdateNodeRequest) returns (UpdateNodeResponse);
+  rpc DeleteNode(DeleteNodeRequest) returns (DeleteNodeResponse);
+  rpc ListNodes(ListNodesRequest) returns (ListNodesResponse);
+
+  rpc SetArticleContent(SetArticleContentRequest) returns (SetArticleContentResponse);
+
+  rpc AddCollaborator(AddCollaboratorRequest) returns (AddCollaboratorResponse);
+  rpc UpdateCollaborator(UpdateCollaboratorRequest) returns (UpdateCollaboratorResponse);
+  rpc RemoveCollaborator(RemoveCollaboratorRequest) returns (RemoveCollaboratorResponse);
+  rpc ListCollaborators(ListCollaboratorsRequest) returns (ListCollaboratorsResponse);
 }

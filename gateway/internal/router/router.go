@@ -38,6 +38,28 @@ func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client
 			users.PUT("/:user_id/avatar", hdl.SetAvatar())
 			users.DELETE("/:user_id", hdl.DeleteUser())
 			users.PUT("/:user_id/password", hdl.ResetPassword())
+
+			repos := authorized.Group("/repos")
+			repos.POST("", hdl.CreateRepo())
+			repos.GET("", hdl.ListUserRepos())
+			repos.GET("/:repo_id", hdl.GetRepo())
+			repos.PUT("/:repo_id", hdl.UpdateRepo())
+			repos.DELETE("/:repo_id", hdl.DeleteRepo())
+
+			nodes := repos.Group("/:repo_id/nodes")
+			nodes.POST("", hdl.CreateNode())
+			nodes.GET("", hdl.ListNodes())
+			nodes.GET("/:node_id", hdl.GetNode())
+			nodes.PUT("/:node_id", hdl.UpdateNode())
+			nodes.DELETE("/:node_id", hdl.DeleteNode())
+			nodes.PUT("/:node_id/content", hdl.UploadArticleContent())
+			nodes.GET("/:node_id/signed-url", hdl.GetArticleSignedURL())
+
+			collabs := repos.Group("/:repo_id/collaborators")
+			collabs.POST("", hdl.AddCollaborator())
+			collabs.GET("", hdl.ListCollaborators())
+			collabs.PUT("/:user_id", hdl.UpdateCollaborator())
+			collabs.DELETE("/:user_id", hdl.RemoveCollaborator())
 		}
 	}
 

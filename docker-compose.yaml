@@ -55,6 +55,24 @@ services:
     networks:
       - knowsync-net
 
+  repo-server:
+    image: knowsync/repo-server:latest
+    container_name: knowsync-repo-server
+    restart: unless-stopped
+    environment:
+      CONFIG_PATH: /app/configs/config.yaml
+      DATABASE_HOST: mysql
+      DATABASE_PORT: "3306"
+      DATABASE_USER: root
+      DATABASE_PASSWORD: "123456"
+      DATABASE_DBNAME: knowsync
+      GRPC_PORT: "50052"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - knowsync-net
+
   gateway:
     image: knowsync/gateway:latest
     container_name: knowsync-gateway
@@ -64,8 +82,11 @@ services:
     environment:
       CONFIG_PATH: /app/configs/config.yaml
       USER_SERVER_ADDR: user-server:50051
+      KNOWSYNC_GATEWAY_GRPC_CLIENTS_TARGETS_REPO_SERVER: repo-server:50052
     depends_on:
       user-server:
+        condition: service_started
+      repo-server:
         condition: service_started
     networks:
       - knowsync-net

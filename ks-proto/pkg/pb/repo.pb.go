@@ -21,26 +21,25 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// RepoVisibility 仓库可见性枚举
 type RepoVisibility int32
 
 const (
-	RepoVisibility_UNSPECIFIED RepoVisibility = 0
-	RepoVisibility_PUBLIC      RepoVisibility = 1
-	RepoVisibility_PRIVATE     RepoVisibility = 2
+	RepoVisibility_REPO_VISIBILITY_UNSPECIFIED RepoVisibility = 0
+	RepoVisibility_PUBLIC                      RepoVisibility = 1
+	RepoVisibility_PRIVATE                     RepoVisibility = 2
 )
 
 // Enum value maps for RepoVisibility.
 var (
 	RepoVisibility_name = map[int32]string{
-		0: "UNSPECIFIED",
+		0: "REPO_VISIBILITY_UNSPECIFIED",
 		1: "PUBLIC",
 		2: "PRIVATE",
 	}
 	RepoVisibility_value = map[string]int32{
-		"UNSPECIFIED": 0,
-		"PUBLIC":      1,
-		"PRIVATE":     2,
+		"REPO_VISIBILITY_UNSPECIFIED": 0,
+		"PUBLIC":                      1,
+		"PRIVATE":                     2,
 	}
 )
 
@@ -71,6 +70,107 @@ func (RepoVisibility) EnumDescriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{0}
 }
 
+type NodeType int32
+
+const (
+	NodeType_NODE_TYPE_UNSPECIFIED NodeType = 0
+	NodeType_FOLDER                NodeType = 1
+	NodeType_ARTICLE               NodeType = 2
+)
+
+// Enum value maps for NodeType.
+var (
+	NodeType_name = map[int32]string{
+		0: "NODE_TYPE_UNSPECIFIED",
+		1: "FOLDER",
+		2: "ARTICLE",
+	}
+	NodeType_value = map[string]int32{
+		"NODE_TYPE_UNSPECIFIED": 0,
+		"FOLDER":                1,
+		"ARTICLE":               2,
+	}
+)
+
+func (x NodeType) Enum() *NodeType {
+	p := new(NodeType)
+	*p = x
+	return p
+}
+
+func (x NodeType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (NodeType) Descriptor() protoreflect.EnumDescriptor {
+	return file_repo_proto_enumTypes[1].Descriptor()
+}
+
+func (NodeType) Type() protoreflect.EnumType {
+	return &file_repo_proto_enumTypes[1]
+}
+
+func (x NodeType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use NodeType.Descriptor instead.
+func (NodeType) EnumDescriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{1}
+}
+
+type CollaboratorRole int32
+
+const (
+	CollaboratorRole_COLLABORATOR_ROLE_UNSPECIFIED CollaboratorRole = 0
+	CollaboratorRole_ADMIN                         CollaboratorRole = 1
+	CollaboratorRole_DEVELOPER                     CollaboratorRole = 2
+	CollaboratorRole_VIEWER                        CollaboratorRole = 3
+)
+
+// Enum value maps for CollaboratorRole.
+var (
+	CollaboratorRole_name = map[int32]string{
+		0: "COLLABORATOR_ROLE_UNSPECIFIED",
+		1: "ADMIN",
+		2: "DEVELOPER",
+		3: "VIEWER",
+	}
+	CollaboratorRole_value = map[string]int32{
+		"COLLABORATOR_ROLE_UNSPECIFIED": 0,
+		"ADMIN":                         1,
+		"DEVELOPER":                     2,
+		"VIEWER":                        3,
+	}
+)
+
+func (x CollaboratorRole) Enum() *CollaboratorRole {
+	p := new(CollaboratorRole)
+	*p = x
+	return p
+}
+
+func (x CollaboratorRole) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (CollaboratorRole) Descriptor() protoreflect.EnumDescriptor {
+	return file_repo_proto_enumTypes[2].Descriptor()
+}
+
+func (CollaboratorRole) Type() protoreflect.EnumType {
+	return &file_repo_proto_enumTypes[2]
+}
+
+func (x CollaboratorRole) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use CollaboratorRole.Descriptor instead.
+func (CollaboratorRole) EnumDescriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{2}
+}
+
 type Repo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -78,6 +178,9 @@ type Repo struct {
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Visibility    RepoVisibility         `protobuf:"varint,4,opt,name=visibility,proto3,enum=proto.RepoVisibility" json:"visibility,omitempty"`
 	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	ArticleCount  int64                  `protobuf:"varint,6,opt,name=article_count,json=articleCount,proto3" json:"article_count,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     string                 `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -137,7 +240,7 @@ func (x *Repo) GetVisibility() RepoVisibility {
 	if x != nil {
 		return x.Visibility
 	}
-	return RepoVisibility_UNSPECIFIED
+	return RepoVisibility_REPO_VISIBILITY_UNSPECIFIED
 }
 
 func (x *Repo) GetDescription() string {
@@ -147,13 +250,38 @@ func (x *Repo) GetDescription() string {
 	return ""
 }
 
+func (x *Repo) GetArticleCount() int64 {
+	if x != nil {
+		return x.ArticleCount
+	}
+	return 0
+}
+
+func (x *Repo) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *Repo) GetUpdatedAt() string {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return ""
+}
+
 type Node struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	RepoId        string                 `protobuf:"bytes,2,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Value         string                 `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"`
-	Size          int64                  `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"`
+	ParentId      string                 `protobuf:"bytes,3,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
+	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
+	Type          NodeType               `protobuf:"varint,5,opt,name=type,proto3,enum=proto.NodeType" json:"type,omitempty"`
+	FilePath      string                 `protobuf:"bytes,6,opt,name=file_path,json=filePath,proto3" json:"file_path,omitempty"`
+	Size          int64                  `protobuf:"varint,7,opt,name=size,proto3" json:"size,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     string                 `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -202,6 +330,13 @@ func (x *Node) GetRepoId() string {
 	return ""
 }
 
+func (x *Node) GetParentId() string {
+	if x != nil {
+		return x.ParentId
+	}
+	return ""
+}
+
 func (x *Node) GetName() string {
 	if x != nil {
 		return x.Name
@@ -209,9 +344,16 @@ func (x *Node) GetName() string {
 	return ""
 }
 
-func (x *Node) GetValue() string {
+func (x *Node) GetType() NodeType {
 	if x != nil {
-		return x.Value
+		return x.Type
+	}
+	return NodeType_NODE_TYPE_UNSPECIFIED
+}
+
+func (x *Node) GetFilePath() string {
+	if x != nil {
+		return x.FilePath
 	}
 	return ""
 }
@@ -221,6 +363,80 @@ func (x *Node) GetSize() int64 {
 		return x.Size
 	}
 	return 0
+}
+
+func (x *Node) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *Node) GetUpdatedAt() string {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return ""
+}
+
+type Collaborator struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Role          CollaboratorRole       `protobuf:"varint,3,opt,name=role,proto3,enum=proto.CollaboratorRole" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Collaborator) Reset() {
+	*x = Collaborator{}
+	mi := &file_repo_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Collaborator) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Collaborator) ProtoMessage() {}
+
+func (x *Collaborator) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Collaborator.ProtoReflect.Descriptor instead.
+func (*Collaborator) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Collaborator) GetRepoId() string {
+	if x != nil {
+		return x.RepoId
+	}
+	return ""
+}
+
+func (x *Collaborator) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *Collaborator) GetRole() CollaboratorRole {
+	if x != nil {
+		return x.Role
+	}
+	return CollaboratorRole_COLLABORATOR_ROLE_UNSPECIFIED
 }
 
 type CreateRepoRequest struct {
@@ -235,7 +451,7 @@ type CreateRepoRequest struct {
 
 func (x *CreateRepoRequest) Reset() {
 	*x = CreateRepoRequest{}
-	mi := &file_repo_proto_msgTypes[2]
+	mi := &file_repo_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -247,7 +463,7 @@ func (x *CreateRepoRequest) String() string {
 func (*CreateRepoRequest) ProtoMessage() {}
 
 func (x *CreateRepoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[2]
+	mi := &file_repo_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -260,7 +476,7 @@ func (x *CreateRepoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRepoRequest.ProtoReflect.Descriptor instead.
 func (*CreateRepoRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{2}
+	return file_repo_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *CreateRepoRequest) GetOwnerId() string {
@@ -281,7 +497,7 @@ func (x *CreateRepoRequest) GetVisibility() RepoVisibility {
 	if x != nil {
 		return x.Visibility
 	}
-	return RepoVisibility_UNSPECIFIED
+	return RepoVisibility_REPO_VISIBILITY_UNSPECIFIED
 }
 
 func (x *CreateRepoRequest) GetDescription() string {
@@ -294,13 +510,15 @@ func (x *CreateRepoRequest) GetDescription() string {
 type CreateRepoResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	Repo          *Repo                  `protobuf:"bytes,3,opt,name=repo,proto3" json:"repo,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateRepoResponse) Reset() {
 	*x = CreateRepoResponse{}
-	mi := &file_repo_proto_msgTypes[3]
+	mi := &file_repo_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -312,7 +530,7 @@ func (x *CreateRepoResponse) String() string {
 func (*CreateRepoResponse) ProtoMessage() {}
 
 func (x *CreateRepoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[3]
+	mi := &file_repo_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -325,7 +543,7 @@ func (x *CreateRepoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRepoResponse.ProtoReflect.Descriptor instead.
 func (*CreateRepoResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{3}
+	return file_repo_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *CreateRepoResponse) GetSuccess() bool {
@@ -335,72 +553,42 @@ func (x *CreateRepoResponse) GetSuccess() bool {
 	return false
 }
 
-type DeleteRepoRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteRepoRequest) Reset() {
-	*x = DeleteRepoRequest{}
-	mi := &file_repo_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteRepoRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteRepoRequest) ProtoMessage() {}
-
-func (x *DeleteRepoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[4]
+func (x *CreateRepoResponse) GetMsg() string {
 	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteRepoRequest.ProtoReflect.Descriptor instead.
-func (*DeleteRepoRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *DeleteRepoRequest) GetRepoId() string {
-	if x != nil {
-		return x.RepoId
+		return x.Msg
 	}
 	return ""
 }
 
-type DeleteRepoResponse struct {
+func (x *CreateRepoResponse) GetRepo() *Repo {
+	if x != nil {
+		return x.Repo
+	}
+	return nil
+}
+
+type GetRepoRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	DeletedNodes  []*Node                `protobuf:"bytes,2,rep,name=deleted_nodes,json=deletedNodes,proto3" json:"deleted_nodes,omitempty"`
+	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *DeleteRepoResponse) Reset() {
-	*x = DeleteRepoResponse{}
+func (x *GetRepoRequest) Reset() {
+	*x = GetRepoRequest{}
 	mi := &file_repo_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *DeleteRepoResponse) String() string {
+func (x *GetRepoRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DeleteRepoResponse) ProtoMessage() {}
+func (*GetRepoRequest) ProtoMessage() {}
 
-func (x *DeleteRepoResponse) ProtoReflect() protoreflect.Message {
+func (x *GetRepoRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_repo_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -412,46 +600,49 @@ func (x *DeleteRepoResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DeleteRepoResponse.ProtoReflect.Descriptor instead.
-func (*DeleteRepoResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetRepoRequest.ProtoReflect.Descriptor instead.
+func (*GetRepoRequest) Descriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *DeleteRepoResponse) GetSuccess() bool {
+func (x *GetRepoRequest) GetRepoId() string {
 	if x != nil {
-		return x.Success
+		return x.RepoId
 	}
-	return false
+	return ""
 }
 
-func (x *DeleteRepoResponse) GetDeletedNodes() []*Node {
+func (x *GetRepoRequest) GetUserId() string {
 	if x != nil {
-		return x.DeletedNodes
+		return x.UserId
 	}
-	return nil
+	return ""
 }
 
-type GetMyReposRequest struct {
+type GetRepoResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	OwnerId       string                 `protobuf:"bytes,1,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	Repo          *Repo                  `protobuf:"bytes,3,opt,name=repo,proto3" json:"repo,omitempty"`
+	MyRole        CollaboratorRole       `protobuf:"varint,4,opt,name=my_role,json=myRole,proto3,enum=proto.CollaboratorRole" json:"my_role,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetMyReposRequest) Reset() {
-	*x = GetMyReposRequest{}
+func (x *GetRepoResponse) Reset() {
+	*x = GetRepoResponse{}
 	mi := &file_repo_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetMyReposRequest) String() string {
+func (x *GetRepoResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetMyReposRequest) ProtoMessage() {}
+func (*GetRepoResponse) ProtoMessage() {}
 
-func (x *GetMyReposRequest) ProtoReflect() protoreflect.Message {
+func (x *GetRepoResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_repo_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -463,715 +654,53 @@ func (x *GetMyReposRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetMyReposRequest.ProtoReflect.Descriptor instead.
-func (*GetMyReposRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetRepoResponse.ProtoReflect.Descriptor instead.
+func (*GetRepoResponse) Descriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *GetMyReposRequest) GetOwnerId() string {
-	if x != nil {
-		return x.OwnerId
-	}
-	return ""
-}
-
-type GetMyReposResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Repos         []*Repo                `protobuf:"bytes,2,rep,name=repos,proto3" json:"repos,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetMyReposResponse) Reset() {
-	*x = GetMyReposResponse{}
-	mi := &file_repo_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetMyReposResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMyReposResponse) ProtoMessage() {}
-
-func (x *GetMyReposResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMyReposResponse.ProtoReflect.Descriptor instead.
-func (*GetMyReposResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *GetMyReposResponse) GetSuccess() bool {
+func (x *GetRepoResponse) GetSuccess() bool {
 	if x != nil {
 		return x.Success
 	}
 	return false
 }
 
-func (x *GetMyReposResponse) GetRepos() []*Repo {
+func (x *GetRepoResponse) GetMsg() string {
 	if x != nil {
-		return x.Repos
+		return x.Msg
+	}
+	return ""
+}
+
+func (x *GetRepoResponse) GetRepo() *Repo {
+	if x != nil {
+		return x.Repo
 	}
 	return nil
 }
 
-type GetReposRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RepoIds       []string               `protobuf:"bytes,1,rep,name=repo_ids,json=repoIds,proto3" json:"repo_ids,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetReposRequest) Reset() {
-	*x = GetReposRequest{}
-	mi := &file_repo_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetReposRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetReposRequest) ProtoMessage() {}
-
-func (x *GetReposRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[8]
+func (x *GetRepoResponse) GetMyRole() CollaboratorRole {
 	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
+		return x.MyRole
 	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetReposRequest.ProtoReflect.Descriptor instead.
-func (*GetReposRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *GetReposRequest) GetRepoIds() []string {
-	if x != nil {
-		return x.RepoIds
-	}
-	return nil
-}
-
-type GetReposResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Repos         []*Repo                `protobuf:"bytes,2,rep,name=repos,proto3" json:"repos,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetReposResponse) Reset() {
-	*x = GetReposResponse{}
-	mi := &file_repo_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetReposResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetReposResponse) ProtoMessage() {}
-
-func (x *GetReposResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetReposResponse.ProtoReflect.Descriptor instead.
-func (*GetReposResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *GetReposResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetReposResponse) GetRepos() []*Repo {
-	if x != nil {
-		return x.Repos
-	}
-	return nil
-}
-
-type CreateNodeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateNodeRequest) Reset() {
-	*x = CreateNodeRequest{}
-	mi := &file_repo_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateNodeRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateNodeRequest) ProtoMessage() {}
-
-func (x *CreateNodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateNodeRequest.ProtoReflect.Descriptor instead.
-func (*CreateNodeRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *CreateNodeRequest) GetRepoId() string {
-	if x != nil {
-		return x.RepoId
-	}
-	return ""
-}
-
-func (x *CreateNodeRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-type CreateNodeResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Node          *Node                  `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateNodeResponse) Reset() {
-	*x = CreateNodeResponse{}
-	mi := &file_repo_proto_msgTypes[11]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateNodeResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateNodeResponse) ProtoMessage() {}
-
-func (x *CreateNodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[11]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateNodeResponse.ProtoReflect.Descriptor instead.
-func (*CreateNodeResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *CreateNodeResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *CreateNodeResponse) GetNode() *Node {
-	if x != nil {
-		return x.Node
-	}
-	return nil
-}
-
-type UploadArticleRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	NodeId        string                 `protobuf:"bytes,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
-	Value         string                 `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
-	Size          int64                  `protobuf:"varint,3,opt,name=size,proto3" json:"size,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UploadArticleRequest) Reset() {
-	*x = UploadArticleRequest{}
-	mi := &file_repo_proto_msgTypes[12]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UploadArticleRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UploadArticleRequest) ProtoMessage() {}
-
-func (x *UploadArticleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[12]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UploadArticleRequest.ProtoReflect.Descriptor instead.
-func (*UploadArticleRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *UploadArticleRequest) GetNodeId() string {
-	if x != nil {
-		return x.NodeId
-	}
-	return ""
-}
-
-func (x *UploadArticleRequest) GetValue() string {
-	if x != nil {
-		return x.Value
-	}
-	return ""
-}
-
-func (x *UploadArticleRequest) GetSize() int64 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-type UploadArticleResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Node          *Node                  `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
-	OldValue      string                 `protobuf:"bytes,3,opt,name=old_value,json=oldValue,proto3" json:"old_value,omitempty"` // 旧文件路径，用于删除 MinIO 和 Milvus 中的旧数据
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UploadArticleResponse) Reset() {
-	*x = UploadArticleResponse{}
-	mi := &file_repo_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UploadArticleResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UploadArticleResponse) ProtoMessage() {}
-
-func (x *UploadArticleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UploadArticleResponse.ProtoReflect.Descriptor instead.
-func (*UploadArticleResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *UploadArticleResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *UploadArticleResponse) GetNode() *Node {
-	if x != nil {
-		return x.Node
-	}
-	return nil
-}
-
-func (x *UploadArticleResponse) GetOldValue() string {
-	if x != nil {
-		return x.OldValue
-	}
-	return ""
-}
-
-type GetNodesRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetNodesRequest) Reset() {
-	*x = GetNodesRequest{}
-	mi := &file_repo_proto_msgTypes[14]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetNodesRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetNodesRequest) ProtoMessage() {}
-
-func (x *GetNodesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[14]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetNodesRequest.ProtoReflect.Descriptor instead.
-func (*GetNodesRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *GetNodesRequest) GetRepoId() string {
-	if x != nil {
-		return x.RepoId
-	}
-	return ""
-}
-
-type GetNodesResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Nodes         []*Node                `protobuf:"bytes,2,rep,name=nodes,proto3" json:"nodes,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetNodesResponse) Reset() {
-	*x = GetNodesResponse{}
-	mi := &file_repo_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetNodesResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetNodesResponse) ProtoMessage() {}
-
-func (x *GetNodesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetNodesResponse.ProtoReflect.Descriptor instead.
-func (*GetNodesResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *GetNodesResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetNodesResponse) GetNodes() []*Node {
-	if x != nil {
-		return x.Nodes
-	}
-	return nil
-}
-
-type DeleteNodeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	NodeId        string                 `protobuf:"bytes,2,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteNodeRequest) Reset() {
-	*x = DeleteNodeRequest{}
-	mi := &file_repo_proto_msgTypes[16]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteNodeRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteNodeRequest) ProtoMessage() {}
-
-func (x *DeleteNodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[16]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteNodeRequest.ProtoReflect.Descriptor instead.
-func (*DeleteNodeRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *DeleteNodeRequest) GetRepoId() string {
-	if x != nil {
-		return x.RepoId
-	}
-	return ""
-}
-
-func (x *DeleteNodeRequest) GetNodeId() string {
-	if x != nil {
-		return x.NodeId
-	}
-	return ""
-}
-
-type DeleteNodeResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Node          *Node                  `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteNodeResponse) Reset() {
-	*x = DeleteNodeResponse{}
-	mi := &file_repo_proto_msgTypes[17]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteNodeResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteNodeResponse) ProtoMessage() {}
-
-func (x *DeleteNodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[17]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteNodeResponse.ProtoReflect.Descriptor instead.
-func (*DeleteNodeResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *DeleteNodeResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *DeleteNodeResponse) GetNode() *Node {
-	if x != nil {
-		return x.Node
-	}
-	return nil
-}
-
-type RenameNodeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	NodeId        string                 `protobuf:"bytes,2,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
-	NewName       string                 `protobuf:"bytes,3,opt,name=new_name,json=newName,proto3" json:"new_name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RenameNodeRequest) Reset() {
-	*x = RenameNodeRequest{}
-	mi := &file_repo_proto_msgTypes[18]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RenameNodeRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RenameNodeRequest) ProtoMessage() {}
-
-func (x *RenameNodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[18]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RenameNodeRequest.ProtoReflect.Descriptor instead.
-func (*RenameNodeRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *RenameNodeRequest) GetRepoId() string {
-	if x != nil {
-		return x.RepoId
-	}
-	return ""
-}
-
-func (x *RenameNodeRequest) GetNodeId() string {
-	if x != nil {
-		return x.NodeId
-	}
-	return ""
-}
-
-func (x *RenameNodeRequest) GetNewName() string {
-	if x != nil {
-		return x.NewName
-	}
-	return ""
-}
-
-type RenameNodeResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Node          *Node                  `protobuf:"bytes,2,opt,name=node,proto3" json:"node,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RenameNodeResponse) Reset() {
-	*x = RenameNodeResponse{}
-	mi := &file_repo_proto_msgTypes[19]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RenameNodeResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RenameNodeResponse) ProtoMessage() {}
-
-func (x *RenameNodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[19]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RenameNodeResponse.ProtoReflect.Descriptor instead.
-func (*RenameNodeResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{19}
-}
-
-func (x *RenameNodeResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *RenameNodeResponse) GetNode() *Node {
-	if x != nil {
-		return x.Node
-	}
-	return nil
+	return CollaboratorRole_COLLABORATOR_ROLE_UNSPECIFIED
 }
 
 type UpdateRepoRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`                                        // 可选，不传则不修改
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`                          // 可选，不传则不修改
-	Visibility    RepoVisibility         `protobuf:"varint,4,opt,name=visibility,proto3,enum=proto.RepoVisibility" json:"visibility,omitempty"` // 可选，不传则不修改
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	Visibility    RepoVisibility         `protobuf:"varint,5,opt,name=visibility,proto3,enum=proto.RepoVisibility" json:"visibility,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UpdateRepoRequest) Reset() {
 	*x = UpdateRepoRequest{}
-	mi := &file_repo_proto_msgTypes[20]
+	mi := &file_repo_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1183,7 +712,7 @@ func (x *UpdateRepoRequest) String() string {
 func (*UpdateRepoRequest) ProtoMessage() {}
 
 func (x *UpdateRepoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[20]
+	mi := &file_repo_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1196,12 +725,19 @@ func (x *UpdateRepoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRepoRequest.ProtoReflect.Descriptor instead.
 func (*UpdateRepoRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{20}
+	return file_repo_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UpdateRepoRequest) GetRepoId() string {
 	if x != nil {
 		return x.RepoId
+	}
+	return ""
+}
+
+func (x *UpdateRepoRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
 	}
 	return ""
 }
@@ -1224,20 +760,21 @@ func (x *UpdateRepoRequest) GetVisibility() RepoVisibility {
 	if x != nil {
 		return x.Visibility
 	}
-	return RepoVisibility_UNSPECIFIED
+	return RepoVisibility_REPO_VISIBILITY_UNSPECIFIED
 }
 
 type UpdateRepoResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Repo          *Repo                  `protobuf:"bytes,2,opt,name=repo,proto3" json:"repo,omitempty"`
+	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	Repo          *Repo                  `protobuf:"bytes,3,opt,name=repo,proto3" json:"repo,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UpdateRepoResponse) Reset() {
 	*x = UpdateRepoResponse{}
-	mi := &file_repo_proto_msgTypes[21]
+	mi := &file_repo_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1249,7 +786,7 @@ func (x *UpdateRepoResponse) String() string {
 func (*UpdateRepoResponse) ProtoMessage() {}
 
 func (x *UpdateRepoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[21]
+	mi := &file_repo_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1262,7 +799,7 @@ func (x *UpdateRepoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRepoResponse.ProtoReflect.Descriptor instead.
 func (*UpdateRepoResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{21}
+	return file_repo_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UpdateRepoResponse) GetSuccess() bool {
@@ -1272,9 +809,1440 @@ func (x *UpdateRepoResponse) GetSuccess() bool {
 	return false
 }
 
+func (x *UpdateRepoResponse) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
 func (x *UpdateRepoResponse) GetRepo() *Repo {
 	if x != nil {
 		return x.Repo
+	}
+	return nil
+}
+
+type DeleteRepoRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteRepoRequest) Reset() {
+	*x = DeleteRepoRequest{}
+	mi := &file_repo_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteRepoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRepoRequest) ProtoMessage() {}
+
+func (x *DeleteRepoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRepoRequest.ProtoReflect.Descriptor instead.
+func (*DeleteRepoRequest) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *DeleteRepoRequest) GetRepoId() string {
+	if x != nil {
+		return x.RepoId
+	}
+	return ""
+}
+
+func (x *DeleteRepoRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type DeleteRepoResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteRepoResponse) Reset() {
+	*x = DeleteRepoResponse{}
+	mi := &file_repo_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteRepoResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRepoResponse) ProtoMessage() {}
+
+func (x *DeleteRepoResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRepoResponse.ProtoReflect.Descriptor instead.
+func (*DeleteRepoResponse) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *DeleteRepoResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *DeleteRepoResponse) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
+type ListUserReposRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUserReposRequest) Reset() {
+	*x = ListUserReposRequest{}
+	mi := &file_repo_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUserReposRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUserReposRequest) ProtoMessage() {}
+
+func (x *ListUserReposRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUserReposRequest.ProtoReflect.Descriptor instead.
+func (*ListUserReposRequest) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ListUserReposRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type ListUserReposResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Repos         []*Repo                `protobuf:"bytes,2,rep,name=repos,proto3" json:"repos,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUserReposResponse) Reset() {
+	*x = ListUserReposResponse{}
+	mi := &file_repo_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUserReposResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUserReposResponse) ProtoMessage() {}
+
+func (x *ListUserReposResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUserReposResponse.ProtoReflect.Descriptor instead.
+func (*ListUserReposResponse) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ListUserReposResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *ListUserReposResponse) GetRepos() []*Repo {
+	if x != nil {
+		return x.Repos
+	}
+	return nil
+}
+
+type CreateNodeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	ParentId      string                 `protobuf:"bytes,3,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
+	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
+	Type          NodeType               `protobuf:"varint,5,opt,name=type,proto3,enum=proto.NodeType" json:"type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateNodeRequest) Reset() {
+	*x = CreateNodeRequest{}
+	mi := &file_repo_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateNodeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateNodeRequest) ProtoMessage() {}
+
+func (x *CreateNodeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateNodeRequest.ProtoReflect.Descriptor instead.
+func (*CreateNodeRequest) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *CreateNodeRequest) GetRepoId() string {
+	if x != nil {
+		return x.RepoId
+	}
+	return ""
+}
+
+func (x *CreateNodeRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *CreateNodeRequest) GetParentId() string {
+	if x != nil {
+		return x.ParentId
+	}
+	return ""
+}
+
+func (x *CreateNodeRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateNodeRequest) GetType() NodeType {
+	if x != nil {
+		return x.Type
+	}
+	return NodeType_NODE_TYPE_UNSPECIFIED
+}
+
+type CreateNodeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	Node          *Node                  `protobuf:"bytes,3,opt,name=node,proto3" json:"node,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateNodeResponse) Reset() {
+	*x = CreateNodeResponse{}
+	mi := &file_repo_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateNodeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateNodeResponse) ProtoMessage() {}
+
+func (x *CreateNodeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateNodeResponse.ProtoReflect.Descriptor instead.
+func (*CreateNodeResponse) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *CreateNodeResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *CreateNodeResponse) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
+func (x *CreateNodeResponse) GetNode() *Node {
+	if x != nil {
+		return x.Node
+	}
+	return nil
+}
+
+type GetNodeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
+	NodeId        string                 `protobuf:"bytes,2,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetNodeRequest) Reset() {
+	*x = GetNodeRequest{}
+	mi := &file_repo_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetNodeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNodeRequest) ProtoMessage() {}
+
+func (x *GetNodeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNodeRequest.ProtoReflect.Descriptor instead.
+func (*GetNodeRequest) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *GetNodeRequest) GetRepoId() string {
+	if x != nil {
+		return x.RepoId
+	}
+	return ""
+}
+
+func (x *GetNodeRequest) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+func (x *GetNodeRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type GetNodeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	Node          *Node                  `protobuf:"bytes,3,opt,name=node,proto3" json:"node,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetNodeResponse) Reset() {
+	*x = GetNodeResponse{}
+	mi := &file_repo_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetNodeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNodeResponse) ProtoMessage() {}
+
+func (x *GetNodeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNodeResponse.ProtoReflect.Descriptor instead.
+func (*GetNodeResponse) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *GetNodeResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *GetNodeResponse) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
+func (x *GetNodeResponse) GetNode() *Node {
+	if x != nil {
+		return x.Node
+	}
+	return nil
+}
+
+type UpdateNodeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	NodeId        string                 `protobuf:"bytes,3,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
+	ParentId      string                 `protobuf:"bytes,5,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateNodeRequest) Reset() {
+	*x = UpdateNodeRequest{}
+	mi := &file_repo_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateNodeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateNodeRequest) ProtoMessage() {}
+
+func (x *UpdateNodeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateNodeRequest.ProtoReflect.Descriptor instead.
+func (*UpdateNodeRequest) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *UpdateNodeRequest) GetRepoId() string {
+	if x != nil {
+		return x.RepoId
+	}
+	return ""
+}
+
+func (x *UpdateNodeRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *UpdateNodeRequest) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+func (x *UpdateNodeRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UpdateNodeRequest) GetParentId() string {
+	if x != nil {
+		return x.ParentId
+	}
+	return ""
+}
+
+type UpdateNodeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	Node          *Node                  `protobuf:"bytes,3,opt,name=node,proto3" json:"node,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateNodeResponse) Reset() {
+	*x = UpdateNodeResponse{}
+	mi := &file_repo_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateNodeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateNodeResponse) ProtoMessage() {}
+
+func (x *UpdateNodeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateNodeResponse.ProtoReflect.Descriptor instead.
+func (*UpdateNodeResponse) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *UpdateNodeResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *UpdateNodeResponse) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
+func (x *UpdateNodeResponse) GetNode() *Node {
+	if x != nil {
+		return x.Node
+	}
+	return nil
+}
+
+type DeleteNodeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	NodeId        string                 `protobuf:"bytes,3,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteNodeRequest) Reset() {
+	*x = DeleteNodeRequest{}
+	mi := &file_repo_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteNodeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteNodeRequest) ProtoMessage() {}
+
+func (x *DeleteNodeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteNodeRequest.ProtoReflect.Descriptor instead.
+func (*DeleteNodeRequest) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *DeleteNodeRequest) GetRepoId() string {
+	if x != nil {
+		return x.RepoId
+	}
+	return ""
+}
+
+func (x *DeleteNodeRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *DeleteNodeRequest) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+type DeleteNodeResponse struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Success          bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg              string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	DeletedNodeIds   []string               `protobuf:"bytes,3,rep,name=deleted_node_ids,json=deletedNodeIds,proto3" json:"deleted_node_ids,omitempty"`
+	DeletedFilePaths []string               `protobuf:"bytes,4,rep,name=deleted_file_paths,json=deletedFilePaths,proto3" json:"deleted_file_paths,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *DeleteNodeResponse) Reset() {
+	*x = DeleteNodeResponse{}
+	mi := &file_repo_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteNodeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteNodeResponse) ProtoMessage() {}
+
+func (x *DeleteNodeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteNodeResponse.ProtoReflect.Descriptor instead.
+func (*DeleteNodeResponse) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *DeleteNodeResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *DeleteNodeResponse) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
+func (x *DeleteNodeResponse) GetDeletedNodeIds() []string {
+	if x != nil {
+		return x.DeletedNodeIds
+	}
+	return nil
+}
+
+func (x *DeleteNodeResponse) GetDeletedFilePaths() []string {
+	if x != nil {
+		return x.DeletedFilePaths
+	}
+	return nil
+}
+
+type ListNodesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	ParentId      string                 `protobuf:"bytes,3,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListNodesRequest) Reset() {
+	*x = ListNodesRequest{}
+	mi := &file_repo_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListNodesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListNodesRequest) ProtoMessage() {}
+
+func (x *ListNodesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListNodesRequest.ProtoReflect.Descriptor instead.
+func (*ListNodesRequest) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *ListNodesRequest) GetRepoId() string {
+	if x != nil {
+		return x.RepoId
+	}
+	return ""
+}
+
+func (x *ListNodesRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *ListNodesRequest) GetParentId() string {
+	if x != nil {
+		return x.ParentId
+	}
+	return ""
+}
+
+type ListNodesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Nodes         []*Node                `protobuf:"bytes,2,rep,name=nodes,proto3" json:"nodes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListNodesResponse) Reset() {
+	*x = ListNodesResponse{}
+	mi := &file_repo_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListNodesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListNodesResponse) ProtoMessage() {}
+
+func (x *ListNodesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListNodesResponse.ProtoReflect.Descriptor instead.
+func (*ListNodesResponse) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *ListNodesResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *ListNodesResponse) GetNodes() []*Node {
+	if x != nil {
+		return x.Nodes
+	}
+	return nil
+}
+
+type SetArticleContentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	NodeId        string                 `protobuf:"bytes,3,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	FilePath      string                 `protobuf:"bytes,4,opt,name=file_path,json=filePath,proto3" json:"file_path,omitempty"`
+	Size          int64                  `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetArticleContentRequest) Reset() {
+	*x = SetArticleContentRequest{}
+	mi := &file_repo_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetArticleContentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetArticleContentRequest) ProtoMessage() {}
+
+func (x *SetArticleContentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetArticleContentRequest.ProtoReflect.Descriptor instead.
+func (*SetArticleContentRequest) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *SetArticleContentRequest) GetRepoId() string {
+	if x != nil {
+		return x.RepoId
+	}
+	return ""
+}
+
+func (x *SetArticleContentRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *SetArticleContentRequest) GetNodeId() string {
+	if x != nil {
+		return x.NodeId
+	}
+	return ""
+}
+
+func (x *SetArticleContentRequest) GetFilePath() string {
+	if x != nil {
+		return x.FilePath
+	}
+	return ""
+}
+
+func (x *SetArticleContentRequest) GetSize() int64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+type SetArticleContentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	Node          *Node                  `protobuf:"bytes,3,opt,name=node,proto3" json:"node,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetArticleContentResponse) Reset() {
+	*x = SetArticleContentResponse{}
+	mi := &file_repo_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetArticleContentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetArticleContentResponse) ProtoMessage() {}
+
+func (x *SetArticleContentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetArticleContentResponse.ProtoReflect.Descriptor instead.
+func (*SetArticleContentResponse) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *SetArticleContentResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *SetArticleContentResponse) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
+func (x *SetArticleContentResponse) GetNode() *Node {
+	if x != nil {
+		return x.Node
+	}
+	return nil
+}
+
+type AddCollaboratorRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
+	OperatorId    string                 `protobuf:"bytes,2,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Role          CollaboratorRole       `protobuf:"varint,4,opt,name=role,proto3,enum=proto.CollaboratorRole" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddCollaboratorRequest) Reset() {
+	*x = AddCollaboratorRequest{}
+	mi := &file_repo_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddCollaboratorRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddCollaboratorRequest) ProtoMessage() {}
+
+func (x *AddCollaboratorRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddCollaboratorRequest.ProtoReflect.Descriptor instead.
+func (*AddCollaboratorRequest) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *AddCollaboratorRequest) GetRepoId() string {
+	if x != nil {
+		return x.RepoId
+	}
+	return ""
+}
+
+func (x *AddCollaboratorRequest) GetOperatorId() string {
+	if x != nil {
+		return x.OperatorId
+	}
+	return ""
+}
+
+func (x *AddCollaboratorRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *AddCollaboratorRequest) GetRole() CollaboratorRole {
+	if x != nil {
+		return x.Role
+	}
+	return CollaboratorRole_COLLABORATOR_ROLE_UNSPECIFIED
+}
+
+type AddCollaboratorResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddCollaboratorResponse) Reset() {
+	*x = AddCollaboratorResponse{}
+	mi := &file_repo_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddCollaboratorResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddCollaboratorResponse) ProtoMessage() {}
+
+func (x *AddCollaboratorResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddCollaboratorResponse.ProtoReflect.Descriptor instead.
+func (*AddCollaboratorResponse) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *AddCollaboratorResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *AddCollaboratorResponse) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
+type UpdateCollaboratorRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
+	OperatorId    string                 `protobuf:"bytes,2,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Role          CollaboratorRole       `protobuf:"varint,4,opt,name=role,proto3,enum=proto.CollaboratorRole" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateCollaboratorRequest) Reset() {
+	*x = UpdateCollaboratorRequest{}
+	mi := &file_repo_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateCollaboratorRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateCollaboratorRequest) ProtoMessage() {}
+
+func (x *UpdateCollaboratorRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateCollaboratorRequest.ProtoReflect.Descriptor instead.
+func (*UpdateCollaboratorRequest) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *UpdateCollaboratorRequest) GetRepoId() string {
+	if x != nil {
+		return x.RepoId
+	}
+	return ""
+}
+
+func (x *UpdateCollaboratorRequest) GetOperatorId() string {
+	if x != nil {
+		return x.OperatorId
+	}
+	return ""
+}
+
+func (x *UpdateCollaboratorRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *UpdateCollaboratorRequest) GetRole() CollaboratorRole {
+	if x != nil {
+		return x.Role
+	}
+	return CollaboratorRole_COLLABORATOR_ROLE_UNSPECIFIED
+}
+
+type UpdateCollaboratorResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateCollaboratorResponse) Reset() {
+	*x = UpdateCollaboratorResponse{}
+	mi := &file_repo_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateCollaboratorResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateCollaboratorResponse) ProtoMessage() {}
+
+func (x *UpdateCollaboratorResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateCollaboratorResponse.ProtoReflect.Descriptor instead.
+func (*UpdateCollaboratorResponse) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *UpdateCollaboratorResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *UpdateCollaboratorResponse) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
+type RemoveCollaboratorRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
+	OperatorId    string                 `protobuf:"bytes,2,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveCollaboratorRequest) Reset() {
+	*x = RemoveCollaboratorRequest{}
+	mi := &file_repo_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveCollaboratorRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveCollaboratorRequest) ProtoMessage() {}
+
+func (x *RemoveCollaboratorRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveCollaboratorRequest.ProtoReflect.Descriptor instead.
+func (*RemoveCollaboratorRequest) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *RemoveCollaboratorRequest) GetRepoId() string {
+	if x != nil {
+		return x.RepoId
+	}
+	return ""
+}
+
+func (x *RemoveCollaboratorRequest) GetOperatorId() string {
+	if x != nil {
+		return x.OperatorId
+	}
+	return ""
+}
+
+func (x *RemoveCollaboratorRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type RemoveCollaboratorResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveCollaboratorResponse) Reset() {
+	*x = RemoveCollaboratorResponse{}
+	mi := &file_repo_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveCollaboratorResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveCollaboratorResponse) ProtoMessage() {}
+
+func (x *RemoveCollaboratorResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveCollaboratorResponse.ProtoReflect.Descriptor instead.
+func (*RemoveCollaboratorResponse) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *RemoveCollaboratorResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *RemoveCollaboratorResponse) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
+type ListCollaboratorsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListCollaboratorsRequest) Reset() {
+	*x = ListCollaboratorsRequest{}
+	mi := &file_repo_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListCollaboratorsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListCollaboratorsRequest) ProtoMessage() {}
+
+func (x *ListCollaboratorsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListCollaboratorsRequest.ProtoReflect.Descriptor instead.
+func (*ListCollaboratorsRequest) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *ListCollaboratorsRequest) GetRepoId() string {
+	if x != nil {
+		return x.RepoId
+	}
+	return ""
+}
+
+func (x *ListCollaboratorsRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type ListCollaboratorsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Collaborators []*Collaborator        `protobuf:"bytes,2,rep,name=collaborators,proto3" json:"collaborators,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListCollaboratorsResponse) Reset() {
+	*x = ListCollaboratorsResponse{}
+	mi := &file_repo_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListCollaboratorsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListCollaboratorsResponse) ProtoMessage() {}
+
+func (x *ListCollaboratorsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListCollaboratorsResponse.ProtoReflect.Descriptor instead.
+func (*ListCollaboratorsResponse) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *ListCollaboratorsResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *ListCollaboratorsResponse) GetCollaborators() []*Collaborator {
+	if x != nil {
+		return x.Collaborators
 	}
 	return nil
 }
@@ -1284,7 +2252,7 @@ var File_repo_proto protoreflect.FileDescriptor
 const file_repo_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"repo.proto\x12\x05proto\"\x9e\x01\n" +
+	"repo.proto\x12\x05proto\"\x81\x02\n" +
 	"\x04Repo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bowner_id\x18\x02 \x01(\tR\aownerId\x12\x12\n" +
@@ -1292,102 +2260,194 @@ const file_repo_proto_rawDesc = "" +
 	"\n" +
 	"visibility\x18\x04 \x01(\x0e2\x15.proto.RepoVisibilityR\n" +
 	"visibility\x12 \n" +
-	"\vdescription\x18\x05 \x01(\tR\vdescription\"m\n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x12#\n" +
+	"\rarticle_count\x18\x06 \x01(\x03R\farticleCount\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\a \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"updated_at\x18\b \x01(\tR\tupdatedAt\"\xf4\x01\n" +
 	"\x04Node\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
-	"\arepo_id\x18\x02 \x01(\tR\x06repoId\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12\x14\n" +
-	"\x05value\x18\x04 \x01(\tR\x05value\x12\x12\n" +
-	"\x04size\x18\x05 \x01(\x03R\x04size\"\x9b\x01\n" +
+	"\arepo_id\x18\x02 \x01(\tR\x06repoId\x12\x1b\n" +
+	"\tparent_id\x18\x03 \x01(\tR\bparentId\x12\x12\n" +
+	"\x04name\x18\x04 \x01(\tR\x04name\x12#\n" +
+	"\x04type\x18\x05 \x01(\x0e2\x0f.proto.NodeTypeR\x04type\x12\x1b\n" +
+	"\tfile_path\x18\x06 \x01(\tR\bfilePath\x12\x12\n" +
+	"\x04size\x18\a \x01(\x03R\x04size\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\b \x01(\tR\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"updated_at\x18\t \x01(\tR\tupdatedAt\"m\n" +
+	"\fCollaborator\x12\x17\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12+\n" +
+	"\x04role\x18\x03 \x01(\x0e2\x17.proto.CollaboratorRoleR\x04role\"\x9b\x01\n" +
 	"\x11CreateRepoRequest\x12\x19\n" +
 	"\bowner_id\x18\x01 \x01(\tR\aownerId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x125\n" +
 	"\n" +
 	"visibility\x18\x03 \x01(\x0e2\x15.proto.RepoVisibilityR\n" +
 	"visibility\x12 \n" +
-	"\vdescription\x18\x04 \x01(\tR\vdescription\".\n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\"a\n" +
 	"\x12CreateRepoResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\",\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
+	"\x04repo\x18\x03 \x01(\v2\v.proto.RepoR\x04repo\"B\n" +
+	"\x0eGetRepoRequest\x12\x17\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"\x90\x01\n" +
+	"\x0fGetRepoResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
+	"\x04repo\x18\x03 \x01(\v2\v.proto.RepoR\x04repo\x120\n" +
+	"\amy_role\x18\x04 \x01(\x0e2\x17.proto.CollaboratorRoleR\x06myRole\"\xb2\x01\n" +
+	"\x11UpdateRepoRequest\x12\x17\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\x125\n" +
+	"\n" +
+	"visibility\x18\x05 \x01(\x0e2\x15.proto.RepoVisibilityR\n" +
+	"visibility\"a\n" +
+	"\x12UpdateRepoResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
+	"\x04repo\x18\x03 \x01(\v2\v.proto.RepoR\x04repo\"E\n" +
 	"\x11DeleteRepoRequest\x12\x17\n" +
-	"\arepo_id\x18\x01 \x01(\tR\x06repoId\"`\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"@\n" +
 	"\x12DeleteRepoResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x120\n" +
-	"\rdeleted_nodes\x18\x02 \x03(\v2\v.proto.NodeR\fdeletedNodes\".\n" +
-	"\x11GetMyReposRequest\x12\x19\n" +
-	"\bowner_id\x18\x01 \x01(\tR\aownerId\"Q\n" +
-	"\x12GetMyReposResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\"/\n" +
+	"\x14ListUserReposRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"T\n" +
+	"\x15ListUserReposResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12!\n" +
-	"\x05repos\x18\x02 \x03(\v2\v.proto.RepoR\x05repos\",\n" +
-	"\x0fGetReposRequest\x12\x19\n" +
-	"\brepo_ids\x18\x01 \x03(\tR\arepoIds\"O\n" +
-	"\x10GetReposResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12!\n" +
-	"\x05repos\x18\x02 \x03(\v2\v.proto.RepoR\x05repos\"@\n" +
+	"\x05repos\x18\x02 \x03(\v2\v.proto.RepoR\x05repos\"\x9b\x01\n" +
 	"\x11CreateNodeRequest\x12\x17\n" +
-	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\"O\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1b\n" +
+	"\tparent_id\x18\x03 \x01(\tR\bparentId\x12\x12\n" +
+	"\x04name\x18\x04 \x01(\tR\x04name\x12#\n" +
+	"\x04type\x18\x05 \x01(\x0e2\x0f.proto.NodeTypeR\x04type\"a\n" +
 	"\x12CreateNodeResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
-	"\x04node\x18\x02 \x01(\v2\v.proto.NodeR\x04node\"Y\n" +
-	"\x14UploadArticleRequest\x12\x17\n" +
-	"\anode_id\x18\x01 \x01(\tR\x06nodeId\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value\x12\x12\n" +
-	"\x04size\x18\x03 \x01(\x03R\x04size\"o\n" +
-	"\x15UploadArticleResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
-	"\x04node\x18\x02 \x01(\v2\v.proto.NodeR\x04node\x12\x1b\n" +
-	"\told_value\x18\x03 \x01(\tR\boldValue\"*\n" +
-	"\x0fGetNodesRequest\x12\x17\n" +
-	"\arepo_id\x18\x01 \x01(\tR\x06repoId\"O\n" +
-	"\x10GetNodesResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12!\n" +
-	"\x05nodes\x18\x02 \x03(\v2\v.proto.NodeR\x05nodes\"E\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
+	"\x04node\x18\x03 \x01(\v2\v.proto.NodeR\x04node\"[\n" +
+	"\x0eGetNodeRequest\x12\x17\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
+	"\anode_id\x18\x02 \x01(\tR\x06nodeId\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\"^\n" +
+	"\x0fGetNodeResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
+	"\x04node\x18\x03 \x01(\v2\v.proto.NodeR\x04node\"\x8f\x01\n" +
+	"\x11UpdateNodeRequest\x12\x17\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x17\n" +
+	"\anode_id\x18\x03 \x01(\tR\x06nodeId\x12\x12\n" +
+	"\x04name\x18\x04 \x01(\tR\x04name\x12\x1b\n" +
+	"\tparent_id\x18\x05 \x01(\tR\bparentId\"a\n" +
+	"\x12UpdateNodeResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
+	"\x04node\x18\x03 \x01(\v2\v.proto.NodeR\x04node\"^\n" +
 	"\x11DeleteNodeRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
-	"\anode_id\x18\x02 \x01(\tR\x06nodeId\"O\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x17\n" +
+	"\anode_id\x18\x03 \x01(\tR\x06nodeId\"\x98\x01\n" +
 	"\x12DeleteNodeResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
-	"\x04node\x18\x02 \x01(\v2\v.proto.NodeR\x04node\"`\n" +
-	"\x11RenameNodeRequest\x12\x17\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\x12(\n" +
+	"\x10deleted_node_ids\x18\x03 \x03(\tR\x0edeletedNodeIds\x12,\n" +
+	"\x12deleted_file_paths\x18\x04 \x03(\tR\x10deletedFilePaths\"a\n" +
+	"\x10ListNodesRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
-	"\anode_id\x18\x02 \x01(\tR\x06nodeId\x12\x19\n" +
-	"\bnew_name\x18\x03 \x01(\tR\anewName\"O\n" +
-	"\x12RenameNodeResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
-	"\x04node\x18\x02 \x01(\v2\v.proto.NodeR\x04node\"\x99\x01\n" +
-	"\x11UpdateRepoRequest\x12\x17\n" +
-	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x125\n" +
-	"\n" +
-	"visibility\x18\x04 \x01(\x0e2\x15.proto.RepoVisibilityR\n" +
-	"visibility\"O\n" +
-	"\x12UpdateRepoResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
-	"\x04repo\x18\x02 \x01(\v2\v.proto.RepoR\x04repo*:\n" +
-	"\x0eRepoVisibility\x12\x0f\n" +
-	"\vUNSPECIFIED\x10\x00\x12\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1b\n" +
+	"\tparent_id\x18\x03 \x01(\tR\bparentId\"P\n" +
+	"\x11ListNodesResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12!\n" +
+	"\x05nodes\x18\x02 \x03(\v2\v.proto.NodeR\x05nodes\"\x96\x01\n" +
+	"\x18SetArticleContentRequest\x12\x17\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x17\n" +
+	"\anode_id\x18\x03 \x01(\tR\x06nodeId\x12\x1b\n" +
+	"\tfile_path\x18\x04 \x01(\tR\bfilePath\x12\x12\n" +
+	"\x04size\x18\x05 \x01(\x03R\x04size\"h\n" +
+	"\x19SetArticleContentResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
+	"\x04node\x18\x03 \x01(\v2\v.proto.NodeR\x04node\"\x98\x01\n" +
+	"\x16AddCollaboratorRequest\x12\x17\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x1f\n" +
+	"\voperator_id\x18\x02 \x01(\tR\n" +
+	"operatorId\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\x12+\n" +
+	"\x04role\x18\x04 \x01(\x0e2\x17.proto.CollaboratorRoleR\x04role\"E\n" +
+	"\x17AddCollaboratorResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\"\x9b\x01\n" +
+	"\x19UpdateCollaboratorRequest\x12\x17\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x1f\n" +
+	"\voperator_id\x18\x02 \x01(\tR\n" +
+	"operatorId\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\x12+\n" +
+	"\x04role\x18\x04 \x01(\x0e2\x17.proto.CollaboratorRoleR\x04role\"H\n" +
+	"\x1aUpdateCollaboratorResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\"n\n" +
+	"\x19RemoveCollaboratorRequest\x12\x17\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x1f\n" +
+	"\voperator_id\x18\x02 \x01(\tR\n" +
+	"operatorId\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\"H\n" +
+	"\x1aRemoveCollaboratorResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\"L\n" +
+	"\x18ListCollaboratorsRequest\x12\x17\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"p\n" +
+	"\x19ListCollaboratorsResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x129\n" +
+	"\rcollaborators\x18\x02 \x03(\v2\x13.proto.CollaboratorR\rcollaborators*J\n" +
+	"\x0eRepoVisibility\x12\x1f\n" +
+	"\x1bREPO_VISIBILITY_UNSPECIFIED\x10\x00\x12\n" +
 	"\n" +
 	"\x06PUBLIC\x10\x01\x12\v\n" +
-	"\aPRIVATE\x10\x022\xa8\x05\n" +
+	"\aPRIVATE\x10\x02*>\n" +
+	"\bNodeType\x12\x19\n" +
+	"\x15NODE_TYPE_UNSPECIFIED\x10\x00\x12\n" +
+	"\n" +
+	"\x06FOLDER\x10\x01\x12\v\n" +
+	"\aARTICLE\x10\x02*[\n" +
+	"\x10CollaboratorRole\x12!\n" +
+	"\x1dCOLLABORATOR_ROLE_UNSPECIFIED\x10\x00\x12\t\n" +
+	"\x05ADMIN\x10\x01\x12\r\n" +
+	"\tDEVELOPER\x10\x02\x12\n" +
+	"\n" +
+	"\x06VIEWER\x10\x032\xd7\b\n" +
 	"\vRepoService\x12A\n" +
 	"\n" +
-	"CreateRepo\x12\x18.proto.CreateRepoRequest\x1a\x19.proto.CreateRepoResponse\x12A\n" +
+	"CreateRepo\x12\x18.proto.CreateRepoRequest\x1a\x19.proto.CreateRepoResponse\x128\n" +
+	"\aGetRepo\x12\x15.proto.GetRepoRequest\x1a\x16.proto.GetRepoResponse\x12A\n" +
 	"\n" +
-	"DeleteRepo\x12\x18.proto.DeleteRepoRequest\x1a\x19.proto.DeleteRepoResponse\x12A\n" +
+	"UpdateRepo\x12\x18.proto.UpdateRepoRequest\x1a\x19.proto.UpdateRepoResponse\x12A\n" +
 	"\n" +
-	"GetMyRepos\x12\x18.proto.GetMyReposRequest\x1a\x19.proto.GetMyReposResponse\x12;\n" +
-	"\bGetRepos\x12\x16.proto.GetReposRequest\x1a\x17.proto.GetReposResponse\x12A\n" +
+	"DeleteRepo\x12\x18.proto.DeleteRepoRequest\x1a\x19.proto.DeleteRepoResponse\x12J\n" +
+	"\rListUserRepos\x12\x1b.proto.ListUserReposRequest\x1a\x1c.proto.ListUserReposResponse\x12A\n" +
 	"\n" +
-	"CreateNode\x12\x18.proto.CreateNodeRequest\x1a\x19.proto.CreateNodeResponse\x12J\n" +
-	"\rUploadArticle\x12\x1b.proto.UploadArticleRequest\x1a\x1c.proto.UploadArticleResponse\x12;\n" +
-	"\bGetNodes\x12\x16.proto.GetNodesRequest\x1a\x17.proto.GetNodesResponse\x12A\n" +
+	"CreateNode\x12\x18.proto.CreateNodeRequest\x1a\x19.proto.CreateNodeResponse\x128\n" +
+	"\aGetNode\x12\x15.proto.GetNodeRequest\x1a\x16.proto.GetNodeResponse\x12A\n" +
 	"\n" +
-	"DeleteNode\x12\x18.proto.DeleteNodeRequest\x1a\x19.proto.DeleteNodeResponse\x12A\n" +
+	"UpdateNode\x12\x18.proto.UpdateNodeRequest\x1a\x19.proto.UpdateNodeResponse\x12A\n" +
 	"\n" +
-	"RenameNode\x12\x18.proto.RenameNodeRequest\x1a\x19.proto.RenameNodeResponse\x12A\n" +
-	"\n" +
-	"UpdateRepo\x12\x18.proto.UpdateRepoRequest\x1a\x19.proto.UpdateRepoResponseB\x11Z\x0fks-proto/pkg/pbb\x06proto3"
+	"DeleteNode\x12\x18.proto.DeleteNodeRequest\x1a\x19.proto.DeleteNodeResponse\x12>\n" +
+	"\tListNodes\x12\x17.proto.ListNodesRequest\x1a\x18.proto.ListNodesResponse\x12V\n" +
+	"\x11SetArticleContent\x12\x1f.proto.SetArticleContentRequest\x1a .proto.SetArticleContentResponse\x12P\n" +
+	"\x0fAddCollaborator\x12\x1d.proto.AddCollaboratorRequest\x1a\x1e.proto.AddCollaboratorResponse\x12Y\n" +
+	"\x12UpdateCollaborator\x12 .proto.UpdateCollaboratorRequest\x1a!.proto.UpdateCollaboratorResponse\x12Y\n" +
+	"\x12RemoveCollaborator\x12 .proto.RemoveCollaboratorRequest\x1a!.proto.RemoveCollaboratorResponse\x12V\n" +
+	"\x11ListCollaborators\x12\x1f.proto.ListCollaboratorsRequest\x1a .proto.ListCollaboratorsResponseB\x11Z\x0fks-proto/pkg/pbb\x06proto3"
 
 var (
 	file_repo_proto_rawDescOnce sync.Once
@@ -1401,71 +2461,101 @@ func file_repo_proto_rawDescGZIP() []byte {
 	return file_repo_proto_rawDescData
 }
 
-var file_repo_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_repo_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+var file_repo_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_repo_proto_msgTypes = make([]protoimpl.MessageInfo, 33)
 var file_repo_proto_goTypes = []any{
-	(RepoVisibility)(0),           // 0: proto.RepoVisibility
-	(*Repo)(nil),                  // 1: proto.Repo
-	(*Node)(nil),                  // 2: proto.Node
-	(*CreateRepoRequest)(nil),     // 3: proto.CreateRepoRequest
-	(*CreateRepoResponse)(nil),    // 4: proto.CreateRepoResponse
-	(*DeleteRepoRequest)(nil),     // 5: proto.DeleteRepoRequest
-	(*DeleteRepoResponse)(nil),    // 6: proto.DeleteRepoResponse
-	(*GetMyReposRequest)(nil),     // 7: proto.GetMyReposRequest
-	(*GetMyReposResponse)(nil),    // 8: proto.GetMyReposResponse
-	(*GetReposRequest)(nil),       // 9: proto.GetReposRequest
-	(*GetReposResponse)(nil),      // 10: proto.GetReposResponse
-	(*CreateNodeRequest)(nil),     // 11: proto.CreateNodeRequest
-	(*CreateNodeResponse)(nil),    // 12: proto.CreateNodeResponse
-	(*UploadArticleRequest)(nil),  // 13: proto.UploadArticleRequest
-	(*UploadArticleResponse)(nil), // 14: proto.UploadArticleResponse
-	(*GetNodesRequest)(nil),       // 15: proto.GetNodesRequest
-	(*GetNodesResponse)(nil),      // 16: proto.GetNodesResponse
-	(*DeleteNodeRequest)(nil),     // 17: proto.DeleteNodeRequest
-	(*DeleteNodeResponse)(nil),    // 18: proto.DeleteNodeResponse
-	(*RenameNodeRequest)(nil),     // 19: proto.RenameNodeRequest
-	(*RenameNodeResponse)(nil),    // 20: proto.RenameNodeResponse
-	(*UpdateRepoRequest)(nil),     // 21: proto.UpdateRepoRequest
-	(*UpdateRepoResponse)(nil),    // 22: proto.UpdateRepoResponse
+	(RepoVisibility)(0),                // 0: proto.RepoVisibility
+	(NodeType)(0),                      // 1: proto.NodeType
+	(CollaboratorRole)(0),              // 2: proto.CollaboratorRole
+	(*Repo)(nil),                       // 3: proto.Repo
+	(*Node)(nil),                       // 4: proto.Node
+	(*Collaborator)(nil),               // 5: proto.Collaborator
+	(*CreateRepoRequest)(nil),          // 6: proto.CreateRepoRequest
+	(*CreateRepoResponse)(nil),         // 7: proto.CreateRepoResponse
+	(*GetRepoRequest)(nil),             // 8: proto.GetRepoRequest
+	(*GetRepoResponse)(nil),            // 9: proto.GetRepoResponse
+	(*UpdateRepoRequest)(nil),          // 10: proto.UpdateRepoRequest
+	(*UpdateRepoResponse)(nil),         // 11: proto.UpdateRepoResponse
+	(*DeleteRepoRequest)(nil),          // 12: proto.DeleteRepoRequest
+	(*DeleteRepoResponse)(nil),         // 13: proto.DeleteRepoResponse
+	(*ListUserReposRequest)(nil),       // 14: proto.ListUserReposRequest
+	(*ListUserReposResponse)(nil),      // 15: proto.ListUserReposResponse
+	(*CreateNodeRequest)(nil),          // 16: proto.CreateNodeRequest
+	(*CreateNodeResponse)(nil),         // 17: proto.CreateNodeResponse
+	(*GetNodeRequest)(nil),             // 18: proto.GetNodeRequest
+	(*GetNodeResponse)(nil),            // 19: proto.GetNodeResponse
+	(*UpdateNodeRequest)(nil),          // 20: proto.UpdateNodeRequest
+	(*UpdateNodeResponse)(nil),         // 21: proto.UpdateNodeResponse
+	(*DeleteNodeRequest)(nil),          // 22: proto.DeleteNodeRequest
+	(*DeleteNodeResponse)(nil),         // 23: proto.DeleteNodeResponse
+	(*ListNodesRequest)(nil),           // 24: proto.ListNodesRequest
+	(*ListNodesResponse)(nil),          // 25: proto.ListNodesResponse
+	(*SetArticleContentRequest)(nil),   // 26: proto.SetArticleContentRequest
+	(*SetArticleContentResponse)(nil),  // 27: proto.SetArticleContentResponse
+	(*AddCollaboratorRequest)(nil),     // 28: proto.AddCollaboratorRequest
+	(*AddCollaboratorResponse)(nil),    // 29: proto.AddCollaboratorResponse
+	(*UpdateCollaboratorRequest)(nil),  // 30: proto.UpdateCollaboratorRequest
+	(*UpdateCollaboratorResponse)(nil), // 31: proto.UpdateCollaboratorResponse
+	(*RemoveCollaboratorRequest)(nil),  // 32: proto.RemoveCollaboratorRequest
+	(*RemoveCollaboratorResponse)(nil), // 33: proto.RemoveCollaboratorResponse
+	(*ListCollaboratorsRequest)(nil),   // 34: proto.ListCollaboratorsRequest
+	(*ListCollaboratorsResponse)(nil),  // 35: proto.ListCollaboratorsResponse
 }
 var file_repo_proto_depIdxs = []int32{
 	0,  // 0: proto.Repo.visibility:type_name -> proto.RepoVisibility
-	0,  // 1: proto.CreateRepoRequest.visibility:type_name -> proto.RepoVisibility
-	2,  // 2: proto.DeleteRepoResponse.deleted_nodes:type_name -> proto.Node
-	1,  // 3: proto.GetMyReposResponse.repos:type_name -> proto.Repo
-	1,  // 4: proto.GetReposResponse.repos:type_name -> proto.Repo
-	2,  // 5: proto.CreateNodeResponse.node:type_name -> proto.Node
-	2,  // 6: proto.UploadArticleResponse.node:type_name -> proto.Node
-	2,  // 7: proto.GetNodesResponse.nodes:type_name -> proto.Node
-	2,  // 8: proto.DeleteNodeResponse.node:type_name -> proto.Node
-	2,  // 9: proto.RenameNodeResponse.node:type_name -> proto.Node
-	0,  // 10: proto.UpdateRepoRequest.visibility:type_name -> proto.RepoVisibility
-	1,  // 11: proto.UpdateRepoResponse.repo:type_name -> proto.Repo
-	3,  // 12: proto.RepoService.CreateRepo:input_type -> proto.CreateRepoRequest
-	5,  // 13: proto.RepoService.DeleteRepo:input_type -> proto.DeleteRepoRequest
-	7,  // 14: proto.RepoService.GetMyRepos:input_type -> proto.GetMyReposRequest
-	9,  // 15: proto.RepoService.GetRepos:input_type -> proto.GetReposRequest
-	11, // 16: proto.RepoService.CreateNode:input_type -> proto.CreateNodeRequest
-	13, // 17: proto.RepoService.UploadArticle:input_type -> proto.UploadArticleRequest
-	15, // 18: proto.RepoService.GetNodes:input_type -> proto.GetNodesRequest
-	17, // 19: proto.RepoService.DeleteNode:input_type -> proto.DeleteNodeRequest
-	19, // 20: proto.RepoService.RenameNode:input_type -> proto.RenameNodeRequest
-	21, // 21: proto.RepoService.UpdateRepo:input_type -> proto.UpdateRepoRequest
-	4,  // 22: proto.RepoService.CreateRepo:output_type -> proto.CreateRepoResponse
-	6,  // 23: proto.RepoService.DeleteRepo:output_type -> proto.DeleteRepoResponse
-	8,  // 24: proto.RepoService.GetMyRepos:output_type -> proto.GetMyReposResponse
-	10, // 25: proto.RepoService.GetRepos:output_type -> proto.GetReposResponse
-	12, // 26: proto.RepoService.CreateNode:output_type -> proto.CreateNodeResponse
-	14, // 27: proto.RepoService.UploadArticle:output_type -> proto.UploadArticleResponse
-	16, // 28: proto.RepoService.GetNodes:output_type -> proto.GetNodesResponse
-	18, // 29: proto.RepoService.DeleteNode:output_type -> proto.DeleteNodeResponse
-	20, // 30: proto.RepoService.RenameNode:output_type -> proto.RenameNodeResponse
-	22, // 31: proto.RepoService.UpdateRepo:output_type -> proto.UpdateRepoResponse
-	22, // [22:32] is the sub-list for method output_type
-	12, // [12:22] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	1,  // 1: proto.Node.type:type_name -> proto.NodeType
+	2,  // 2: proto.Collaborator.role:type_name -> proto.CollaboratorRole
+	0,  // 3: proto.CreateRepoRequest.visibility:type_name -> proto.RepoVisibility
+	3,  // 4: proto.CreateRepoResponse.repo:type_name -> proto.Repo
+	3,  // 5: proto.GetRepoResponse.repo:type_name -> proto.Repo
+	2,  // 6: proto.GetRepoResponse.my_role:type_name -> proto.CollaboratorRole
+	0,  // 7: proto.UpdateRepoRequest.visibility:type_name -> proto.RepoVisibility
+	3,  // 8: proto.UpdateRepoResponse.repo:type_name -> proto.Repo
+	3,  // 9: proto.ListUserReposResponse.repos:type_name -> proto.Repo
+	1,  // 10: proto.CreateNodeRequest.type:type_name -> proto.NodeType
+	4,  // 11: proto.CreateNodeResponse.node:type_name -> proto.Node
+	4,  // 12: proto.GetNodeResponse.node:type_name -> proto.Node
+	4,  // 13: proto.UpdateNodeResponse.node:type_name -> proto.Node
+	4,  // 14: proto.ListNodesResponse.nodes:type_name -> proto.Node
+	4,  // 15: proto.SetArticleContentResponse.node:type_name -> proto.Node
+	2,  // 16: proto.AddCollaboratorRequest.role:type_name -> proto.CollaboratorRole
+	2,  // 17: proto.UpdateCollaboratorRequest.role:type_name -> proto.CollaboratorRole
+	5,  // 18: proto.ListCollaboratorsResponse.collaborators:type_name -> proto.Collaborator
+	6,  // 19: proto.RepoService.CreateRepo:input_type -> proto.CreateRepoRequest
+	8,  // 20: proto.RepoService.GetRepo:input_type -> proto.GetRepoRequest
+	10, // 21: proto.RepoService.UpdateRepo:input_type -> proto.UpdateRepoRequest
+	12, // 22: proto.RepoService.DeleteRepo:input_type -> proto.DeleteRepoRequest
+	14, // 23: proto.RepoService.ListUserRepos:input_type -> proto.ListUserReposRequest
+	16, // 24: proto.RepoService.CreateNode:input_type -> proto.CreateNodeRequest
+	18, // 25: proto.RepoService.GetNode:input_type -> proto.GetNodeRequest
+	20, // 26: proto.RepoService.UpdateNode:input_type -> proto.UpdateNodeRequest
+	22, // 27: proto.RepoService.DeleteNode:input_type -> proto.DeleteNodeRequest
+	24, // 28: proto.RepoService.ListNodes:input_type -> proto.ListNodesRequest
+	26, // 29: proto.RepoService.SetArticleContent:input_type -> proto.SetArticleContentRequest
+	28, // 30: proto.RepoService.AddCollaborator:input_type -> proto.AddCollaboratorRequest
+	30, // 31: proto.RepoService.UpdateCollaborator:input_type -> proto.UpdateCollaboratorRequest
+	32, // 32: proto.RepoService.RemoveCollaborator:input_type -> proto.RemoveCollaboratorRequest
+	34, // 33: proto.RepoService.ListCollaborators:input_type -> proto.ListCollaboratorsRequest
+	7,  // 34: proto.RepoService.CreateRepo:output_type -> proto.CreateRepoResponse
+	9,  // 35: proto.RepoService.GetRepo:output_type -> proto.GetRepoResponse
+	11, // 36: proto.RepoService.UpdateRepo:output_type -> proto.UpdateRepoResponse
+	13, // 37: proto.RepoService.DeleteRepo:output_type -> proto.DeleteRepoResponse
+	15, // 38: proto.RepoService.ListUserRepos:output_type -> proto.ListUserReposResponse
+	17, // 39: proto.RepoService.CreateNode:output_type -> proto.CreateNodeResponse
+	19, // 40: proto.RepoService.GetNode:output_type -> proto.GetNodeResponse
+	21, // 41: proto.RepoService.UpdateNode:output_type -> proto.UpdateNodeResponse
+	23, // 42: proto.RepoService.DeleteNode:output_type -> proto.DeleteNodeResponse
+	25, // 43: proto.RepoService.ListNodes:output_type -> proto.ListNodesResponse
+	27, // 44: proto.RepoService.SetArticleContent:output_type -> proto.SetArticleContentResponse
+	29, // 45: proto.RepoService.AddCollaborator:output_type -> proto.AddCollaboratorResponse
+	31, // 46: proto.RepoService.UpdateCollaborator:output_type -> proto.UpdateCollaboratorResponse
+	33, // 47: proto.RepoService.RemoveCollaborator:output_type -> proto.RemoveCollaboratorResponse
+	35, // 48: proto.RepoService.ListCollaborators:output_type -> proto.ListCollaboratorsResponse
+	34, // [34:49] is the sub-list for method output_type
+	19, // [19:34] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_repo_proto_init() }
@@ -1478,8 +2568,8 @@ func file_repo_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_repo_proto_rawDesc), len(file_repo_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   22,
+			NumEnums:      3,
+			NumMessages:   33,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -1,0 +1,25 @@
+project:
+  name: repo-server
+  version: v0.0.0
+
+logger:
+  level: info
+  dir: "./logs"
+  max_size: 100
+  max_backups: 3
+  max_age: 7
+  compress: true
+  local_time: true
+
+database:
+  host: localhost
+  port: 3306
+  user: root
+  password: 123456
+  dbname: knowsync
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: 5m
+
+grpc:
+  port: 50052
