@@ -2,83 +2,70 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
-	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 	"github.com/gangantongxue/knowsync/repo-server/pkg/database/schema"
 )
 
 // AddCollaborator 添加协作者，仅 ADMIN 可操作
-func (s *Service) AddCollaborator(ctx context.Context, req *pb.AddCollaboratorRequest) (*pb.AddCollaboratorResponse, error) {
-	if err := s.CheckRepoPermission(ctx, req.RepoId, req.OperatorId, "ADMIN"); err != nil {
-		return &pb.AddCollaboratorResponse{Success: false, Msg: err.Error()}, nil
+func (s *Service) AddCollaborator(ctx context.Context, repoID, operatorID, userID, role string) error {
+	if err := s.CheckRepoPermission(ctx, repoID, operatorID, "ADMIN"); err != nil {
+		return err
 	}
 
 	c := &schema.Collaborator{
-		RepoID: req.RepoId,
-		UserID: req.UserId,
-		Role:   req.Role.String(),
+		RepoID: repoID,
+		UserID: userID,
+		Role:   role,
 	}
 	if err := s.Repository.AddCollaborator(ctx, c); err != nil {
 		slog.Error("添加协作者失败", "error", err)
-		return &pb.AddCollaboratorResponse{Success: false, Msg: "添加协作者失败"}, nil
+		return fmt.Errorf("添加协作者失败")
 	}
 
-	return &pb.AddCollaboratorResponse{Success: true}, nil
+	return nil
 }
 
 // UpdateCollaborator 更新协作者角色，仅 ADMIN 可操作
-func (s *Service) UpdateCollaborator(ctx context.Context, req *pb.UpdateCollaboratorRequest) (*pb.UpdateCollaboratorResponse, error) {
-	if err := s.CheckRepoPermission(ctx, req.RepoId, req.OperatorId, "ADMIN"); err != nil {
-		return &pb.UpdateCollaboratorResponse{Success: false, Msg: err.Error()}, nil
+func (s *Service) UpdateCollaborator(ctx context.Context, repoID, operatorID, userID, role string) error {
+	if err := s.CheckRepoPermission(ctx, repoID, operatorID, "ADMIN"); err != nil {
+		return err
 	}
 
-	if err := s.Repository.UpdateCollaborator(ctx, req.RepoId, req.UserId, req.Role.String()); err != nil {
+	if err := s.Repository.UpdateCollaborator(ctx, repoID, userID, role); err != nil {
 		slog.Error("更新协作者失败", "error", err)
-		return &pb.UpdateCollaboratorResponse{Success: false, Msg: "更新协作者失败"}, nil
+		return fmt.Errorf("更新协作者失败")
 	}
 
-	return &pb.UpdateCollaboratorResponse{Success: true}, nil
+	return nil
 }
 
 // RemoveCollaborator 移除协作者，仅 ADMIN 可操作
-func (s *Service) RemoveCollaborator(ctx context.Context, req *pb.RemoveCollaboratorRequest) (*pb.RemoveCollaboratorResponse, error) {
-	if err := s.CheckRepoPermission(ctx, req.RepoId, req.OperatorId, "ADMIN"); err != nil {
-		return &pb.RemoveCollaboratorResponse{Success: false, Msg: err.Error()}, nil
+func (s *Service) RemoveCollaborator(ctx context.Context, repoID, operatorID, userID string) error {
+	if err := s.CheckRepoPermission(ctx, repoID, operatorID, "ADMIN"); err != nil {
+		return err
 	}
 
-	if err := s.Repository.RemoveCollaborator(ctx, req.RepoId, req.UserId); err != nil {
+	if err := s.Repository.RemoveCollaborator(ctx, repoID, userID); err != nil {
 		slog.Error("移除协作者失败", "error", err)
-		return &pb.RemoveCollaboratorResponse{Success: false, Msg: "移除协作者失败"}, nil
+		return fmt.Errorf("移除协作者失败")
 	}
 
-	return &pb.RemoveCollaboratorResponse{Success: true}, nil
+	return nil
 }
 
 // ListCollaborators 列出协作者列表，需要 ADMIN 或 DEVELOPER 权限
-func (s *Service) ListCollaborators(ctx context.Context, req *pb.ListCollaboratorsRequest) (*pb.ListCollaboratorsResponse, error) {
-	if err := s.CheckRepoPermission(ctx, req.RepoId, req.UserId, "ADMIN", "DEVELOPER"); err != nil {
-		return &pb.ListCollaboratorsResponse{Success: false, Collaborators: []*pb.Collaborator{}}, nil
+func (s *Service) ListCollaborators(ctx context.Context, repoID, userID string) ([]schema.Collaborator, error) {
+	if err := s.CheckRepoPermission(ctx, repoID, userID, "ADMIN", "DEVELOPER"); err != nil {
+		return nil, err
 	}
 
-	collaborators, err := s.Repository.ListCollaborators(ctx, req.RepoId)
+	collaborators, err := s.Repository.ListCollaborators(ctx, repoID)
 	if err != nil {
 		slog.Error("查询协作者列表失败", "error", err)
-		return &pb.ListCollaboratorsResponse{Success: false, Collaborators: []*pb.Collaborator{}}, nil
+		return nil, fmt.Errorf("查询协作者列表失败")
 	}
 
-	pbCollabs := make([]*pb.Collaborator, 0, len(collaborators))
-	for _, c := range collaborators {
-		role, _ := pb.CollaboratorRole_value[c.Role]
-		pbCollabs = append(pbCollabs, &pb.Collaborator{
-			RepoId: c.RepoID,
-			UserId: c.UserID,
-			Role:   pb.CollaboratorRole(role),
-		})
-	}
-
-	return &pb.ListCollaboratorsResponse{
-		Success:       true,
-		Collaborators: pbCollabs,
-	}, nil
+	return collaborators, nil
 }
