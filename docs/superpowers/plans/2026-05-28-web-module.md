@@ -3020,7 +3020,7 @@ export default function ArticleEditor() {
 - 创建: `web/src/components/Settings/SettingsModal.tsx`
 - 创建: `web/src/pages/SearchResult.tsx`
 
-- [ ] **Step 1: SettingsModal**
+- [x] **Step 1: SettingsModal**
 
 ```typescript
 import { useState, useEffect } from 'react'
@@ -3172,7 +3172,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
 cd web && npm install antd-img-crop
 ```
 
-- [ ] **Step 2: SearchResult 页面**
+- [x] **Step 2: SearchResult 页面**
 
 ```typescript
 import { useEffect, useState } from 'react'
@@ -3258,7 +3258,7 @@ export default function SearchResult() {
 }
 ```
 
-- [ ] **Step 3: NotFound 页面**
+- [x] **Step 3: NotFound 页面**
 
 ```typescript
 import { Link } from 'react-router-dom'
