@@ -2410,7 +2410,7 @@ export default function RepoList() {
 - 创建: `web/src/components/Repo/RepoTree.tsx`
 - 创建: `web/src/components/Repo/CollabList.tsx`
 
-- [ ] **Step 1: RepoTree 组件（带右键菜单 + 拖拽）**
+- [x] **Step 1: RepoTree 组件（带右键菜单 + 拖拽）**
 
 ```typescript
 import { useState, useCallback } from 'react'
@@ -2606,7 +2606,7 @@ function NodeItem({ node, repoId, onContextMenu, onNavigate, onDragStart, onDrop
 }
 ```
 
-- [ ] **Step 2: CollabList 组件（协作者列表）**
+- [x] **Step 2: CollabList 组件（协作者列表）**
 
 ```typescript
 import { useState, useEffect } from 'react'
@@ -2697,7 +2697,7 @@ export default function CollabList({ repoId }: CollabListProps) {
 }
 ```
 
-- [ ] **Step 3: RepoDetail 页面**
+- [x] **Step 3: RepoDetail 页面**
 
 ```typescript
 import { useEffect, useState } from 'react'
