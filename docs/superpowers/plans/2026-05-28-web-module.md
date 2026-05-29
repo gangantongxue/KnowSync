@@ -2782,7 +2782,7 @@ export default function RepoDetail() {
 - 创建: `web/src/pages/ArticleEditor.tsx`
 - 创建: `web/src/components/Editor/MarkdownEditor.tsx`
 
-- [ ] **Step 1: MarkdownEditor 组件（Monaco Editor + 预览）**
+- [x] **Step 1: MarkdownEditor 组件（Monaco Editor + 预览）**
 
 ```typescript
 import { useState } from 'react'
@@ -2849,7 +2849,7 @@ function MarkdownPreview({ content }: { content: string }) {
 import { Streamdown } from '../Chat/Streamdown'
 ```
 
-- [ ] **Step 2: ArticleView 页面**
+- [x] **Step 2: ArticleView 页面**
 
 ```typescript
 import { useEffect, useState } from 'react'
@@ -2911,7 +2911,7 @@ function MarkdownViewer({ content }: { content: string }) {
 }
 ```
 
-- [ ] **Step 3: ArticleEditor 页面**
+- [x] **Step 3: ArticleEditor 页面**
 
 ```typescript
 import { useEffect, useState } from 'react'
