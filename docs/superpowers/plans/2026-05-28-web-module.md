@@ -3278,13 +3278,13 @@ export default function NotFound() {
 
 ### Task 9: 安装依赖 + 编译验证
 
-- [ ] **Step 1: 安装所有依赖**
+- [x] **Step 1: 安装所有依赖**
 
 ```bash
 cd web && npm install && npm install antd-img-crop
 ```
 
-- [ ] **Step 2: TypeScript 编译检查**
+- [x] **Step 2: TypeScript 编译检查**
 
 ```bash
 cd web && npx tsc --noEmit
@@ -3292,7 +3292,7 @@ cd web && npx tsc --noEmit
 
 修复所有类型错误。
 
-- [ ] **Step 3: Vite 构建**
+- [x] **Step 3: Vite 构建**
 
 ```bash
 cd web && npm run build

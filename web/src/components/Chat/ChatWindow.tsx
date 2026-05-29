@@ -4,10 +4,9 @@ import MessageBubble from './MessageBubble'
 import AskUserModal from './AskUserModal'
 
 interface ChatWindowProps {
-  onSendMessage?: (message: string) => void
 }
 
-export default function ChatWindow({ onSendMessage }: ChatWindowProps) {
+export default function ChatWindow(_props: ChatWindowProps) {
   const { messages, isStreaming, sendMessage } = useChat()
   const [input, setInput] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)

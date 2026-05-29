@@ -8,7 +8,6 @@ export default function SearchResult() {
   const [searchParams] = useSearchParams()
   const query = searchParams.get('q') || ''
   const navigate = useNavigate()
-  const [repoIds, setRepoIds] = useState<string[]>([])
   const [repos, setRepos] = useState<Repo[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
@@ -24,7 +23,6 @@ export default function SearchResult() {
           body: JSON.stringify({ query: query.trim(), page, page_size: 20 }),
           skipAuth: false,
         })
-        setRepoIds(res.data.repo_ids || [])
         setHasMore(res.data.has_more)
 
         const details = await Promise.all(
@@ -32,7 +30,6 @@ export default function SearchResult() {
         )
         setRepos(details.filter(Boolean) as Repo[])
       } catch {
-        setRepoIds([])
         setRepos([])
       }
       setLoading(false)
