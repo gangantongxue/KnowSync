@@ -182,16 +182,16 @@ func (h *Handler) ListCollaborators() app.HandlerFunc {
 			return
 		}
 
-		collaborators := make([]map[string]interface{}, 0, len(resp.Collaborators))
+		collaborators := make([]map[string]any, 0, len(resp.Collaborators))
 		for _, c := range resp.Collaborators {
-			collaborators = append(collaborators, map[string]interface{}{
+			collaborators = append(collaborators, map[string]any{
 				"repo_id": c.RepoId,
 				"user_id": c.UserId,
 				"role":    c.Role.String(),
 			})
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"collaborators": collaborators,
 		})
 	}

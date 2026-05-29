@@ -59,8 +59,8 @@ func (h *Handler) GetUser() app.HandlerFunc {
 			return
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
-			"user": map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
+			"user": map[string]any{
 				"id":     getUserResp.User.Id,
 				"name":   getUserResp.User.Name,
 				"email":  getUserResp.User.Email,
@@ -105,8 +105,8 @@ func (h *Handler) UpdateUser() app.HandlerFunc {
 			return
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
-			"user": map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
+			"user": map[string]any{
 				"id":     updateResp.User.Id,
 				"name":   updateResp.User.Name,
 				"email":  updateResp.User.Email,
@@ -221,7 +221,7 @@ func (h *Handler) SetAvatar() app.HandlerFunc {
 			return
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"avatar": avatarURL,
 		})
 	}

@@ -26,7 +26,7 @@ func Auth(publicKey *rsa.PublicKey) app.HandlerFunc {
 		}
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		token, err := jwt.ParseWithClaims(tokenString, &AccessTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(tokenString, &AccessTokenClaims{}, func(token *jwt.Token) (any, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 				return nil, jwt.ErrSignatureInvalid
 			}

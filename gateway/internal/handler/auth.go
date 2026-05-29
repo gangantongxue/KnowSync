@@ -134,8 +134,8 @@ func (h *Handler) Register() app.HandlerFunc {
 			}
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
-			"user": map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
+			"user": map[string]any{
 				"id":     registerResp.User.Id,
 				"name":   registerResp.User.Name,
 				"email":  registerResp.User.Email,
@@ -174,7 +174,7 @@ func (h *Handler) Login() app.HandlerFunc {
 			return
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"access_token":  loginResp.AccessToken,
 			"refresh_token": loginResp.RefreshToken,
 		})
@@ -241,7 +241,7 @@ func (h *Handler) Refresh() app.HandlerFunc {
 			return
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"access_token":  refreshResp.AccessToken,
 			"refresh_token": refreshResp.RefreshToken,
 		})

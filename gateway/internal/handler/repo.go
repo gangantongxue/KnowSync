@@ -69,8 +69,8 @@ func (h *Handler) CreateRepo() app.HandlerFunc {
 			return
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
-			"repo": map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
+			"repo": map[string]any{
 				"id":            resp.Repo.Id,
 				"name":          resp.Repo.Name,
 				"visibility":    resp.Repo.Visibility.String(),
@@ -108,7 +108,7 @@ func (h *Handler) GetRepo() app.HandlerFunc {
 			return
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"repo":    marshalRepoResponse(resp.Repo),
 			"my_role": resp.MyRole.String(),
 		})
@@ -158,7 +158,7 @@ func (h *Handler) UpdateRepo() app.HandlerFunc {
 			return
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"repo": marshalRepoResponse(resp.Repo),
 		})
 	}
@@ -218,20 +218,20 @@ func (h *Handler) ListUserRepos() app.HandlerFunc {
 			return
 		}
 
-		repos := make([]map[string]interface{}, 0, len(resp.Repos))
+		repos := make([]map[string]any, 0, len(resp.Repos))
 		for _, r := range resp.Repos {
 			repos = append(repos, marshalRepoResponse(r))
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"repos": repos,
 		})
 	}
 }
 
 // marshalRepoResponse 将 protobuf Repo 转换为 HTTP JSON 响应格式
-func marshalRepoResponse(r *pb.Repo) map[string]interface{} {
-	return map[string]interface{}{
+func marshalRepoResponse(r *pb.Repo) map[string]any {
+	return map[string]any{
 		"id":            r.Id,
 		"owner_id":      r.OwnerId,
 		"name":          r.Name,
@@ -244,12 +244,12 @@ func marshalRepoResponse(r *pb.Repo) map[string]interface{} {
 }
 
 // marshalNodeResponse 将 protobuf Node 转换为 HTTP JSON 响应格式
-func (h *Handler) marshalNodeResponse(n *pb.Node) map[string]interface{} {
+func (h *Handler) marshalNodeResponse(n *pb.Node) map[string]any {
 	typ := "FOLDER"
 	if n.Type == pb.NodeType_ARTICLE {
 		typ = "ARTICLE"
 	}
-	return map[string]interface{}{
+	return map[string]any{
 		"id":         n.Id,
 		"repo_id":    n.RepoId,
 		"parent_id":  n.ParentId,

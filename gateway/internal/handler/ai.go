@@ -102,7 +102,7 @@ func (h *Handler) Chat() app.HandlerFunc {
 			}
 
 			if askUser := resp.GetAskUserEvent(); askUser != nil {
-				writeSSEEvent(ctx, "ask_user", map[string]interface{}{
+				writeSSEEvent(ctx, "ask_user", map[string]any{
 					"session_id": resp.GetSessionId(),
 					"question":   askUser.Question,
 					"type":       askUser.Type,
@@ -112,7 +112,7 @@ func (h *Handler) Chat() app.HandlerFunc {
 			}
 
 			if resp.Finished {
-				writeSSEEvent(ctx, "done", map[string]interface{}{
+				writeSSEEvent(ctx, "done", map[string]any{
 					"session_id":    resp.GetSessionId(),
 					"message_id":    resp.GetMessageId(),
 					"title":         resp.GetTitle(),
@@ -125,13 +125,13 @@ func (h *Handler) Chat() app.HandlerFunc {
 }
 
 // writeSSEEvent 写入一条 SSE 事件
-func writeSSEEvent(ctx *app.RequestContext, eventType string, data interface{}) {
+func writeSSEEvent(ctx *app.RequestContext, eventType string, data any) {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		slog.Error("SSE 数据序列化失败", "event", eventType, "error", err)
 		return
 	}
-	_, _ = ctx.Write([]byte(fmt.Sprintf("event: %s\ndata: %s\n\n", eventType, string(jsonData))))
+	_, _ = ctx.Write(fmt.Appendf(nil, "event: %s\ndata: %s\n\n", eventType, string(jsonData)))
 	ctx.Flush()
 }
 
@@ -176,7 +176,7 @@ func (h *Handler) Search() app.HandlerFunc {
 			return
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"repo_ids":    resp.RepoIds,
 			"total_pages": resp.TotalPages,
 			"has_more":    resp.HasMore,
@@ -214,12 +214,12 @@ func (h *Handler) GetChatSessions() app.HandlerFunc {
 			return
 		}
 
-		sessions := make([]map[string]interface{}, 0, len(resp.Sessions))
+		sessions := make([]map[string]any, 0, len(resp.Sessions))
 		for _, s := range resp.Sessions {
 			sessions = append(sessions, marshalSession(s))
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"sessions": sessions,
 			"has_more": resp.HasMore,
 		})
@@ -263,12 +263,12 @@ func (h *Handler) GetChatMessages() app.HandlerFunc {
 			return
 		}
 
-		messages := make([]map[string]interface{}, 0, len(resp.Messages))
+		messages := make([]map[string]any, 0, len(resp.Messages))
 		for _, m := range resp.Messages {
 			messages = append(messages, marshalMessage(m))
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"messages": messages,
 			"has_more": resp.HasMore,
 		})
@@ -340,8 +340,8 @@ func parseLimitParam(s string, defaultVal int32) int32 {
 }
 
 // marshalSession 将 protobuf ChatSession 转换为 HTTP JSON 响应格式
-func marshalSession(s *pb.ChatSession) map[string]interface{} {
-	return map[string]interface{}{
+func marshalSession(s *pb.ChatSession) map[string]any {
+	return map[string]any{
 		"id":         s.Id,
 		"title":      s.Title,
 		"created_at": s.CreatedAt,
@@ -350,8 +350,8 @@ func marshalSession(s *pb.ChatSession) map[string]interface{} {
 }
 
 // marshalMessage 将 protobuf ChatMessage 转换为 HTTP JSON 响应格式
-func marshalMessage(m *pb.ChatMessage) map[string]interface{} {
-	return map[string]interface{}{
+func marshalMessage(m *pb.ChatMessage) map[string]any {
+	return map[string]any{
 		"id":         m.Id,
 		"role":       m.Role,
 		"content":    m.Content,

@@ -12,8 +12,8 @@ import (
 
 // RedisClient 定义通用接口
 type RedisClient interface {
-	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd
-	SetNX(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.BoolCmd
+	Set(ctx context.Context, key string, value any, expiration time.Duration) *redis.StatusCmd
+	SetNX(ctx context.Context, key string, value any, expiration time.Duration) *redis.BoolCmd
 	Get(ctx context.Context, key string) *redis.StringCmd
 	Del(ctx context.Context, keys ...string) *redis.IntCmd
 	Exists(ctx context.Context, keys ...string) *redis.IntCmd

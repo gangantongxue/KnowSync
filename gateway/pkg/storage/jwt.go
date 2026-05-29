@@ -43,7 +43,7 @@ func (s *Store) SignTempURL(bucket Bucket, key string) (string, error) {
 // ValidateToken 校验 JWT 令牌并返回声明
 func (s *Store) ValidateToken(tokenString string) (*FileAccessClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &FileAccessClaims{},
-		func(token *jwt.Token) (interface{}, error) {
+		func(token *jwt.Token) (any, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("非预期的签名算法: %v", token.Header["alg"])
 			}

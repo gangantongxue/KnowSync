@@ -80,10 +80,7 @@ func (s *Store) StoreChunks(ctx context.Context, repoID, nodeID string, chunks [
 
 	// 分批添加文档
 	for i := 0; i < len(chunks); i += batchSize {
-		end := i + batchSize
-		if end > len(chunks) {
-			end = len(chunks)
-		}
+		end := min(i+batchSize, len(chunks))
 
 		var docs []chromem.Document
 		for j := i; j < end; j++ {

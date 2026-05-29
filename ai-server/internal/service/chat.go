@@ -90,7 +90,7 @@ func (s *Service) Chat(ctx context.Context, reqUserID, reqSessionID, message str
 
 	var askedUser bool
 
-	for round := 0; round < 10; round++ {
+	for range 10 {
 		toolModel, err := s.LLM.GetToolModel(toolSet.GetToolInfos())
 		if err != nil {
 			_ = cb(&ChatEvent{Error: fmt.Errorf("获取工具模型失败: %w", err)})

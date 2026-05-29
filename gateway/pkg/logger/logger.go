@@ -53,7 +53,7 @@ func NewLogger(cfg *config.Config) (*Logger, error) {
 }
 
 // Printf 格式化输出日志，用于 Redis 等第三方库的日志适配
-func (l *Logger) Printf(ctx context.Context, format string, v ...interface{}) {
+func (l *Logger) Printf(ctx context.Context, format string, v ...any) {
 	msg := fmt.Sprintf(format, v...)
 	if strings.Contains(msg, "ping") {
 		return

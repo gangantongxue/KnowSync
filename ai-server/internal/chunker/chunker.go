@@ -223,10 +223,7 @@ func splitByChars(text string, maxTokens int) []Chunk {
 
 	var chunks []Chunk
 	for i := 0; i < len(runes); i += maxChars {
-		end := i + maxChars
-		if end > len(runes) {
-			end = len(runes)
-		}
+		end := min(i+maxChars, len(runes))
 		chunks = append(chunks, Chunk{Text: string(runes[i:end])})
 	}
 

@@ -33,7 +33,7 @@ func GenerateAccessToken(userID string, key *rsa.PrivateKey, ttl time.Duration) 
 }
 
 func ValidateAccessToken(tokenString string, key *rsa.PublicKey) (string, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &AccessTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &AccessTokenClaims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("非预期的签名算法: %v", token.Header["alg"])
 		}

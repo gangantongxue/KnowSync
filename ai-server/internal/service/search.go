@@ -167,10 +167,7 @@ func (s *Service) searchAndCache(ctx context.Context, query string, page, pageSi
 	// 6. 返回当前页
 	totalPages := int(math.Ceil(float64(totalCount) / float64(pageSize)))
 	start := (page - 1) * pageSize
-	end := start + pageSize
-	if end > totalCount {
-		end = totalCount
-	}
+	end := min(start+pageSize, totalCount)
 
 	var pageItems []string
 	if start < totalCount {

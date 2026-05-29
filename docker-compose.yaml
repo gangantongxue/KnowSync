@@ -40,6 +40,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    volumes:
+      - ./user-server/logs:/app/logs
     networks:
       - knowsync-net
 
@@ -51,6 +53,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    volumes:
+      - ./repo-server/logs:/app/logs
     networks:
       - knowsync-net
 
@@ -64,6 +68,8 @@ services:
         condition: service_started
       repo-server:
         condition: service_started
+    volumes:
+      - ./gateway/logs:/app/logs
     networks:
       - knowsync-net
 
@@ -91,6 +97,8 @@ services:
         condition: service_started
       gateway:
         condition: service_started
+    volumes:
+      - ./ai-server/logs:/app/logs
     networks:
       - knowsync-net
 

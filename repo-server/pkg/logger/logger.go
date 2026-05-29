@@ -51,7 +51,7 @@ func NewLogger(cfg *config.Config) (*Logger, error) {
 	return &Logger{Logger: logger, MultiHandler: multiHandler, Cfg: cfg}, nil
 }
 
-func (l *Logger) Printf(ctx context.Context, format string, v ...interface{}) {
+func (l *Logger) Printf(ctx context.Context, format string, v ...any) {
 	msg := fmt.Sprintf(format, v...)
 	l.Logger.InfoContext(ctx, msg)
 }

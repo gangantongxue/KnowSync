@@ -73,7 +73,7 @@ func (h *Handler) CreateNode() app.HandlerFunc {
 			return
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"node": h.marshalNodeResponse(resp.Node),
 		})
 	}
@@ -108,7 +108,7 @@ func (h *Handler) GetNode() app.HandlerFunc {
 			return
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"node": h.marshalNodeResponse(resp.Node),
 		})
 	}
@@ -151,7 +151,7 @@ func (h *Handler) UpdateNode() app.HandlerFunc {
 			return
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"node": h.marshalNodeResponse(resp.Node),
 		})
 	}
@@ -192,7 +192,7 @@ func (h *Handler) DeleteNode() app.HandlerFunc {
 			}
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"deleted_node_ids":   resp.DeletedNodeIds,
 			"deleted_file_paths": resp.DeletedFilePaths,
 		})
@@ -228,12 +228,12 @@ func (h *Handler) ListNodes() app.HandlerFunc {
 			return
 		}
 
-		nodes := make([]map[string]interface{}, 0, len(resp.Nodes))
+		nodes := make([]map[string]any, 0, len(resp.Nodes))
 		for _, n := range resp.Nodes {
 			nodes = append(nodes, h.marshalNodeResponse(n))
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"nodes": nodes,
 		})
 	}
@@ -301,7 +301,7 @@ func (h *Handler) UploadArticleContent() app.HandlerFunc {
 			slog.Warn("生成签名 URL 失败", "error", err)
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"node":       h.marshalNodeResponse(setResp.Node),
 			"signed_url": signedURL,
 		})
@@ -349,7 +349,7 @@ func (h *Handler) GetArticleSignedURL() app.HandlerFunc {
 			return
 		}
 
-		response.Success(c, ctx, map[string]interface{}{
+		response.Success(c, ctx, map[string]any{
 			"signed_url": signedURL,
 		})
 	}
