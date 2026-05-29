@@ -1,0 +1,11 @@
+node_modules
+.git
+.gitignore
+*.md
+scripts
+Taskfile.yml
+tsconfig*.json
+vite.config.ts
+postcss.config.js
+tailwind.config.ts
+package-lock.json

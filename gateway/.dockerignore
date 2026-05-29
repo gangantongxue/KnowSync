@@ -10,7 +10,6 @@ vendor/
 go.work
 
 # Build artifacts
-bin/
 *.exe
 *.dll
 *.so

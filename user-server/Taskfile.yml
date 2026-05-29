@@ -56,7 +56,7 @@ tasks:
         fi
         $PYTHON_CMD scripts/build.py {{.CLI_ARGS}}
 
-  build:image:
+  image:
     desc: 构建 Docker 镜像
     silent: true
     cmds:

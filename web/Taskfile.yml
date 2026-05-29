@@ -1,9 +1,8 @@
 version: '3'
 
 vars:
-  SERVICE_NAME: gateway
-  BIN_DIR: bin
-  CONFIGS_DIR: configs
+  SERVICE_NAME: web
+  BIN_DIR: dist
 
 tasks:
   default:
@@ -20,11 +19,9 @@ tasks:
         {{.SERVICE_NAME}} 构建工具
 
         可用命令:
-          task build        - 跨平台编译二进制文件到 ./bin
+          task build        - 编译 React 前端到 ./dist
           task build:image  - 构建 Docker 镜像
-          task fmt          - 格式化 Go 代码
-          task mod          - 整理 Go 模块依赖 (go mod tidy)
-          task modup        - 更新所有 Go 包到最新版本
+          task dev          - 启动 Vite 开发服务器
           task clean        - 清除编译产物
           task help         - 显示此帮助信息
 
@@ -34,14 +31,12 @@ tasks:
           task build -- v1.0.0    - 指定版本号编译
           task build:image        - 构建 Docker 镜像
           task build:image -- v1.0.0  - 指定版本号构建镜像
-          task fmt                - 格式化代码
+          task dev                - 启动开发服务器
           task clean              - 清除编译产物
-          task mod                - 整理依赖
-          task modup              - 更新依赖
         EOF
 
   build:
-    desc: 跨平台编译二进制文件
+    desc: 编译 React 前端
     silent: true
     cmds:
       - |
@@ -72,28 +67,14 @@ tasks:
         fi
         $PYTHON_CMD scripts/build_image.py {{.CLI_ARGS}}
 
-  fmt:
-    desc: 格式化 Go 代码
+  dev:
+    desc: 启动 Vite 开发服务器
     silent: true
     cmds:
-      - go fmt ./...
-      - echo "Go 代码格式化完成"
-
-  mod:
-    desc: 整理 Go 模块依赖
-    silent: true
-    cmds:
-      - go mod tidy
-
-  modup:
-    desc: 更新所有 Go 包到最新版本
-    silent: true
-    cmds:
-      - go get -u ./...
-      - go mod tidy
+      - npm run dev
 
   clean:
-    desc: 清除所有编译产物
+    desc: 清除编译产物
     silent: true
     cmds:
       - rm -rf {{.BIN_DIR}}

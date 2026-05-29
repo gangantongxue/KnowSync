@@ -58,13 +58,23 @@ services:
     image: knowsync/gateway:latest
     container_name: knowsync-gateway
     restart: unless-stopped
-    ports:
-      - "8080:8080"
     env_file: .env
     depends_on:
       user-server:
         condition: service_started
       repo-server:
+        condition: service_started
+    networks:
+      - knowsync-net
+
+  web:
+    image: knowsync/web:latest
+    container_name: knowsync-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      gateway:
         condition: service_started
     networks:
       - knowsync-net
