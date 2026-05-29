@@ -2231,7 +2231,7 @@ export default function Chat() {
 - 创建: `web/src/pages/RepoList.tsx`
 - 创建: `web/src/components/Repo/RepoCard.tsx`
 
-- [ ] **Step 1: RepoCard 组件**
+- [x] **Step 1: RepoCard 组件**
 
 ```typescript
 import { repoApi, updateRepo, deleteRepo } from '../../lib/repos'
@@ -2312,7 +2312,7 @@ export default function RepoCard({ repo, onSelect, onUpdate }: RepoCardProps) {
 }
 ```
 
-- [ ] **Step 2: RepoList 页面**
+- [x] **Step 2: RepoList 页面**
 
 ```typescript
 import { useEffect, useState } from 'react'
