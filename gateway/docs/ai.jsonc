@@ -1,0 +1,373 @@
+{
+  // KnowSync 网关 - AI 服务 HTTP API 接口文档
+  // 基础路径: /api/v1
+  //
+  // 统一响应格式（非 SSE 接口）:
+  //   code    - 业务状态码，200 表示成功，非 200 表示各类错误
+  //   message - 提示信息
+  //   data    - 响应数据（成功时携带），可能为 null
+  //
+  // SSE 接口（Chat）:
+  //   Content-Type: text/event-stream
+  //   通过事件名区分不同类型的流式数据
+
+  "base_url": "/api/v1",
+
+  "response_schema": {
+    "code":    { "type": "integer", "desc": "业务状态码，200 成功，非 200 失败" },
+    "message": { "type": "string",  "desc": "提示信息" },
+    "data":    { "type": "object",  "desc": "响应数据，失败时为 null" }
+  },
+
+  "error_codes": {
+    "200":  { "desc": "成功" },
+    "400":  { "desc": "请求参数错误" },
+    "401":  { "desc": "未授权，令牌无效或已过期" },
+    "404":  { "desc": "资源不存在" },
+    "429":  { "desc": "请求频率过快" }
+  },
+
+  "apis": [
+
+    //==============================================================================
+    // 一、对话相关（/ai/*）
+    //==============================================================================
+
+    //==============================================================================
+    // 流式对话
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/ai/chat",
+      "auth_required": true,
+      "description": "与 AI 进行流式对话，通过 SSE 返回思考过程和回答片段",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "body": {
+          "session_id": { "type": "string", "required": false, "desc": "会话 ID，新会话传空字符串，服务端自动创建" },
+          "message":    { "type": "string", "required": true,  "desc": "用户输入的消息内容" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "SSE 流式响应，Content-Type: text/event-stream",
+          "events": [
+            {
+              "event": "thinking",
+              "desc": "思考过程片段（可能多条，顺序出现）",
+              "data": {
+                "session_id": { "type": "string", "desc": "会话 ID" },
+                "content":    { "type": "string", "desc": "思考过程文本" }
+              }
+            },
+            {
+              "event": "thinking_finished",
+              "desc": "思考结束标记",
+              "data": {
+                "session_id": { "type": "string", "desc": "会话 ID" }
+              }
+            },
+            {
+              "event": "content",
+              "desc": "正式回答片段（可能多条，顺序出现）",
+              "data": {
+                "session_id": { "type": "string", "desc": "会话 ID" },
+                "content":    { "type": "string", "desc": "回答文本" }
+              }
+            },
+            {
+              "event": "ask_user",
+              "desc": "反问用户事件（需要用户选择/填写后继续）",
+              "data": {
+                "session_id": { "type": "string", "desc": "会话 ID" },
+                "question":   { "type": "string", "desc": "问题内容" },
+                "type":       { "type": "string", "desc": "问题类型: single / multiple" },
+                "options":    { "type": "array",  "desc": "选项列表" },
+                "has_other":  { "type": "boolean","desc": "是否包含其他自由输入选项" }
+              }
+            },
+            {
+              "event": "done",
+              "desc": "对话结束事件（最后一条）",
+              "data": {
+                "session_id":    { "type": "string",  "desc": "会话 ID" },
+                "message_id":    { "type": "string",  "desc": "本次回复的消息 ID" },
+                "title":         { "type": "string",  "desc": "会话标题（首次对话时可能更新）" },
+                "title_updated": { "type": "boolean", "desc": "标题是否更新" }
+              }
+            },
+            {
+              "event": "error",
+              "desc": "流式响应中途出错",
+              "data": {
+                "session_id": { "type": "string", "desc": "会话 ID" },
+                "message":    { "type": "string", "desc": "错误描述" }
+              }
+            }
+          ]
+        },
+        "400": {
+          "desc": "参数错误 / 连接失败（非 SSE，直接返回 JSON）",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 语义搜索
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/ai/search",
+      "description": "语义搜索公开知识库，按搜索关键词缓存到 Redis（MD5 哈希），不同用户搜索相同关键词共享结果。仅搜索公开仓库",
+      "request": {
+        "content_type": "application/json",
+        "body": {
+          "query":     { "type": "string",  "required": true,  "desc": "搜索关键词" },
+          "page":      { "type": "integer", "required": false, "desc": "页码（从 1 开始，默认 1）" },
+          "page_size": { "type": "integer", "required": false, "desc": "每页条数（默认 20）" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "搜索成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "desc": "搜索结果",
+              "fields": {
+                "repo_ids":    { "type": "array",   "desc": "当前页匹配的知识库 ID 列表" },
+                "total_pages": { "type": "integer", "desc": "总页数" },
+                "has_more":    { "type": "boolean", "desc": "是否还有更多数据" }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 二、会话管理（/ai/sessions/*）
+    //==============================================================================
+
+    //==============================================================================
+    // 获取会话列表（游标分页）
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/ai/sessions",
+      "auth_required": true,
+      "description": "获取当前用户的所有对话会话，按更新时间倒序，游标分页",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "cursor": { "type": "integer", "required": false, "in": "query", "desc": "游标（上次返回的最后一条 updated_at 时间戳），首次查询不传" },
+          "limit":  { "type": "integer", "required": false, "in": "query", "desc": "每页条数（默认 20）" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "desc": "会话列表",
+              "fields": {
+                "sessions": {
+                  "type": "array",
+                  "desc": "会话列表",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "id":         { "type": "string",  "desc": "会话 ID" },
+                      "title":      { "type": "string",  "desc": "会话标题" },
+                      "created_at": { "type": "integer", "desc": "创建时间戳" },
+                      "updated_at": { "type": "integer", "desc": "最后更新时间戳" }
+                    }
+                  }
+                },
+                "has_more": { "type": "boolean", "desc": "是否还有更多数据" }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 获取会话消息列表（游标分页）
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/ai/sessions/:session_id/messages",
+      "auth_required": true,
+      "description": "获取指定会话的消息记录，按创建时间正序，游标分页",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "session_id": { "type": "string",  "required": true, "in": "path",  "desc": "会话 ID" },
+          "cursor":     { "type": "integer", "required": false, "in": "query", "desc": "游标（上次返回的最后一条 created_at 时间戳），首次查询不传" },
+          "limit":      { "type": "integer", "required": false, "in": "query", "desc": "每页条数（默认 50）" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "desc": "消息列表",
+              "fields": {
+                "messages": {
+                  "type": "array",
+                  "desc": "消息列表",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "id":         { "type": "string",  "desc": "消息 ID" },
+                      "role":       { "type": "string",  "desc": "角色: user / assistant" },
+                      "content":    { "type": "string",  "desc": "消息内容" },
+                      "thinking":   { "type": "string",  "desc": "AI 思考过程" },
+                      "created_at": { "type": "integer", "desc": "创建时间戳" }
+                    }
+                  }
+                },
+                "has_more": { "type": "boolean", "desc": "是否还有更多数据" }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 会话 ID 为空",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "404": {
+          "desc": "会话不存在",
+          "body": {
+            "code":    { "type": "integer", "desc": "40400" },
+            "message": { "type": "string",  "desc": "会话不存在" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 删除会话
+    //==============================================================================
+
+    {
+      "method": "DELETE",
+      "path": "/ai/sessions/:session_id",
+      "auth_required": true,
+      "description": "删除指定会话及其所有消息",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "session_id": { "type": "string", "required": true, "in": "path", "desc": "会话 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "删除成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 会话 ID 为空",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "404": {
+          "desc": "会话不存在",
+          "body": {
+            "code":    { "type": "integer", "desc": "40400" },
+            "message": { "type": "string",  "desc": "会话不存在" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    }
+  ]
+}

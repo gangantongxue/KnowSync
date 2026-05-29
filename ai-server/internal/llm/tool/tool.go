@@ -88,6 +88,7 @@ type VectorStore interface {
 // RepoClient 仓库服务客户端接口
 type RepoClient interface {
 	ListUserRepos(ctx context.Context, userID string) ([]string, error)
+	ListPublicRepos(ctx context.Context) ([]string, error)
 }
 
 // SessionTitleUpdater 会话标题更新接口

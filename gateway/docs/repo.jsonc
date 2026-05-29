@@ -1,0 +1,976 @@
+{
+  // KnowSync 网关 - 知识库服务 HTTP API 接口文档
+  // 基础路径（所有接口均以此开头）: /api/v1
+  //
+  // 统一响应格式:
+  //   code    - 业务状态码，200 表示成功，非 200 表示各类错误
+  //   message - 提示信息
+  //   data    - 响应数据（成功时携带），可能为 null
+
+  "base_url": "/api/v1",
+
+  "response_schema": {
+    "code":    { "type": "integer", "desc": "业务状态码，200 成功，非 200 失败" },
+    "message": { "type": "string",  "desc": "提示信息" },
+    "data":    { "type": "object",  "desc": "响应数据，失败时为 null" }
+  },
+
+  "error_codes": {
+    "200":     { "desc": "成功" },
+    "40000":   { "desc": "请求参数错误" },
+    "40100":   { "desc": "未授权，令牌无效或已过期" },
+    "40400":   { "desc": "资源不存在" },
+    "42900":   { "desc": "请求频率过快" }
+  },
+
+  "apis": [
+
+    //==============================================================================
+    // 一、知识库相关（/repos/*）
+    //==============================================================================
+
+    //==============================================================================
+    // 创建知识库
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/repos",
+      "auth_required": true,
+      "description": "创建知识库，创建者自动成为 ADMIN 角色协作者",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "body": {
+          "name":        { "type": "string", "required": true,  "desc": "知识库名称" },
+          "description": { "type": "string", "required": false, "desc": "知识库描述" },
+          "visibility":  { "type": "string", "required": false, "desc": "可见性: PUBLIC / PRIVATE（默认 PRIVATE）" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "创建成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "desc": "创建的知识库",
+              "fields": {
+                "repo": {
+                  "type": "object",
+                  "desc": "知识库信息",
+                  "fields": {
+                    "id":            { "type": "string",  "desc": "知识库 ID" },
+                    "name":          { "type": "string",  "desc": "知识库名称" },
+                    "visibility":    { "type": "string",  "desc": "可见性: PUBLIC / PRIVATE" },
+                    "description":   { "type": "string",  "desc": "知识库描述" },
+                    "article_count": { "type": "integer", "desc": "文章数量" },
+                    "created_at":    { "type": "string",  "desc": "创建时间（ISO 8601）" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 名称重复",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 获取用户知识库列表
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/repos",
+      "auth_required": true,
+      "description": "获取当前用户参与的所有知识库列表",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "desc": "知识库列表",
+              "fields": {
+                "repos": {
+                  "type": "array",
+                  "desc": "知识库列表",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "id":            { "type": "string",  "desc": "知识库 ID" },
+                      "owner_id":      { "type": "string",  "desc": "所有者 ID" },
+                      "name":          { "type": "string",  "desc": "知识库名称" },
+                      "visibility":    { "type": "string",  "desc": "可见性: PUBLIC / PRIVATE" },
+                      "description":   { "type": "string",  "desc": "知识库描述" },
+                      "article_count": { "type": "integer", "desc": "文章数量" },
+                      "created_at":    { "type": "string",  "desc": "创建时间（ISO 8601）" },
+                      "updated_at":    { "type": "string",  "desc": "最后更新时间（ISO 8601）" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 获取知识库详情
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/repos/:repo_id",
+      "auth_required": true,
+      "description": "获取指定知识库的详情及当前用户的角色",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "repo_id": { "type": "string", "required": true, "in": "path", "desc": "知识库 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "desc": "知识库详情",
+              "fields": {
+                "repo": {
+                  "type": "object",
+                  "desc": "知识库信息",
+                  "fields": {
+                    "id":            { "type": "string",  "desc": "知识库 ID" },
+                    "owner_id":      { "type": "string",  "desc": "所有者 ID" },
+                    "name":          { "type": "string",  "desc": "知识库名称" },
+                    "visibility":    { "type": "string",  "desc": "可见性: PUBLIC / PRIVATE" },
+                    "description":   { "type": "string",  "desc": "知识库描述" },
+                    "article_count": { "type": "integer", "desc": "文章数量" },
+                    "created_at":    { "type": "string",  "desc": "创建时间（ISO 8601）" },
+                    "updated_at":    { "type": "string",  "desc": "最后更新时间（ISO 8601）" }
+                  }
+                },
+                "my_role": { "type": "string", "desc": "当前用户角色: ADMIN / DEVELOPER / VIEWER" }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "404": {
+          "desc": "知识库不存在或无权限访问",
+          "body": {
+            "code":    { "type": "integer", "desc": "40400" },
+            "message": { "type": "string",  "desc": "知识库不存在" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 更新知识库
+    //==============================================================================
+
+    {
+      "method": "PUT",
+      "path": "/repos/:repo_id",
+      "auth_required": true,
+      "description": "更新知识库名称、描述或可见性（仅 ADMIN 可操作）",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "repo_id": { "type": "string", "required": true, "in": "path", "desc": "知识库 ID" }
+        },
+        "body": {
+          "name":        { "type": "string", "required": false, "desc": "新名称" },
+          "description": { "type": "string", "required": false, "desc": "新描述" },
+          "visibility":  { "type": "string", "required": false, "desc": "新可见性: PUBLIC / PRIVATE" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "更新成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "desc": "更新后的知识库信息",
+              "fields": {
+                "repo": {
+                  "type": "object",
+                  "desc": "知识库信息",
+                  "fields": {
+                    "id":            { "type": "string",  "desc": "知识库 ID" },
+                    "owner_id":      { "type": "string",  "desc": "所有者 ID" },
+                    "name":          { "type": "string",  "desc": "知识库名称" },
+                    "visibility":    { "type": "string",  "desc": "可见性: PUBLIC / PRIVATE" },
+                    "description":   { "type": "string",  "desc": "知识库描述" },
+                    "article_count": { "type": "integer", "desc": "文章数量" },
+                    "created_at":    { "type": "string",  "desc": "创建时间（ISO 8601）" },
+                    "updated_at":    { "type": "string",  "desc": "最后更新时间（ISO 8601）" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 名称重复",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "403": {
+          "desc": "权限不足（非 ADMIN）",
+          "body": {
+            "code":    { "type": "integer", "desc": "40300" },
+            "message": { "type": "string",  "desc": "权限不足" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 删除知识库
+    //==============================================================================
+
+    {
+      "method": "DELETE",
+      "path": "/repos/:repo_id",
+      "auth_required": true,
+      "description": "软删除知识库（仅 ADMIN 可操作）",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "repo_id": { "type": "string", "required": true, "in": "path", "desc": "知识库 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "删除成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "403": {
+          "desc": "权限不足（非 ADMIN）",
+          "body": {
+            "code":    { "type": "integer", "desc": "40300" },
+            "message": { "type": "string",  "desc": "权限不足" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 二、节点管理（/repos/:repo_id/nodes/*）
+    //==============================================================================
+
+    //==============================================================================
+    // 创建节点
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/repos/:repo_id/nodes",
+      "auth_required": true,
+      "description": "在知识库中创建文件夹或文章节点",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "repo_id": { "type": "string", "required": true, "in": "path", "desc": "知识库 ID" }
+        },
+        "body": {
+          "parent_id": { "type": "string", "required": false, "desc": "父节点 ID（根目录传空）" },
+          "name":      { "type": "string", "required": true,  "desc": "节点名称" },
+          "type":      { "type": "string", "required": true,  "desc": "节点类型: FOLDER / ARTICLE" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "创建成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "desc": "创建的节点",
+              "fields": {
+                "node": { "$ref": "#/definitions/node" }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 名称重复",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 获取节点列表
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/repos/:repo_id/nodes",
+      "auth_required": true,
+      "description": "获取指定父目录下的子节点列表（不递归）",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "repo_id":   { "type": "string", "required": true,  "in": "path", "desc": "知识库 ID" },
+          "parent_id": { "type": "string", "required": false, "in": "query", "desc": "父节点 ID（不传或传空则列出根目录节点）" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "desc": "节点列表",
+              "fields": {
+                "nodes": {
+                  "type": "array",
+                  "desc": "子节点列表",
+                  "items": { "$ref": "#/definitions/node" }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 获取节点详情
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/repos/:repo_id/nodes/:node_id",
+      "auth_required": true,
+      "description": "获取指定节点的详细信息",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "repo_id": { "type": "string", "required": true, "in": "path", "desc": "知识库 ID" },
+          "node_id": { "type": "string", "required": true, "in": "path", "desc": "节点 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "node": { "$ref": "#/definitions/node" }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "404": {
+          "desc": "节点不存在",
+          "body": {
+            "code":    { "type": "integer", "desc": "40400" },
+            "message": { "type": "string",  "desc": "节点不存在" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 更新节点
+    //==============================================================================
+
+    {
+      "method": "PUT",
+      "path": "/repos/:repo_id/nodes/:node_id",
+      "auth_required": true,
+      "description": "重命名或移动节点",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "repo_id": { "type": "string", "required": true, "in": "path", "desc": "知识库 ID" },
+          "node_id": { "type": "string", "required": true, "in": "path", "desc": "节点 ID" }
+        },
+        "body": {
+          "name":      { "type": "string", "required": false, "desc": "新节点名称" },
+          "parent_id": { "type": "string", "required": false, "desc": "新父节点 ID（移动节点）" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "更新成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "node": { "$ref": "#/definitions/node" }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 删除节点
+    //==============================================================================
+
+    {
+      "method": "DELETE",
+      "path": "/repos/:repo_id/nodes/:node_id",
+      "auth_required": true,
+      "description": "递归删除节点及其所有子节点（删除 ARTICLE 时同时删除已上传的存储文件）",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "repo_id": { "type": "string", "required": true, "in": "path", "desc": "知识库 ID" },
+          "node_id": { "type": "string", "required": true, "in": "path", "desc": "节点 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "删除成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "desc": "删除结果",
+              "fields": {
+                "deleted_node_ids":   { "type": "array",   "desc": "被删除的节点 ID 列表" },
+                "deleted_file_paths": { "type": "array",   "desc": "被删除的存储文件路径列表" }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 上传文章内容
+    //==============================================================================
+
+    {
+      "method": "PUT",
+      "path": "/repos/:repo_id/nodes/:node_id/content",
+      "auth_required": true,
+      "description": "上传 Markdown 文件作为文章内容，上传后自动关联到节点并返回签名临时访问 URL",
+      "request": {
+        "content_type": "multipart/form-data",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "repo_id": { "type": "string", "required": true, "in": "path", "desc": "知识库 ID" },
+          "node_id": { "type": "string", "required": true, "in": "path", "desc": "节点 ID" }
+        },
+        "body": {
+          "file": { "type": "file", "required": true, "desc": "Markdown 文件，仅支持 .md / .markdown 扩展名" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "上传成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "desc": "上传结果",
+              "fields": {
+                "node":       { "$ref": "#/definitions/node", "desc": "更新后的节点信息（含 file_path/size）" },
+                "signed_url": { "type": "string", "desc": "文章内容的签名临时访问 URL（限时有效）" }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 文件格式不支持",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 获取文章签名 URL
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/repos/:repo_id/nodes/:node_id/signed-url",
+      "auth_required": true,
+      "description": "获取已上传文章内容的签名临时访问 URL",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "repo_id": { "type": "string", "required": true, "in": "path", "desc": "知识库 ID" },
+          "node_id": { "type": "string", "required": true, "in": "path", "desc": "节点 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "signed_url": { "type": "string", "desc": "文章内容的签名临时访问 URL" }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "该节点没有关联文件",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "该节点没有关联文件" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "404": {
+          "desc": "节点不存在",
+          "body": {
+            "code":    { "type": "integer", "desc": "40400" },
+            "message": { "type": "string",  "desc": "节点不存在" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 三、协作者管理（/repos/:repo_id/collaborators/*）
+    //==============================================================================
+
+    //==============================================================================
+    // 添加协作者
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/repos/:repo_id/collaborators",
+      "auth_required": true,
+      "description": "添加协作者到知识库（仅 ADMIN 可操作）",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "repo_id": { "type": "string", "required": true, "in": "path", "desc": "知识库 ID" }
+        },
+        "body": {
+          "user_id": { "type": "string", "required": true, "desc": "用户 ID" },
+          "role":    { "type": "string", "required": true, "desc": "角色: ADMIN / DEVELOPER / VIEWER" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "添加成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 角色错误 / 用户已是协作者",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "403": {
+          "desc": "权限不足（非 ADMIN）",
+          "body": {
+            "code":    { "type": "integer", "desc": "40300" },
+            "message": { "type": "string",  "desc": "权限不足" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 列出协作者
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/repos/:repo_id/collaborators",
+      "auth_required": true,
+      "description": "获取知识库的所有协作者列表",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "repo_id": { "type": "string", "required": true, "in": "path", "desc": "知识库 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "desc": "协作者列表",
+              "fields": {
+                "collaborators": {
+                  "type": "array",
+                  "desc": "协作者列表",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "repo_id": { "type": "string", "desc": "知识库 ID" },
+                      "user_id": { "type": "string", "desc": "用户 ID" },
+                      "role":    { "type": "string", "desc": "角色: ADMIN / DEVELOPER / VIEWER" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 更新协作者角色
+    //==============================================================================
+
+    {
+      "method": "PUT",
+      "path": "/repos/:repo_id/collaborators/:user_id",
+      "auth_required": true,
+      "description": "修改协作者角色（仅 ADMIN 可操作）",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "repo_id": { "type": "string", "required": true, "in": "path", "desc": "知识库 ID" },
+          "user_id": { "type": "string", "required": true, "in": "path", "desc": "协作者的用户 ID" }
+        },
+        "body": {
+          "role": { "type": "string", "required": true, "desc": "新角色: ADMIN / DEVELOPER / VIEWER" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "更新成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "403": {
+          "desc": "权限不足（非 ADMIN）",
+          "body": {
+            "code":    { "type": "integer", "desc": "40300" },
+            "message": { "type": "string",  "desc": "权限不足" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 移除协作者
+    //==============================================================================
+
+    {
+      "method": "DELETE",
+      "path": "/repos/:repo_id/collaborators/:user_id",
+      "auth_required": true,
+      "description": "从知识库中移除协作者（仅 ADMIN 可操作）",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "repo_id": { "type": "string", "required": true, "in": "path", "desc": "知识库 ID" },
+          "user_id": { "type": "string", "required": true, "in": "path", "desc": "要移除的协作者用户 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "移除成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "403": {
+          "desc": "权限不足（非 ADMIN）",
+          "body": {
+            "code":    { "type": "integer", "desc": "40300" },
+            "message": { "type": "string",  "desc": "权限不足" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    }
+  ],
+
+  //==============================================================================
+  // 公共定义
+  //==============================================================================
+
+  "definitions": {
+    "node": {
+      "type": "object",
+      "desc": "节点信息",
+      "fields": {
+        "id":         { "type": "string",  "desc": "节点 ID" },
+        "repo_id":    { "type": "string",  "desc": "所属知识库 ID" },
+        "parent_id":  { "type": "string",  "desc": "父节点 ID" },
+        "name":       { "type": "string",  "desc": "节点名称" },
+        "type":       { "type": "string",  "desc": "节点类型: FOLDER / ARTICLE" },
+        "file_path":  { "type": "string",  "desc": "关联文件路径（仅 ARTICLE 类型）" },
+        "size":       { "type": "integer", "desc": "文件大小（字节，仅 ARTICLE 类型）" },
+        "created_at": { "type": "string",  "desc": "创建时间（ISO 8601）" },
+        "updated_at": { "type": "string",  "desc": "最后更新时间（ISO 8601）" }
+      }
+    }
+  }
+}

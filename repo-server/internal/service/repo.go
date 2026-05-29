@@ -96,6 +96,16 @@ func (s *Service) DeleteRepo(ctx context.Context, repoID, userID string) error {
 	return nil
 }
 
+// ListPublicRepos 获取所有公开知识库列表
+func (s *Service) ListPublicRepos(ctx context.Context) ([]schema.Repo, error) {
+	repos, err := s.Repository.ListPublicRepos(ctx)
+	if err != nil {
+		slog.Error("查询公开知识库列表失败", "error", err)
+		return nil, fmt.Errorf("查询公开知识库列表失败")
+	}
+	return repos, nil
+}
+
 // ListUserRepos 获取用户参与的所有知识库列表
 func (s *Service) ListUserRepos(ctx context.Context, userID string) ([]schema.Repo, error) {
 	repoIDs, err := s.Repository.ListUserRepoIDs(ctx, userID)

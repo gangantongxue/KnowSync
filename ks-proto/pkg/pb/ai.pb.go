@@ -531,8 +531,8 @@ func (*ChatResponse_AskUserEvent) isChatResponse_Event() {}
 type GetChatSessionsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Cursor        int64                  `protobuf:"varint,2,opt,name=cursor,proto3" json:"cursor,omitempty"` // 游标时间戳（updated_at），首次查询传 0
+	Limit         int32                  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`   // 返回条数（默认 20）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -574,16 +574,16 @@ func (x *GetChatSessionsRequest) GetUserId() string {
 	return ""
 }
 
-func (x *GetChatSessionsRequest) GetPage() int32 {
+func (x *GetChatSessionsRequest) GetCursor() int64 {
 	if x != nil {
-		return x.Page
+		return x.Cursor
 	}
 	return 0
 }
 
-func (x *GetChatSessionsRequest) GetPageSize() int32 {
+func (x *GetChatSessionsRequest) GetLimit() int32 {
 	if x != nil {
-		return x.PageSize
+		return x.Limit
 	}
 	return 0
 }
@@ -593,7 +593,7 @@ type GetChatSessionsResponse struct {
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	Sessions      []*ChatSession         `protobuf:"bytes,3,rep,name=sessions,proto3" json:"sessions,omitempty"`
-	Total         int32                  `protobuf:"varint,4,opt,name=total,proto3" json:"total,omitempty"`
+	HasMore       bool                   `protobuf:"varint,4,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"` // 是否还有更多数据
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -649,19 +649,19 @@ func (x *GetChatSessionsResponse) GetSessions() []*ChatSession {
 	return nil
 }
 
-func (x *GetChatSessionsResponse) GetTotal() int32 {
+func (x *GetChatSessionsResponse) GetHasMore() bool {
 	if x != nil {
-		return x.Total
+		return x.HasMore
 	}
-	return 0
+	return false
 }
 
 type GetChatMessagesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	SessionId     string                 `protobuf:"bytes,2,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
-	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Cursor        int64                  `protobuf:"varint,3,opt,name=cursor,proto3" json:"cursor,omitempty"` // 游标时间戳（created_at），首次查询传 0
+	Limit         int32                  `protobuf:"varint,4,opt,name=limit,proto3" json:"limit,omitempty"`   // 返回条数（默认 50）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -710,16 +710,16 @@ func (x *GetChatMessagesRequest) GetSessionId() string {
 	return ""
 }
 
-func (x *GetChatMessagesRequest) GetPage() int32 {
+func (x *GetChatMessagesRequest) GetCursor() int64 {
 	if x != nil {
-		return x.Page
+		return x.Cursor
 	}
 	return 0
 }
 
-func (x *GetChatMessagesRequest) GetPageSize() int32 {
+func (x *GetChatMessagesRequest) GetLimit() int32 {
 	if x != nil {
-		return x.PageSize
+		return x.Limit
 	}
 	return 0
 }
@@ -729,7 +729,7 @@ type GetChatMessagesResponse struct {
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	Messages      []*ChatMessage         `protobuf:"bytes,3,rep,name=messages,proto3" json:"messages,omitempty"`
-	Total         int32                  `protobuf:"varint,4,opt,name=total,proto3" json:"total,omitempty"`
+	HasMore       bool                   `protobuf:"varint,4,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"` // 是否还有更多数据
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -785,11 +785,11 @@ func (x *GetChatMessagesResponse) GetMessages() []*ChatMessage {
 	return nil
 }
 
-func (x *GetChatMessagesResponse) GetTotal() int32 {
+func (x *GetChatMessagesResponse) GetHasMore() bool {
 	if x != nil {
-		return x.Total
+		return x.HasMore
 	}
-	return 0
+	return false
 }
 
 type DeleteChatSessionRequest struct {
@@ -899,9 +899,9 @@ func (x *DeleteChatSessionResponse) GetMsg() string {
 type SearchRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	QueryId       string                 `protobuf:"bytes,2,opt,name=query_id,json=queryId,proto3" json:"query_id,omitempty"`
-	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
-	Query         string                 `protobuf:"bytes,4,opt,name=query,proto3" json:"query,omitempty"`
+	Query         string                 `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`                        // 搜索文本
+	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`                         // 页码（从 1 开始）
+	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"` // 每页条数（默认 20）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -943,9 +943,9 @@ func (x *SearchRequest) GetUserId() string {
 	return ""
 }
 
-func (x *SearchRequest) GetQueryId() string {
+func (x *SearchRequest) GetQuery() string {
 	if x != nil {
-		return x.QueryId
+		return x.Query
 	}
 	return ""
 }
@@ -957,18 +957,20 @@ func (x *SearchRequest) GetPage() int32 {
 	return 0
 }
 
-func (x *SearchRequest) GetQuery() string {
+func (x *SearchRequest) GetPageSize() int32 {
 	if x != nil {
-		return x.Query
+		return x.PageSize
 	}
-	return ""
+	return 0
 }
 
 type SearchResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	RepoIds       []string               `protobuf:"bytes,2,rep,name=repo_ids,json=repoIds,proto3" json:"repo_ids,omitempty"`
-	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"` // 页数(-1:查询失败 0:缓存命中 n:查询成功，共n页)
+	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"` // 错误描述
+	RepoIds       []string               `protobuf:"bytes,3,rep,name=repo_ids,json=repoIds,proto3" json:"repo_ids,omitempty"`
+	TotalPages    int32                  `protobuf:"varint,4,opt,name=total_pages,json=totalPages,proto3" json:"total_pages,omitempty"` // 总页数
+	HasMore       bool                   `protobuf:"varint,5,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`          // 是否还有更多数据
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1010,6 +1012,13 @@ func (x *SearchResponse) GetSuccess() bool {
 	return false
 }
 
+func (x *SearchResponse) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
 func (x *SearchResponse) GetRepoIds() []string {
 	if x != nil {
 		return x.RepoIds
@@ -1017,11 +1026,18 @@ func (x *SearchResponse) GetRepoIds() []string {
 	return nil
 }
 
-func (x *SearchResponse) GetPage() int32 {
+func (x *SearchResponse) GetTotalPages() int32 {
 	if x != nil {
-		return x.Page
+		return x.TotalPages
 	}
 	return 0
+}
+
+func (x *SearchResponse) GetHasMore() bool {
+	if x != nil {
+		return x.HasMore
+	}
+	return false
 }
 
 type UpdateRepoVisibilityRequest struct {
@@ -1284,43 +1300,46 @@ const file_ai_proto_rawDesc = "" +
 	"\bfinished\x18\x06 \x01(\bR\bfinished\x12\x14\n" +
 	"\x05title\x18\a \x01(\tR\x05title\x12#\n" +
 	"\rtitle_updated\x18\b \x01(\bR\ftitleUpdatedB\a\n" +
-	"\x05event\"b\n" +
+	"\x05event\"_\n" +
 	"\x16GetChatSessionsRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x12\n" +
-	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\"\x8b\x01\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x16\n" +
+	"\x06cursor\x18\x02 \x01(\x03R\x06cursor\x12\x14\n" +
+	"\x05limit\x18\x03 \x01(\x05R\x05limit\"\x90\x01\n" +
 	"\x17GetChatSessionsResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\x12.\n" +
-	"\bsessions\x18\x03 \x03(\v2\x12.proto.ChatSessionR\bsessions\x12\x14\n" +
-	"\x05total\x18\x04 \x01(\x05R\x05total\"\x81\x01\n" +
+	"\bsessions\x18\x03 \x03(\v2\x12.proto.ChatSessionR\bsessions\x12\x19\n" +
+	"\bhas_more\x18\x04 \x01(\bR\ahasMore\"~\n" +
 	"\x16GetChatMessagesRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1d\n" +
 	"\n" +
-	"session_id\x18\x02 \x01(\tR\tsessionId\x12\x12\n" +
-	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"\x8b\x01\n" +
+	"session_id\x18\x02 \x01(\tR\tsessionId\x12\x16\n" +
+	"\x06cursor\x18\x03 \x01(\x03R\x06cursor\x12\x14\n" +
+	"\x05limit\x18\x04 \x01(\x05R\x05limit\"\x90\x01\n" +
 	"\x17GetChatMessagesResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\x12.\n" +
-	"\bmessages\x18\x03 \x03(\v2\x12.proto.ChatMessageR\bmessages\x12\x14\n" +
-	"\x05total\x18\x04 \x01(\x05R\x05total\"R\n" +
+	"\bmessages\x18\x03 \x03(\v2\x12.proto.ChatMessageR\bmessages\x12\x19\n" +
+	"\bhas_more\x18\x04 \x01(\bR\ahasMore\"R\n" +
 	"\x18DeleteChatSessionRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1d\n" +
 	"\n" +
 	"session_id\x18\x02 \x01(\tR\tsessionId\"G\n" +
 	"\x19DeleteChatSessionResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"m\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\"o\n" +
 	"\rSearchRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x19\n" +
-	"\bquery_id\x18\x02 \x01(\tR\aqueryId\x12\x12\n" +
-	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x14\n" +
-	"\x05query\x18\x04 \x01(\tR\x05query\"Y\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
+	"\x05query\x18\x02 \x01(\tR\x05query\x12\x12\n" +
+	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"\x93\x01\n" +
 	"\x0eSearchResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x19\n" +
-	"\brepo_ids\x18\x02 \x03(\tR\arepoIds\x12\x12\n" +
-	"\x04page\x18\x03 \x01(\x05R\x04page\"S\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x19\n" +
+	"\brepo_ids\x18\x03 \x03(\tR\arepoIds\x12\x1f\n" +
+	"\vtotal_pages\x18\x04 \x01(\x05R\n" +
+	"totalPages\x12\x19\n" +
+	"\bhas_more\x18\x05 \x01(\bR\ahasMore\"S\n" +
 	"\x1bUpdateRepoVisibilityRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x1b\n" +
 	"\tis_public\x18\x02 \x01(\bR\bisPublic\"8\n" +

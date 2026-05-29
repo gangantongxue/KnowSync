@@ -24,6 +24,7 @@ const (
 	RepoService_UpdateRepo_FullMethodName         = "/proto.RepoService/UpdateRepo"
 	RepoService_DeleteRepo_FullMethodName         = "/proto.RepoService/DeleteRepo"
 	RepoService_ListUserRepos_FullMethodName      = "/proto.RepoService/ListUserRepos"
+	RepoService_ListPublicRepos_FullMethodName    = "/proto.RepoService/ListPublicRepos"
 	RepoService_CreateNode_FullMethodName         = "/proto.RepoService/CreateNode"
 	RepoService_GetNode_FullMethodName            = "/proto.RepoService/GetNode"
 	RepoService_UpdateNode_FullMethodName         = "/proto.RepoService/UpdateNode"
@@ -45,6 +46,7 @@ type RepoServiceClient interface {
 	UpdateRepo(ctx context.Context, in *UpdateRepoRequest, opts ...grpc.CallOption) (*UpdateRepoResponse, error)
 	DeleteRepo(ctx context.Context, in *DeleteRepoRequest, opts ...grpc.CallOption) (*DeleteRepoResponse, error)
 	ListUserRepos(ctx context.Context, in *ListUserReposRequest, opts ...grpc.CallOption) (*ListUserReposResponse, error)
+	ListPublicRepos(ctx context.Context, in *ListPublicReposRequest, opts ...grpc.CallOption) (*ListPublicReposResponse, error)
 	CreateNode(ctx context.Context, in *CreateNodeRequest, opts ...grpc.CallOption) (*CreateNodeResponse, error)
 	GetNode(ctx context.Context, in *GetNodeRequest, opts ...grpc.CallOption) (*GetNodeResponse, error)
 	UpdateNode(ctx context.Context, in *UpdateNodeRequest, opts ...grpc.CallOption) (*UpdateNodeResponse, error)
@@ -109,6 +111,16 @@ func (c *repoServiceClient) ListUserRepos(ctx context.Context, in *ListUserRepos
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListUserReposResponse)
 	err := c.cc.Invoke(ctx, RepoService_ListUserRepos_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *repoServiceClient) ListPublicRepos(ctx context.Context, in *ListPublicReposRequest, opts ...grpc.CallOption) (*ListPublicReposResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPublicReposResponse)
+	err := c.cc.Invoke(ctx, RepoService_ListPublicRepos_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -224,6 +236,7 @@ type RepoServiceServer interface {
 	UpdateRepo(context.Context, *UpdateRepoRequest) (*UpdateRepoResponse, error)
 	DeleteRepo(context.Context, *DeleteRepoRequest) (*DeleteRepoResponse, error)
 	ListUserRepos(context.Context, *ListUserReposRequest) (*ListUserReposResponse, error)
+	ListPublicRepos(context.Context, *ListPublicReposRequest) (*ListPublicReposResponse, error)
 	CreateNode(context.Context, *CreateNodeRequest) (*CreateNodeResponse, error)
 	GetNode(context.Context, *GetNodeRequest) (*GetNodeResponse, error)
 	UpdateNode(context.Context, *UpdateNodeRequest) (*UpdateNodeResponse, error)
@@ -258,6 +271,9 @@ func (UnimplementedRepoServiceServer) DeleteRepo(context.Context, *DeleteRepoReq
 }
 func (UnimplementedRepoServiceServer) ListUserRepos(context.Context, *ListUserReposRequest) (*ListUserReposResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListUserRepos not implemented")
+}
+func (UnimplementedRepoServiceServer) ListPublicRepos(context.Context, *ListPublicReposRequest) (*ListPublicReposResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListPublicRepos not implemented")
 }
 func (UnimplementedRepoServiceServer) CreateNode(context.Context, *CreateNodeRequest) (*CreateNodeResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateNode not implemented")
@@ -396,6 +412,24 @@ func _RepoService_ListUserRepos_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RepoServiceServer).ListUserRepos(ctx, req.(*ListUserReposRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RepoService_ListPublicRepos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPublicReposRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepoServiceServer).ListPublicRepos(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RepoService_ListPublicRepos_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepoServiceServer).ListPublicRepos(ctx, req.(*ListPublicReposRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -606,6 +640,10 @@ var RepoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListUserRepos",
 			Handler:    _RepoService_ListUserRepos_Handler,
+		},
+		{
+			MethodName: "ListPublicRepos",
+			Handler:    _RepoService_ListPublicRepos_Handler,
 		},
 		{
 			MethodName: "CreateNode",

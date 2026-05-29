@@ -46,9 +46,14 @@ func (h *Handler) Chat(req *pb.ChatRequest, stream pb.AIService_ChatServer) erro
 	return nil
 }
 
-// GetChatSessions 获取会话列表
+// GetChatSessions 获取会话列表（游标分页）
 func (h *Handler) GetChatSessions(ctx context.Context, req *pb.GetChatSessionsRequest) (*pb.GetChatSessionsResponse, error) {
-	sessions, total, err := h.Service.Repo.ListSessions(req.GetUserId(), int(req.GetPage()), int(req.GetPageSize()))
+	limit := int(req.GetLimit())
+	if limit <= 0 {
+		limit = 20
+	}
+
+	sessions, hasMore, err := h.Service.Repo.ListSessions(req.GetUserId(), req.GetCursor(), limit)
 	if err != nil {
 		return &pb.GetChatSessionsResponse{
 			Success: false,
@@ -70,13 +75,18 @@ func (h *Handler) GetChatSessions(ctx context.Context, req *pb.GetChatSessionsRe
 	return &pb.GetChatSessionsResponse{
 		Success:  true,
 		Sessions: pbSessions,
-		Total:    int32(total),
+		HasMore:  hasMore,
 	}, nil
 }
 
-// GetChatMessages 获取会话消息列表
+// GetChatMessages 获取会话消息列表（游标分页）
 func (h *Handler) GetChatMessages(ctx context.Context, req *pb.GetChatMessagesRequest) (*pb.GetChatMessagesResponse, error) {
-	messages, total, err := h.Service.Repo.ListMessages(req.GetSessionId(), int(req.GetPage()), int(req.GetPageSize()))
+	limit := int(req.GetLimit())
+	if limit <= 0 {
+		limit = 50
+	}
+
+	messages, hasMore, err := h.Service.Repo.ListMessages(req.GetSessionId(), req.GetCursor(), limit)
 	if err != nil {
 		return &pb.GetChatMessagesResponse{
 			Success: false,
@@ -99,7 +109,7 @@ func (h *Handler) GetChatMessages(ctx context.Context, req *pb.GetChatMessagesRe
 	return &pb.GetChatMessagesResponse{
 		Success:  true,
 		Messages: pbMessages,
-		Total:    int32(total),
+		HasMore:  hasMore,
 	}, nil
 }
 

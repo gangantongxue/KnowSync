@@ -48,6 +48,16 @@ func (r *Repository) ListReposByIDs(ctx context.Context, ids []string) ([]schema
 	return repos, err
 }
 
+// ListPublicRepos 获取所有公开知识库
+func (r *Repository) ListPublicRepos(ctx context.Context) ([]schema.Repo, error) {
+	var repos []schema.Repo
+	err := r.Database.DB.WithContext(ctx).
+		Where("visibility = ?", "PUBLIC").
+		Order("updated_at DESC").
+		Find(&repos).Error
+	return repos, err
+}
+
 // IncrementArticleCount 原子增减知识库文章计数
 func (r *Repository) IncrementArticleCount(ctx context.Context, repoID string, delta int) error {
 	return r.Database.DB.WithContext(ctx).

@@ -971,6 +971,94 @@ func (x *ListUserReposRequest) GetUserId() string {
 	return ""
 }
 
+type ListPublicReposRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPublicReposRequest) Reset() {
+	*x = ListPublicReposRequest{}
+	mi := &file_repo_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPublicReposRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPublicReposRequest) ProtoMessage() {}
+
+func (x *ListPublicReposRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPublicReposRequest.ProtoReflect.Descriptor instead.
+func (*ListPublicReposRequest) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{12}
+}
+
+type ListPublicReposResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Repos         []*Repo                `protobuf:"bytes,2,rep,name=repos,proto3" json:"repos,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPublicReposResponse) Reset() {
+	*x = ListPublicReposResponse{}
+	mi := &file_repo_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPublicReposResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPublicReposResponse) ProtoMessage() {}
+
+func (x *ListPublicReposResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_repo_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPublicReposResponse.ProtoReflect.Descriptor instead.
+func (*ListPublicReposResponse) Descriptor() ([]byte, []int) {
+	return file_repo_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ListPublicReposResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *ListPublicReposResponse) GetRepos() []*Repo {
+	if x != nil {
+		return x.Repos
+	}
+	return nil
+}
+
 type ListUserReposResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
@@ -981,7 +1069,7 @@ type ListUserReposResponse struct {
 
 func (x *ListUserReposResponse) Reset() {
 	*x = ListUserReposResponse{}
-	mi := &file_repo_proto_msgTypes[12]
+	mi := &file_repo_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -993,7 +1081,7 @@ func (x *ListUserReposResponse) String() string {
 func (*ListUserReposResponse) ProtoMessage() {}
 
 func (x *ListUserReposResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[12]
+	mi := &file_repo_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1006,7 +1094,7 @@ func (x *ListUserReposResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUserReposResponse.ProtoReflect.Descriptor instead.
 func (*ListUserReposResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{12}
+	return file_repo_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ListUserReposResponse) GetSuccess() bool {
@@ -1036,7 +1124,7 @@ type CreateNodeRequest struct {
 
 func (x *CreateNodeRequest) Reset() {
 	*x = CreateNodeRequest{}
-	mi := &file_repo_proto_msgTypes[13]
+	mi := &file_repo_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1048,7 +1136,7 @@ func (x *CreateNodeRequest) String() string {
 func (*CreateNodeRequest) ProtoMessage() {}
 
 func (x *CreateNodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[13]
+	mi := &file_repo_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1061,7 +1149,7 @@ func (x *CreateNodeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateNodeRequest.ProtoReflect.Descriptor instead.
 func (*CreateNodeRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{13}
+	return file_repo_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *CreateNodeRequest) GetRepoId() string {
@@ -1110,7 +1198,7 @@ type CreateNodeResponse struct {
 
 func (x *CreateNodeResponse) Reset() {
 	*x = CreateNodeResponse{}
-	mi := &file_repo_proto_msgTypes[14]
+	mi := &file_repo_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1122,7 +1210,7 @@ func (x *CreateNodeResponse) String() string {
 func (*CreateNodeResponse) ProtoMessage() {}
 
 func (x *CreateNodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[14]
+	mi := &file_repo_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1135,7 +1223,7 @@ func (x *CreateNodeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateNodeResponse.ProtoReflect.Descriptor instead.
 func (*CreateNodeResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{14}
+	return file_repo_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *CreateNodeResponse) GetSuccess() bool {
@@ -1170,7 +1258,7 @@ type GetNodeRequest struct {
 
 func (x *GetNodeRequest) Reset() {
 	*x = GetNodeRequest{}
-	mi := &file_repo_proto_msgTypes[15]
+	mi := &file_repo_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1182,7 +1270,7 @@ func (x *GetNodeRequest) String() string {
 func (*GetNodeRequest) ProtoMessage() {}
 
 func (x *GetNodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[15]
+	mi := &file_repo_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1195,7 +1283,7 @@ func (x *GetNodeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetNodeRequest.ProtoReflect.Descriptor instead.
 func (*GetNodeRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{15}
+	return file_repo_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *GetNodeRequest) GetRepoId() string {
@@ -1230,7 +1318,7 @@ type GetNodeResponse struct {
 
 func (x *GetNodeResponse) Reset() {
 	*x = GetNodeResponse{}
-	mi := &file_repo_proto_msgTypes[16]
+	mi := &file_repo_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1242,7 +1330,7 @@ func (x *GetNodeResponse) String() string {
 func (*GetNodeResponse) ProtoMessage() {}
 
 func (x *GetNodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[16]
+	mi := &file_repo_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1255,7 +1343,7 @@ func (x *GetNodeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetNodeResponse.ProtoReflect.Descriptor instead.
 func (*GetNodeResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{16}
+	return file_repo_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *GetNodeResponse) GetSuccess() bool {
@@ -1292,7 +1380,7 @@ type UpdateNodeRequest struct {
 
 func (x *UpdateNodeRequest) Reset() {
 	*x = UpdateNodeRequest{}
-	mi := &file_repo_proto_msgTypes[17]
+	mi := &file_repo_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1304,7 +1392,7 @@ func (x *UpdateNodeRequest) String() string {
 func (*UpdateNodeRequest) ProtoMessage() {}
 
 func (x *UpdateNodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[17]
+	mi := &file_repo_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1317,7 +1405,7 @@ func (x *UpdateNodeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateNodeRequest.ProtoReflect.Descriptor instead.
 func (*UpdateNodeRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{17}
+	return file_repo_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *UpdateNodeRequest) GetRepoId() string {
@@ -1366,7 +1454,7 @@ type UpdateNodeResponse struct {
 
 func (x *UpdateNodeResponse) Reset() {
 	*x = UpdateNodeResponse{}
-	mi := &file_repo_proto_msgTypes[18]
+	mi := &file_repo_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1378,7 +1466,7 @@ func (x *UpdateNodeResponse) String() string {
 func (*UpdateNodeResponse) ProtoMessage() {}
 
 func (x *UpdateNodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[18]
+	mi := &file_repo_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1391,7 +1479,7 @@ func (x *UpdateNodeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateNodeResponse.ProtoReflect.Descriptor instead.
 func (*UpdateNodeResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{18}
+	return file_repo_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *UpdateNodeResponse) GetSuccess() bool {
@@ -1426,7 +1514,7 @@ type DeleteNodeRequest struct {
 
 func (x *DeleteNodeRequest) Reset() {
 	*x = DeleteNodeRequest{}
-	mi := &file_repo_proto_msgTypes[19]
+	mi := &file_repo_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1438,7 +1526,7 @@ func (x *DeleteNodeRequest) String() string {
 func (*DeleteNodeRequest) ProtoMessage() {}
 
 func (x *DeleteNodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[19]
+	mi := &file_repo_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1451,7 +1539,7 @@ func (x *DeleteNodeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteNodeRequest.ProtoReflect.Descriptor instead.
 func (*DeleteNodeRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{19}
+	return file_repo_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *DeleteNodeRequest) GetRepoId() string {
@@ -1487,7 +1575,7 @@ type DeleteNodeResponse struct {
 
 func (x *DeleteNodeResponse) Reset() {
 	*x = DeleteNodeResponse{}
-	mi := &file_repo_proto_msgTypes[20]
+	mi := &file_repo_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1499,7 +1587,7 @@ func (x *DeleteNodeResponse) String() string {
 func (*DeleteNodeResponse) ProtoMessage() {}
 
 func (x *DeleteNodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[20]
+	mi := &file_repo_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1512,7 +1600,7 @@ func (x *DeleteNodeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteNodeResponse.ProtoReflect.Descriptor instead.
 func (*DeleteNodeResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{20}
+	return file_repo_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *DeleteNodeResponse) GetSuccess() bool {
@@ -1554,7 +1642,7 @@ type ListNodesRequest struct {
 
 func (x *ListNodesRequest) Reset() {
 	*x = ListNodesRequest{}
-	mi := &file_repo_proto_msgTypes[21]
+	mi := &file_repo_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1566,7 +1654,7 @@ func (x *ListNodesRequest) String() string {
 func (*ListNodesRequest) ProtoMessage() {}
 
 func (x *ListNodesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[21]
+	mi := &file_repo_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1579,7 +1667,7 @@ func (x *ListNodesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNodesRequest.ProtoReflect.Descriptor instead.
 func (*ListNodesRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{21}
+	return file_repo_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *ListNodesRequest) GetRepoId() string {
@@ -1613,7 +1701,7 @@ type ListNodesResponse struct {
 
 func (x *ListNodesResponse) Reset() {
 	*x = ListNodesResponse{}
-	mi := &file_repo_proto_msgTypes[22]
+	mi := &file_repo_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1625,7 +1713,7 @@ func (x *ListNodesResponse) String() string {
 func (*ListNodesResponse) ProtoMessage() {}
 
 func (x *ListNodesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[22]
+	mi := &file_repo_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1638,7 +1726,7 @@ func (x *ListNodesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNodesResponse.ProtoReflect.Descriptor instead.
 func (*ListNodesResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{22}
+	return file_repo_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *ListNodesResponse) GetSuccess() bool {
@@ -1668,7 +1756,7 @@ type SetArticleContentRequest struct {
 
 func (x *SetArticleContentRequest) Reset() {
 	*x = SetArticleContentRequest{}
-	mi := &file_repo_proto_msgTypes[23]
+	mi := &file_repo_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1680,7 +1768,7 @@ func (x *SetArticleContentRequest) String() string {
 func (*SetArticleContentRequest) ProtoMessage() {}
 
 func (x *SetArticleContentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[23]
+	mi := &file_repo_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1693,7 +1781,7 @@ func (x *SetArticleContentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetArticleContentRequest.ProtoReflect.Descriptor instead.
 func (*SetArticleContentRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{23}
+	return file_repo_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *SetArticleContentRequest) GetRepoId() string {
@@ -1742,7 +1830,7 @@ type SetArticleContentResponse struct {
 
 func (x *SetArticleContentResponse) Reset() {
 	*x = SetArticleContentResponse{}
-	mi := &file_repo_proto_msgTypes[24]
+	mi := &file_repo_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1754,7 +1842,7 @@ func (x *SetArticleContentResponse) String() string {
 func (*SetArticleContentResponse) ProtoMessage() {}
 
 func (x *SetArticleContentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[24]
+	mi := &file_repo_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1767,7 +1855,7 @@ func (x *SetArticleContentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetArticleContentResponse.ProtoReflect.Descriptor instead.
 func (*SetArticleContentResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{24}
+	return file_repo_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *SetArticleContentResponse) GetSuccess() bool {
@@ -1803,7 +1891,7 @@ type AddCollaboratorRequest struct {
 
 func (x *AddCollaboratorRequest) Reset() {
 	*x = AddCollaboratorRequest{}
-	mi := &file_repo_proto_msgTypes[25]
+	mi := &file_repo_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1815,7 +1903,7 @@ func (x *AddCollaboratorRequest) String() string {
 func (*AddCollaboratorRequest) ProtoMessage() {}
 
 func (x *AddCollaboratorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[25]
+	mi := &file_repo_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1828,7 +1916,7 @@ func (x *AddCollaboratorRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddCollaboratorRequest.ProtoReflect.Descriptor instead.
 func (*AddCollaboratorRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{25}
+	return file_repo_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *AddCollaboratorRequest) GetRepoId() string {
@@ -1869,7 +1957,7 @@ type AddCollaboratorResponse struct {
 
 func (x *AddCollaboratorResponse) Reset() {
 	*x = AddCollaboratorResponse{}
-	mi := &file_repo_proto_msgTypes[26]
+	mi := &file_repo_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1881,7 +1969,7 @@ func (x *AddCollaboratorResponse) String() string {
 func (*AddCollaboratorResponse) ProtoMessage() {}
 
 func (x *AddCollaboratorResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[26]
+	mi := &file_repo_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1894,7 +1982,7 @@ func (x *AddCollaboratorResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddCollaboratorResponse.ProtoReflect.Descriptor instead.
 func (*AddCollaboratorResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{26}
+	return file_repo_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *AddCollaboratorResponse) GetSuccess() bool {
@@ -1923,7 +2011,7 @@ type UpdateCollaboratorRequest struct {
 
 func (x *UpdateCollaboratorRequest) Reset() {
 	*x = UpdateCollaboratorRequest{}
-	mi := &file_repo_proto_msgTypes[27]
+	mi := &file_repo_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1935,7 +2023,7 @@ func (x *UpdateCollaboratorRequest) String() string {
 func (*UpdateCollaboratorRequest) ProtoMessage() {}
 
 func (x *UpdateCollaboratorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[27]
+	mi := &file_repo_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1948,7 +2036,7 @@ func (x *UpdateCollaboratorRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateCollaboratorRequest.ProtoReflect.Descriptor instead.
 func (*UpdateCollaboratorRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{27}
+	return file_repo_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *UpdateCollaboratorRequest) GetRepoId() string {
@@ -1989,7 +2077,7 @@ type UpdateCollaboratorResponse struct {
 
 func (x *UpdateCollaboratorResponse) Reset() {
 	*x = UpdateCollaboratorResponse{}
-	mi := &file_repo_proto_msgTypes[28]
+	mi := &file_repo_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2001,7 +2089,7 @@ func (x *UpdateCollaboratorResponse) String() string {
 func (*UpdateCollaboratorResponse) ProtoMessage() {}
 
 func (x *UpdateCollaboratorResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[28]
+	mi := &file_repo_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2014,7 +2102,7 @@ func (x *UpdateCollaboratorResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateCollaboratorResponse.ProtoReflect.Descriptor instead.
 func (*UpdateCollaboratorResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{28}
+	return file_repo_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *UpdateCollaboratorResponse) GetSuccess() bool {
@@ -2042,7 +2130,7 @@ type RemoveCollaboratorRequest struct {
 
 func (x *RemoveCollaboratorRequest) Reset() {
 	*x = RemoveCollaboratorRequest{}
-	mi := &file_repo_proto_msgTypes[29]
+	mi := &file_repo_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2054,7 +2142,7 @@ func (x *RemoveCollaboratorRequest) String() string {
 func (*RemoveCollaboratorRequest) ProtoMessage() {}
 
 func (x *RemoveCollaboratorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[29]
+	mi := &file_repo_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2067,7 +2155,7 @@ func (x *RemoveCollaboratorRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveCollaboratorRequest.ProtoReflect.Descriptor instead.
 func (*RemoveCollaboratorRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{29}
+	return file_repo_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *RemoveCollaboratorRequest) GetRepoId() string {
@@ -2101,7 +2189,7 @@ type RemoveCollaboratorResponse struct {
 
 func (x *RemoveCollaboratorResponse) Reset() {
 	*x = RemoveCollaboratorResponse{}
-	mi := &file_repo_proto_msgTypes[30]
+	mi := &file_repo_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2113,7 +2201,7 @@ func (x *RemoveCollaboratorResponse) String() string {
 func (*RemoveCollaboratorResponse) ProtoMessage() {}
 
 func (x *RemoveCollaboratorResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[30]
+	mi := &file_repo_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2126,7 +2214,7 @@ func (x *RemoveCollaboratorResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveCollaboratorResponse.ProtoReflect.Descriptor instead.
 func (*RemoveCollaboratorResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{30}
+	return file_repo_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *RemoveCollaboratorResponse) GetSuccess() bool {
@@ -2153,7 +2241,7 @@ type ListCollaboratorsRequest struct {
 
 func (x *ListCollaboratorsRequest) Reset() {
 	*x = ListCollaboratorsRequest{}
-	mi := &file_repo_proto_msgTypes[31]
+	mi := &file_repo_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2165,7 +2253,7 @@ func (x *ListCollaboratorsRequest) String() string {
 func (*ListCollaboratorsRequest) ProtoMessage() {}
 
 func (x *ListCollaboratorsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[31]
+	mi := &file_repo_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2178,7 +2266,7 @@ func (x *ListCollaboratorsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCollaboratorsRequest.ProtoReflect.Descriptor instead.
 func (*ListCollaboratorsRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{31}
+	return file_repo_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *ListCollaboratorsRequest) GetRepoId() string {
@@ -2205,7 +2293,7 @@ type ListCollaboratorsResponse struct {
 
 func (x *ListCollaboratorsResponse) Reset() {
 	*x = ListCollaboratorsResponse{}
-	mi := &file_repo_proto_msgTypes[32]
+	mi := &file_repo_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2217,7 +2305,7 @@ func (x *ListCollaboratorsResponse) String() string {
 func (*ListCollaboratorsResponse) ProtoMessage() {}
 
 func (x *ListCollaboratorsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[32]
+	mi := &file_repo_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2230,7 +2318,7 @@ func (x *ListCollaboratorsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCollaboratorsResponse.ProtoReflect.Descriptor instead.
 func (*ListCollaboratorsResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{32}
+	return file_repo_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *ListCollaboratorsResponse) GetSuccess() bool {
@@ -2320,7 +2408,11 @@ const file_repo_proto_rawDesc = "" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\"/\n" +
 	"\x14ListUserReposRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\"T\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"\x18\n" +
+	"\x16ListPublicReposRequest\"V\n" +
+	"\x17ListPublicReposResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12!\n" +
+	"\x05repos\x18\x02 \x03(\v2\v.proto.RepoR\x05repos\"T\n" +
 	"\x15ListUserReposResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12!\n" +
 	"\x05repos\x18\x02 \x03(\v2\v.proto.RepoR\x05repos\"\x9b\x01\n" +
@@ -2425,7 +2517,7 @@ const file_repo_proto_rawDesc = "" +
 	"\x05ADMIN\x10\x01\x12\r\n" +
 	"\tDEVELOPER\x10\x02\x12\n" +
 	"\n" +
-	"\x06VIEWER\x10\x032\xd7\b\n" +
+	"\x06VIEWER\x10\x032\xa9\t\n" +
 	"\vRepoService\x12A\n" +
 	"\n" +
 	"CreateRepo\x12\x18.proto.CreateRepoRequest\x1a\x19.proto.CreateRepoResponse\x128\n" +
@@ -2434,7 +2526,8 @@ const file_repo_proto_rawDesc = "" +
 	"UpdateRepo\x12\x18.proto.UpdateRepoRequest\x1a\x19.proto.UpdateRepoResponse\x12A\n" +
 	"\n" +
 	"DeleteRepo\x12\x18.proto.DeleteRepoRequest\x1a\x19.proto.DeleteRepoResponse\x12J\n" +
-	"\rListUserRepos\x12\x1b.proto.ListUserReposRequest\x1a\x1c.proto.ListUserReposResponse\x12A\n" +
+	"\rListUserRepos\x12\x1b.proto.ListUserReposRequest\x1a\x1c.proto.ListUserReposResponse\x12P\n" +
+	"\x0fListPublicRepos\x12\x1d.proto.ListPublicReposRequest\x1a\x1e.proto.ListPublicReposResponse\x12A\n" +
 	"\n" +
 	"CreateNode\x12\x18.proto.CreateNodeRequest\x1a\x19.proto.CreateNodeResponse\x128\n" +
 	"\aGetNode\x12\x15.proto.GetNodeRequest\x1a\x16.proto.GetNodeResponse\x12A\n" +
@@ -2462,7 +2555,7 @@ func file_repo_proto_rawDescGZIP() []byte {
 }
 
 var file_repo_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_repo_proto_msgTypes = make([]protoimpl.MessageInfo, 33)
+var file_repo_proto_msgTypes = make([]protoimpl.MessageInfo, 35)
 var file_repo_proto_goTypes = []any{
 	(RepoVisibility)(0),                // 0: proto.RepoVisibility
 	(NodeType)(0),                      // 1: proto.NodeType
@@ -2479,27 +2572,29 @@ var file_repo_proto_goTypes = []any{
 	(*DeleteRepoRequest)(nil),          // 12: proto.DeleteRepoRequest
 	(*DeleteRepoResponse)(nil),         // 13: proto.DeleteRepoResponse
 	(*ListUserReposRequest)(nil),       // 14: proto.ListUserReposRequest
-	(*ListUserReposResponse)(nil),      // 15: proto.ListUserReposResponse
-	(*CreateNodeRequest)(nil),          // 16: proto.CreateNodeRequest
-	(*CreateNodeResponse)(nil),         // 17: proto.CreateNodeResponse
-	(*GetNodeRequest)(nil),             // 18: proto.GetNodeRequest
-	(*GetNodeResponse)(nil),            // 19: proto.GetNodeResponse
-	(*UpdateNodeRequest)(nil),          // 20: proto.UpdateNodeRequest
-	(*UpdateNodeResponse)(nil),         // 21: proto.UpdateNodeResponse
-	(*DeleteNodeRequest)(nil),          // 22: proto.DeleteNodeRequest
-	(*DeleteNodeResponse)(nil),         // 23: proto.DeleteNodeResponse
-	(*ListNodesRequest)(nil),           // 24: proto.ListNodesRequest
-	(*ListNodesResponse)(nil),          // 25: proto.ListNodesResponse
-	(*SetArticleContentRequest)(nil),   // 26: proto.SetArticleContentRequest
-	(*SetArticleContentResponse)(nil),  // 27: proto.SetArticleContentResponse
-	(*AddCollaboratorRequest)(nil),     // 28: proto.AddCollaboratorRequest
-	(*AddCollaboratorResponse)(nil),    // 29: proto.AddCollaboratorResponse
-	(*UpdateCollaboratorRequest)(nil),  // 30: proto.UpdateCollaboratorRequest
-	(*UpdateCollaboratorResponse)(nil), // 31: proto.UpdateCollaboratorResponse
-	(*RemoveCollaboratorRequest)(nil),  // 32: proto.RemoveCollaboratorRequest
-	(*RemoveCollaboratorResponse)(nil), // 33: proto.RemoveCollaboratorResponse
-	(*ListCollaboratorsRequest)(nil),   // 34: proto.ListCollaboratorsRequest
-	(*ListCollaboratorsResponse)(nil),  // 35: proto.ListCollaboratorsResponse
+	(*ListPublicReposRequest)(nil),     // 15: proto.ListPublicReposRequest
+	(*ListPublicReposResponse)(nil),    // 16: proto.ListPublicReposResponse
+	(*ListUserReposResponse)(nil),      // 17: proto.ListUserReposResponse
+	(*CreateNodeRequest)(nil),          // 18: proto.CreateNodeRequest
+	(*CreateNodeResponse)(nil),         // 19: proto.CreateNodeResponse
+	(*GetNodeRequest)(nil),             // 20: proto.GetNodeRequest
+	(*GetNodeResponse)(nil),            // 21: proto.GetNodeResponse
+	(*UpdateNodeRequest)(nil),          // 22: proto.UpdateNodeRequest
+	(*UpdateNodeResponse)(nil),         // 23: proto.UpdateNodeResponse
+	(*DeleteNodeRequest)(nil),          // 24: proto.DeleteNodeRequest
+	(*DeleteNodeResponse)(nil),         // 25: proto.DeleteNodeResponse
+	(*ListNodesRequest)(nil),           // 26: proto.ListNodesRequest
+	(*ListNodesResponse)(nil),          // 27: proto.ListNodesResponse
+	(*SetArticleContentRequest)(nil),   // 28: proto.SetArticleContentRequest
+	(*SetArticleContentResponse)(nil),  // 29: proto.SetArticleContentResponse
+	(*AddCollaboratorRequest)(nil),     // 30: proto.AddCollaboratorRequest
+	(*AddCollaboratorResponse)(nil),    // 31: proto.AddCollaboratorResponse
+	(*UpdateCollaboratorRequest)(nil),  // 32: proto.UpdateCollaboratorRequest
+	(*UpdateCollaboratorResponse)(nil), // 33: proto.UpdateCollaboratorResponse
+	(*RemoveCollaboratorRequest)(nil),  // 34: proto.RemoveCollaboratorRequest
+	(*RemoveCollaboratorResponse)(nil), // 35: proto.RemoveCollaboratorResponse
+	(*ListCollaboratorsRequest)(nil),   // 36: proto.ListCollaboratorsRequest
+	(*ListCollaboratorsResponse)(nil),  // 37: proto.ListCollaboratorsResponse
 }
 var file_repo_proto_depIdxs = []int32{
 	0,  // 0: proto.Repo.visibility:type_name -> proto.RepoVisibility
@@ -2511,51 +2606,54 @@ var file_repo_proto_depIdxs = []int32{
 	2,  // 6: proto.GetRepoResponse.my_role:type_name -> proto.CollaboratorRole
 	0,  // 7: proto.UpdateRepoRequest.visibility:type_name -> proto.RepoVisibility
 	3,  // 8: proto.UpdateRepoResponse.repo:type_name -> proto.Repo
-	3,  // 9: proto.ListUserReposResponse.repos:type_name -> proto.Repo
-	1,  // 10: proto.CreateNodeRequest.type:type_name -> proto.NodeType
-	4,  // 11: proto.CreateNodeResponse.node:type_name -> proto.Node
-	4,  // 12: proto.GetNodeResponse.node:type_name -> proto.Node
-	4,  // 13: proto.UpdateNodeResponse.node:type_name -> proto.Node
-	4,  // 14: proto.ListNodesResponse.nodes:type_name -> proto.Node
-	4,  // 15: proto.SetArticleContentResponse.node:type_name -> proto.Node
-	2,  // 16: proto.AddCollaboratorRequest.role:type_name -> proto.CollaboratorRole
-	2,  // 17: proto.UpdateCollaboratorRequest.role:type_name -> proto.CollaboratorRole
-	5,  // 18: proto.ListCollaboratorsResponse.collaborators:type_name -> proto.Collaborator
-	6,  // 19: proto.RepoService.CreateRepo:input_type -> proto.CreateRepoRequest
-	8,  // 20: proto.RepoService.GetRepo:input_type -> proto.GetRepoRequest
-	10, // 21: proto.RepoService.UpdateRepo:input_type -> proto.UpdateRepoRequest
-	12, // 22: proto.RepoService.DeleteRepo:input_type -> proto.DeleteRepoRequest
-	14, // 23: proto.RepoService.ListUserRepos:input_type -> proto.ListUserReposRequest
-	16, // 24: proto.RepoService.CreateNode:input_type -> proto.CreateNodeRequest
-	18, // 25: proto.RepoService.GetNode:input_type -> proto.GetNodeRequest
-	20, // 26: proto.RepoService.UpdateNode:input_type -> proto.UpdateNodeRequest
-	22, // 27: proto.RepoService.DeleteNode:input_type -> proto.DeleteNodeRequest
-	24, // 28: proto.RepoService.ListNodes:input_type -> proto.ListNodesRequest
-	26, // 29: proto.RepoService.SetArticleContent:input_type -> proto.SetArticleContentRequest
-	28, // 30: proto.RepoService.AddCollaborator:input_type -> proto.AddCollaboratorRequest
-	30, // 31: proto.RepoService.UpdateCollaborator:input_type -> proto.UpdateCollaboratorRequest
-	32, // 32: proto.RepoService.RemoveCollaborator:input_type -> proto.RemoveCollaboratorRequest
-	34, // 33: proto.RepoService.ListCollaborators:input_type -> proto.ListCollaboratorsRequest
-	7,  // 34: proto.RepoService.CreateRepo:output_type -> proto.CreateRepoResponse
-	9,  // 35: proto.RepoService.GetRepo:output_type -> proto.GetRepoResponse
-	11, // 36: proto.RepoService.UpdateRepo:output_type -> proto.UpdateRepoResponse
-	13, // 37: proto.RepoService.DeleteRepo:output_type -> proto.DeleteRepoResponse
-	15, // 38: proto.RepoService.ListUserRepos:output_type -> proto.ListUserReposResponse
-	17, // 39: proto.RepoService.CreateNode:output_type -> proto.CreateNodeResponse
-	19, // 40: proto.RepoService.GetNode:output_type -> proto.GetNodeResponse
-	21, // 41: proto.RepoService.UpdateNode:output_type -> proto.UpdateNodeResponse
-	23, // 42: proto.RepoService.DeleteNode:output_type -> proto.DeleteNodeResponse
-	25, // 43: proto.RepoService.ListNodes:output_type -> proto.ListNodesResponse
-	27, // 44: proto.RepoService.SetArticleContent:output_type -> proto.SetArticleContentResponse
-	29, // 45: proto.RepoService.AddCollaborator:output_type -> proto.AddCollaboratorResponse
-	31, // 46: proto.RepoService.UpdateCollaborator:output_type -> proto.UpdateCollaboratorResponse
-	33, // 47: proto.RepoService.RemoveCollaborator:output_type -> proto.RemoveCollaboratorResponse
-	35, // 48: proto.RepoService.ListCollaborators:output_type -> proto.ListCollaboratorsResponse
-	34, // [34:49] is the sub-list for method output_type
-	19, // [19:34] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	3,  // 9: proto.ListPublicReposResponse.repos:type_name -> proto.Repo
+	3,  // 10: proto.ListUserReposResponse.repos:type_name -> proto.Repo
+	1,  // 11: proto.CreateNodeRequest.type:type_name -> proto.NodeType
+	4,  // 12: proto.CreateNodeResponse.node:type_name -> proto.Node
+	4,  // 13: proto.GetNodeResponse.node:type_name -> proto.Node
+	4,  // 14: proto.UpdateNodeResponse.node:type_name -> proto.Node
+	4,  // 15: proto.ListNodesResponse.nodes:type_name -> proto.Node
+	4,  // 16: proto.SetArticleContentResponse.node:type_name -> proto.Node
+	2,  // 17: proto.AddCollaboratorRequest.role:type_name -> proto.CollaboratorRole
+	2,  // 18: proto.UpdateCollaboratorRequest.role:type_name -> proto.CollaboratorRole
+	5,  // 19: proto.ListCollaboratorsResponse.collaborators:type_name -> proto.Collaborator
+	6,  // 20: proto.RepoService.CreateRepo:input_type -> proto.CreateRepoRequest
+	8,  // 21: proto.RepoService.GetRepo:input_type -> proto.GetRepoRequest
+	10, // 22: proto.RepoService.UpdateRepo:input_type -> proto.UpdateRepoRequest
+	12, // 23: proto.RepoService.DeleteRepo:input_type -> proto.DeleteRepoRequest
+	14, // 24: proto.RepoService.ListUserRepos:input_type -> proto.ListUserReposRequest
+	15, // 25: proto.RepoService.ListPublicRepos:input_type -> proto.ListPublicReposRequest
+	18, // 26: proto.RepoService.CreateNode:input_type -> proto.CreateNodeRequest
+	20, // 27: proto.RepoService.GetNode:input_type -> proto.GetNodeRequest
+	22, // 28: proto.RepoService.UpdateNode:input_type -> proto.UpdateNodeRequest
+	24, // 29: proto.RepoService.DeleteNode:input_type -> proto.DeleteNodeRequest
+	26, // 30: proto.RepoService.ListNodes:input_type -> proto.ListNodesRequest
+	28, // 31: proto.RepoService.SetArticleContent:input_type -> proto.SetArticleContentRequest
+	30, // 32: proto.RepoService.AddCollaborator:input_type -> proto.AddCollaboratorRequest
+	32, // 33: proto.RepoService.UpdateCollaborator:input_type -> proto.UpdateCollaboratorRequest
+	34, // 34: proto.RepoService.RemoveCollaborator:input_type -> proto.RemoveCollaboratorRequest
+	36, // 35: proto.RepoService.ListCollaborators:input_type -> proto.ListCollaboratorsRequest
+	7,  // 36: proto.RepoService.CreateRepo:output_type -> proto.CreateRepoResponse
+	9,  // 37: proto.RepoService.GetRepo:output_type -> proto.GetRepoResponse
+	11, // 38: proto.RepoService.UpdateRepo:output_type -> proto.UpdateRepoResponse
+	13, // 39: proto.RepoService.DeleteRepo:output_type -> proto.DeleteRepoResponse
+	17, // 40: proto.RepoService.ListUserRepos:output_type -> proto.ListUserReposResponse
+	16, // 41: proto.RepoService.ListPublicRepos:output_type -> proto.ListPublicReposResponse
+	19, // 42: proto.RepoService.CreateNode:output_type -> proto.CreateNodeResponse
+	21, // 43: proto.RepoService.GetNode:output_type -> proto.GetNodeResponse
+	23, // 44: proto.RepoService.UpdateNode:output_type -> proto.UpdateNodeResponse
+	25, // 45: proto.RepoService.DeleteNode:output_type -> proto.DeleteNodeResponse
+	27, // 46: proto.RepoService.ListNodes:output_type -> proto.ListNodesResponse
+	29, // 47: proto.RepoService.SetArticleContent:output_type -> proto.SetArticleContentResponse
+	31, // 48: proto.RepoService.AddCollaborator:output_type -> proto.AddCollaboratorResponse
+	33, // 49: proto.RepoService.UpdateCollaborator:output_type -> proto.UpdateCollaboratorResponse
+	35, // 50: proto.RepoService.RemoveCollaborator:output_type -> proto.RemoveCollaboratorResponse
+	37, // 51: proto.RepoService.ListCollaborators:output_type -> proto.ListCollaboratorsResponse
+	36, // [36:52] is the sub-list for method output_type
+	20, // [20:36] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_repo_proto_init() }
@@ -2569,7 +2667,7 @@ func file_repo_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_repo_proto_rawDesc), len(file_repo_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   33,
+			NumMessages:   35,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

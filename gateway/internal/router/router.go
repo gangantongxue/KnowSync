@@ -60,6 +60,13 @@ func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client
 			collabs.GET("", hdl.ListCollaborators())
 			collabs.PUT("/:user_id", hdl.UpdateCollaborator())
 			collabs.DELETE("/:user_id", hdl.RemoveCollaborator())
+
+			ai := authorized.Group("/ai")
+			ai.POST("/chat", hdl.Chat())
+			ai.POST("/search", hdl.Search())
+			ai.GET("/sessions", hdl.GetChatSessions())
+			ai.GET("/sessions/:session_id/messages", hdl.GetChatMessages())
+			ai.DELETE("/sessions/:session_id", hdl.DeleteChatSession())
 		}
 	}
 

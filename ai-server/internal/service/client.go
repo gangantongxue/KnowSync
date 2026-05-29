@@ -98,6 +98,23 @@ func (c *Client) GetArticleContent(ctx context.Context, filePath string) (string
 	return string(body), nil
 }
 
+// ListPublicRepos 获取所有公开仓库 ID 列表
+func (c *Client) ListPublicRepos(ctx context.Context) ([]string, error) {
+	resp, err := c.repoClient.ListPublicRepos(ctx, &pb.ListPublicReposRequest{})
+	if err != nil {
+		return nil, fmt.Errorf("调用 repo-server ListPublicRepos 失败: %w", err)
+	}
+	if resp == nil || !resp.Success {
+		return nil, errors.New("获取公开仓库列表失败")
+	}
+
+	repoIDs := make([]string, len(resp.Repos))
+	for i, repo := range resp.Repos {
+		repoIDs[i] = repo.Id
+	}
+	return repoIDs, nil
+}
+
 // ListUserRepos 获取用户拥有的仓库 ID 列表
 func (c *Client) ListUserRepos(ctx context.Context, userID string) ([]string, error) {
 	resp, err := c.repoClient.ListUserRepos(ctx, &pb.ListUserReposRequest{

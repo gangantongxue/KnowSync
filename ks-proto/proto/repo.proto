@@ -105,6 +105,13 @@ message ListUserReposRequest {
   string user_id = 1;
 }
 
+message ListPublicReposRequest {}
+
+message ListPublicReposResponse {
+  bool success = 1;
+  repeated Repo repos = 2;
+}
+
 message ListUserReposResponse {
   bool success = 1;
   repeated Repo repos = 2;
@@ -239,6 +246,7 @@ service RepoService {
   rpc UpdateRepo(UpdateRepoRequest) returns (UpdateRepoResponse);
   rpc DeleteRepo(DeleteRepoRequest) returns (DeleteRepoResponse);
   rpc ListUserRepos(ListUserReposRequest) returns (ListUserReposResponse);
+  rpc ListPublicRepos(ListPublicReposRequest) returns (ListPublicReposResponse);
 
   rpc CreateNode(CreateNodeRequest) returns (CreateNodeResponse);
   rpc GetNode(GetNodeRequest) returns (GetNodeResponse);

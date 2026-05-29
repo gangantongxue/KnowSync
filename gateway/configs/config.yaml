@@ -25,3 +25,4 @@ grpc_clients:
   targets:
     user_server: "localhost:50051"
     repo_server: "localhost:50052"
+    ai_server: "localhost:50053"

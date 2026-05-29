@@ -43,23 +43,28 @@ func (r *Repository) GetSession(sessionID string) (*ChatSession, error) {
 	return &session, nil
 }
 
-// ListSessions 列出用户的会话（按更新时间倒序）
-func (r *Repository) ListSessions(userID string, page, pageSize int) ([]ChatSession, int64, error) {
+// ListSessions 列出用户的会话（按更新时间倒序游标分页）
+// cursor 为 updated_at 时间戳（秒），首次传 0 表示从头开始
+// 返回会话列表及是否有更多数据
+func (r *Repository) ListSessions(userID string, cursor int64, limit int) ([]ChatSession, bool, error) {
 	var sessions []ChatSession
-	var total int64
 
 	query := r.DB.Model(&ChatSession{}).Where("user_id = ?", userID)
 
-	if err := query.Count(&total).Error; err != nil {
-		return nil, 0, err
+	if cursor > 0 {
+		query = query.Where("updated_at < ?", time.Unix(cursor, 0))
 	}
 
-	offset := (page - 1) * pageSize
-	if err := query.Order("updated_at DESC").Offset(offset).Limit(pageSize).Find(&sessions).Error; err != nil {
-		return nil, 0, err
+	if err := query.Order("updated_at DESC").Limit(limit + 1).Find(&sessions).Error; err != nil {
+		return nil, false, err
 	}
 
-	return sessions, total, nil
+	hasMore := len(sessions) > limit
+	if hasMore {
+		sessions = sessions[:limit]
+	}
+
+	return sessions, hasMore, nil
 }
 
 // UpdateSessionTitle 更新会话标题

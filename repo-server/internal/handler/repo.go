@@ -63,6 +63,24 @@ func (h *Handler) DeleteRepo(ctx context.Context, req *pb.DeleteRepoRequest) (*p
 	return &pb.DeleteRepoResponse{Success: true}, nil
 }
 
+// ListPublicRepos 获取所有公开知识库列表
+func (h *Handler) ListPublicRepos(ctx context.Context, req *pb.ListPublicReposRequest) (*pb.ListPublicReposResponse, error) {
+	repos, err := h.Service.ListPublicRepos(ctx)
+	if err != nil {
+		return &pb.ListPublicReposResponse{Success: false}, nil
+	}
+
+	pbRepos := make([]*pb.Repo, 0, len(repos))
+	for i := range repos {
+		pbRepos = append(pbRepos, marshalRepo(&repos[i]))
+	}
+
+	return &pb.ListPublicReposResponse{
+		Success: true,
+		Repos:   pbRepos,
+	}, nil
+}
+
 // ListUserRepos 获取用户的知识库列表
 func (h *Handler) ListUserRepos(ctx context.Context, req *pb.ListUserReposRequest) (*pb.ListUserReposResponse, error) {
 	repos, err := h.Service.ListUserRepos(ctx, req.GetUserId())

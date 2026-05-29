@@ -152,7 +152,7 @@ func (s *Service) Refresh(ctx context.Context, refreshToken, clientIP string) (s
 	}
 
 	// 4. 生成新的 access token
-		accessToken, err := auth.GenerateAccessToken(session.UserID, s.privateKey, s.Cfg.Auth.AccessTTL)
+	accessToken, err := auth.GenerateAccessToken(session.UserID, s.privateKey, s.Cfg.Auth.AccessTTL)
 	if err != nil {
 		slog.Error("刷新时生成 access token 失败", "user_id", session.UserID, "error", err)
 		return "", "", fmt.Errorf("生成访问凭证失败")
