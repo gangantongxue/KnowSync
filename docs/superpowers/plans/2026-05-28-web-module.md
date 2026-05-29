@@ -1885,7 +1885,7 @@ cd web && npx tsc --noEmit
 - 创建: `web/src/components/Chat/SessionList.tsx`
 - 创建: `web/src/components/Chat/AskUserModal.tsx`
 
-- [ ] **Step 1: Streamdown 组件**
+- [x] **Step 1: Streamdown 组件**
 
 ```typescript
 import { memo } from 'react'
@@ -1929,7 +1929,7 @@ function StreamdownInner({ content }: StreamdownProps) {
 export const Streamdown = memo(StreamdownInner)
 ```
 
-- [ ] **Step 2: MessageBubble 组件**
+- [x] **Step 2: MessageBubble 组件**
 
 ```typescript
 import { Streamdown } from './Streamdown'
@@ -1973,7 +1973,7 @@ export default function MessageBubble({ role, content, thinking, isStreaming }: 
 }
 ```
 
-- [ ] **Step 3: SessionList 组件**
+- [x] **Step 3: SessionList 组件**
 
 ```typescript
 import { useChat } from '../../store/chat-context'
@@ -2012,7 +2012,7 @@ export default function SessionList() {
 }
 ```
 
-- [ ] **Step 4: AskUserModal 组件**
+- [x] **Step 4: AskUserModal 组件**
 
 ```typescript
 import { useState, useEffect } from 'react'
@@ -2068,7 +2068,7 @@ export default function AskUserModal() {
 }
 ```
 
-- [ ] **Step 5: ChatWindow 组件**
+- [x] **Step 5: ChatWindow 组件**
 
 ```typescript
 import { useState, useRef, useEffect } from 'react'
@@ -2177,7 +2177,7 @@ export default function ChatWindow({ onSendMessage }: ChatWindowProps) {
 }
 ```
 
-- [ ] **Step 6: Chat 页面 (pages/Chat.tsx)**
+- [x] **Step 6: Chat 页面 (pages/Chat.tsx)**
 
 ```typescript
 import { useEffect } from 'react'
