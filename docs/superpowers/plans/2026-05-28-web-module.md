@@ -35,7 +35,7 @@
 - 创建: `web/.gitignore`
 - 修改: `docker-compose.yaml`
 
-- [ ] **Step 1: 初始化 package.json**
+- [*] **Step 1: 初始化 package.json**
 
 ```json
 {
@@ -73,7 +73,7 @@
 }
 ```
 
-- [ ] **Step 2: vite.config.ts**
+- [*] **Step 2: vite.config.ts**
 
 ```typescript
 import { defineConfig } from 'vite'
@@ -96,7 +96,7 @@ export default defineConfig({
 })
 ```
 
-- [ ] **Step 3: tsconfig.json**
+- [*] **Step 3: tsconfig.json**
 
 ```json
 {
@@ -125,7 +125,7 @@ export default defineConfig({
 }
 ```
 
-- [ ] **Step 4: tsconfig.node.json**
+- [*] **Step 4: tsconfig.node.json**
 
 ```json
 {
@@ -145,7 +145,7 @@ export default defineConfig({
 }
 ```
 
-- [ ] **Step 5: index.html**
+- [*] **Step 5: index.html**
 
 ```html
 <!DOCTYPE html>
@@ -163,13 +163,13 @@ export default defineConfig({
 </html>
 ```
 
-- [ ] **Step 6: src/styles/index.css (Tailwind 入口)**
+- [*] **Step 6: src/styles/index.css (Tailwind 入口)**
 
 ```css
 @import "tailwindcss";
 ```
 
-- [ ] **Step 7: src/main.tsx (入口)**
+- [*] **Step 7: src/main.tsx (入口)**
 
 ```typescript
 import { StrictMode } from 'react'
@@ -187,7 +187,7 @@ createRoot(document.getElementById('root')!).render(
 )
 ```
 
-- [ ] **Step 8: Taskfile.yml**
+- [*] **Step 8: Taskfile.yml**
 
 ```yaml
 version: '3'
@@ -273,7 +273,7 @@ tasks:
       - echo "已清除编译产物"
 ```
 
-- [ ] **Step 9: scripts/build.py**
+- [*] **Step 9: scripts/build.py**
 
 ```python
 #!/usr/bin/env python3
@@ -393,7 +393,7 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 10: scripts/build_image.py**
+- [*] **Step 10: scripts/build_image.py**
 
 ```python
 #!/usr/bin/env python3
@@ -529,7 +529,7 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 11: Dockerfile**
+- [*] **Step 11: Dockerfile**
 
 ```dockerfile
 # KnowSync Web - Caddy 镜像
@@ -549,7 +549,7 @@ RUN echo $VERSION > /usr/share/caddy/version.txt
 EXPOSE 80 443
 ```
 
-- [ ] **Step 12: Caddyfile**
+- [*] **Step 12: Caddyfile**
 
 ```
 knowsync.local {
@@ -565,7 +565,7 @@ knowsync.local {
 }
 ```
 
-- [ ] **Step 13: .dockerignore**
+- [*] **Step 13: .dockerignore**
 
 ```
 node_modules
@@ -581,7 +581,7 @@ tailwind.config.ts
 package-lock.json
 ```
 
-- [ ] **Step 14: .gitignore**
+- [*] **Step 14: .gitignore**
 
 ```
 node_modules
@@ -589,7 +589,7 @@ dist
 *.local
 ```
 
-- [ ] **Step 15: 修改 docker-compose.yaml 添加 web 服务**
+- [*] **Step 15: 修改 docker-compose.yaml 添加 web 服务**
 
 在 docker-compose.yaml 中新增 web 服务，gateway 移除 ports 暴露：
 
@@ -607,7 +607,7 @@ dist
       - knowsync-net
 ```
 
-- [ ] **Step 16: 初始化并验证构建**
+- [*] **Step 16: 初始化并验证构建**
 
 ```bash
 cd web && npm install && npm run build
@@ -635,7 +635,7 @@ cd web && npm install && npm run build
 - 创建: `web/src/components/Layout/ChatLayout.tsx`
 - 创建: `web/src/App.tsx`
 
-- [ ] **Step 1: API 客户端 (lib/client.ts)**
+- [x] **Step 1: API 客户端 (lib/client.ts)**
 
 ```typescript
 const BASE_URL = ''
@@ -757,7 +757,7 @@ export async function uploadFile<T>(
 export { getToken, setTokens, clearTokens, getRefreshToken }
 ```
 
-- [ ] **Step 2: Auth API (lib/auth.ts)**
+- [x] **Step 2: Auth API (lib/auth.ts)**
 
 ```typescript
 import { request, setTokens } from './client'
@@ -866,7 +866,7 @@ export async function forgetPassword(email: string, password: string, verifyCode
 }
 ```
 
-- [ ] **Step 3: Repos API (lib/repos.ts)**
+- [x] **Step 3: Repos API (lib/repos.ts)**
 
 ```typescript
 import { request } from './client'
@@ -913,7 +913,7 @@ export async function deleteRepo(repoId: string): Promise<void> {
 }
 ```
 
-- [ ] **Step 4: Nodes API (lib/nodes.ts)**
+- [x] **Step 4: Nodes API (lib/nodes.ts)**
 
 ```typescript
 import { request, uploadFile } from './client'
@@ -1008,7 +1008,7 @@ export async function removeCollaborator(repoId: string, userId: string): Promis
 }
 ```
 
-- [ ] **Step 5: Chat API (lib/chat.ts)**
+- [x] **Step 5: Chat API (lib/chat.ts)**
 
 ```typescript
 import { request, getToken } from './client'
@@ -1109,7 +1109,7 @@ export async function createChatStream(
 }
 ```
 
-- [ ] **Step 6: AuthContext (store/auth-context.tsx)**
+- [x] **Step 6: AuthContext (store/auth-context.tsx)**
 
 ```typescript
 import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react'
@@ -1208,7 +1208,7 @@ export function useAuth() {
 }
 ```
 
-- [ ] **Step 7: ChatContext (store/chat-context.tsx)**
+- [x] **Step 7: ChatContext (store/chat-context.tsx)**
 
 ```typescript
 import { createContext, useContext, useReducer, useCallback, type ReactNode } from 'react'
@@ -1379,7 +1379,7 @@ export function useChat() {
 }
 ```
 
-- [ ] **Step 8: RepoContext (store/repo-context.tsx)**
+- [x] **Step 8: RepoContext (store/repo-context.tsx)**
 
 ```typescript
 import { createContext, useContext, useReducer, useCallback, type ReactNode } from 'react'
@@ -1484,7 +1484,7 @@ export function useRepo() {
 }
 ```
 
-- [ ] **Step 9: 路由定义 (App.tsx)**
+- [x] **Step 9: 路由定义 (App.tsx)**
 
 ```typescript
 import { Routes, Route, Navigate } from 'react-router-dom'
@@ -1544,7 +1544,7 @@ function RootRedirect() {
 }
 ```
 
-- [ ] **Step 10: PublicLayout**
+- [x] **Step 10: PublicLayout**
 
 ```typescript
 import { Outlet, Navigate } from 'react-router-dom'
@@ -1561,7 +1561,7 @@ export default function PublicLayout() {
 }
 ```
 
-- [ ] **Step 11: TopBar**
+- [x] **Step 11: TopBar**
 
 ```typescript
 import { useState, useRef, useEffect } from 'react'
@@ -1653,7 +1653,7 @@ export default function TopBar() {
 }
 ```
 
-- [ ] **Step 12: Sidebar**
+- [x] **Step 12: Sidebar**
 
 ```typescript
 import { useState } from 'react'
@@ -1758,7 +1758,7 @@ function FileTree({ repoId }: { repoId: string }) {
 }
 ```
 
-- [ ] **Step 13: AppLayout**
+- [x] **Step 13: AppLayout**
 
 ```typescript
 import { useEffect } from 'react'
@@ -1828,7 +1828,7 @@ export default function AppLayout() {
 }
 ```
 
-- [ ] **Step 14: ChatLayout (三栏聊天布局)**
+- [x] **Step 14: ChatLayout (三栏聊天布局)**
 
 ```typescript
 import { type ReactNode } from 'react'
@@ -1860,7 +1860,7 @@ export default function ChatLayout({ sidebar, main, rightPanel }: ChatLayoutProp
 }
 ```
 
-- [ ] **Step 15: 验证 TypeScript 编译通过**
+- [x] **Step 15: 验证 TypeScript 编译通过**
 
 ```bash
 cd web && npx tsc --noEmit

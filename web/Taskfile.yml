@@ -20,7 +20,7 @@ tasks:
 
         可用命令:
           task build        - 编译 React 前端到 ./dist
-          task build:image  - 构建 Docker 镜像
+          task image        - 构建 Docker 镜像
           task dev          - 启动 Vite 开发服务器
           task clean        - 清除编译产物
           task help         - 显示此帮助信息
@@ -29,8 +29,8 @@ tasks:
           task                    - 默认显示帮助信息
           task build              - 执行编译
           task build -- v1.0.0    - 指定版本号编译
-          task build:image        - 构建 Docker 镜像
-          task build:image -- v1.0.0  - 指定版本号构建镜像
+          task image              - 构建 Docker 镜像
+          task image -- v1.0.0    - 指定版本号构建镜像
           task dev                - 启动开发服务器
           task clean              - 清除编译产物
         EOF
