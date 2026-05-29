@@ -34,7 +34,11 @@ type RedisCfg struct {
 
 // DatabaseCfg 数据库配置
 type DatabaseCfg struct {
-	DSN string `yaml:"dsn"`
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	DBName   string `yaml:"dbname"`
 }
 
 // RepoServerCfg repo-server gRPC 客户端配置

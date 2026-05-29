@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/redis/go-redis/v9"
@@ -21,7 +22,7 @@ func NewRedis(cfg *model.RedisCfg) (*redis.Client, error) {
 		DB:       cfg.DB,
 	})
 
-	if err := rdb.Ping(nil).Err(); err != nil {
+	if err := rdb.Ping(context.Background()).Err(); err != nil {
 		return nil, fmt.Errorf("连接 Redis 失败: %w", err)
 	}
 

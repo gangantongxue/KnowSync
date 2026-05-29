@@ -1,4 +1,4 @@
-knowsync.local {
+localhost {
     root * /usr/share/caddy
     encode gzip
 

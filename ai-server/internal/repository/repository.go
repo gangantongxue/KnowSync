@@ -16,7 +16,10 @@ type Repository struct {
 
 // NewRepository 创建数据库连接和 Repository
 func NewRepository(cfg *model.DatabaseCfg) (*Repository, error) {
-	db, err := gorm.Open(mysql.Open(cfg.DSN), &gorm.Config{
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DBName)
+
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: nil,
 	})
 	if err != nil {

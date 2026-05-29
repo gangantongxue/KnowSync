@@ -12,7 +12,11 @@ redis:
   db: 0
 
 database:
-  dsn: "root:password@tcp(localhost:3306)/knowsync?charset=utf8mb4&parseTime=True&loc=Local"
+  host: localhost
+  port: 3306
+  user: root
+  password: password
+  dbname: knowsync
 
 repo_server:
   addr: localhost:8081
