@@ -3,6 +3,7 @@ import { request, setTokens } from './client'
 export interface LoginData {
   access_token: string
   refresh_token: string
+  user: UserInfo
 }
 
 export interface UserInfo {

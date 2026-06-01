@@ -65,8 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = async (email: string, password: string) => {
-    await authApi.login(email, password)
-    dispatch({ type: 'SET_LOADING', loading: false })
+    const data = await authApi.login(email, password)
+    dispatch({ type: 'SET_USER', user: data.user })
   }
 
   const logout = async () => {

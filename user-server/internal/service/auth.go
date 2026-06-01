@@ -69,16 +69,16 @@ func (s *Service) Register(ctx context.Context, name, email, password, verifyCod
 }
 
 // Login 用户登录
-func (s *Service) Login(ctx context.Context, email, password, clientIP string) (string, string, error) {
+func (s *Service) Login(ctx context.Context, email, password, clientIP string) (*schema.User, string, string, error) {
 	// 1. 根据邮箱查找用户
 	user, err := s.Repository.GetUserByEmail(ctx, email)
 	if err != nil {
-		return "", "", fmt.Errorf("邮箱或密码错误")
+		return nil, "", "", fmt.Errorf("邮箱或密码错误")
 	}
 
 	// 2. 校验密码
 	if err := CheckPassword(password, user.Password); err != nil {
-		return "", "", fmt.Errorf("邮箱或密码错误")
+		return nil, "", "", fmt.Errorf("邮箱或密码错误")
 	}
 
 	// 3. 清理该用户所有旧会话，保证一个用户至多一个活跃会话
@@ -90,14 +90,14 @@ func (s *Service) Login(ctx context.Context, email, password, clientIP string) (
 	accessToken, err := auth.GenerateAccessToken(user.ID, s.privateKey, s.Cfg.Auth.AccessTTL)
 	if err != nil {
 		slog.Error("生成 access token 失败", "user_id", user.ID, "error", err)
-		return "", "", fmt.Errorf("生成访问凭证失败")
+		return nil, "", "", fmt.Errorf("生成访问凭证失败")
 	}
 
 	// 5. 生成随机 refresh token
 	refreshToken, err := generateRefreshToken()
 	if err != nil {
 		slog.Error("生成 refresh token 失败", "user_id", user.ID, "error", err)
-		return "", "", fmt.Errorf("生成刷新凭证失败")
+		return nil, "", "", fmt.Errorf("生成刷新凭证失败")
 	}
 
 	// 6. 创建新会话
@@ -110,11 +110,11 @@ func (s *Service) Login(ctx context.Context, email, password, clientIP string) (
 	}
 	if err := s.Repository.CreateSession(ctx, session); err != nil {
 		slog.Error("创建会话失败", "user_id", user.ID, "error", err)
-		return "", "", fmt.Errorf("创建会话失败")
+		return nil, "", "", fmt.Errorf("创建会话失败")
 	}
 
 	slog.Info("用户登录成功", "user_id", user.ID, "client_ip", clientIP)
-	return accessToken, refreshToken, nil
+	return user, accessToken, refreshToken, nil
 }
 
 // Logout 用户退出登录，清空该用户全部活跃会话

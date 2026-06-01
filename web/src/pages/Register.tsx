@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import ImgCrop from 'antd-img-crop'
+import { Upload } from 'antd'
 import { register, sendVerifyCode } from '../lib/auth'
 
 export default function Register() {
@@ -12,6 +14,8 @@ export default function Register() {
   const [loading, setLoading] = useState(false)
   const [codeSent, setCodeSent] = useState(false)
   const [codeSending, setCodeSending] = useState(false)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string>('/img/default_avatar.jpg')
 
   const handleSendCode = async () => {
     if (!email) return
@@ -30,7 +34,7 @@ export default function Register() {
     setError('')
     setLoading(true)
     try {
-      await register(name, email, password, verifyCode)
+      await register(name, email, password, verifyCode, avatarFile || undefined)
       navigate('/login')
     } catch (err: any) {
       setError(err.message || '注册失败')
@@ -44,6 +48,31 @@ export default function Register() {
       <p className="text-sm text-gray-500 text-center mb-6">创建你的账号</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* 头像 */}
+        <div className="flex flex-col items-center">
+          <label className="block text-sm font-medium text-gray-700 mb-3 self-start">头像</label>
+          <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
+            <img src={avatarPreview} alt="avatar" className="w-full h-full object-cover"
+              onError={() => setAvatarPreview('/img/default_avatar.jpg')} />
+          </div>
+          <div className="mt-3">
+            <ImgCrop aspect={1} quality={1} modalTitle="裁剪头像">
+              <Upload
+                showUploadList={false}
+                beforeUpload={(file) => {
+                  setAvatarFile(file)
+                  setAvatarPreview(URL.createObjectURL(file))
+                  return false
+                }}
+              >
+                <span className="text-sm text-emerald-600 cursor-pointer hover:text-emerald-500">
+                  选择图片并裁剪
+                </span>
+              </Upload>
+            </ImgCrop>
+          </div>
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">用户名</label>
           <input type="text" value={name} onChange={e => setName(e.target.value)} required

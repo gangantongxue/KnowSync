@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	gomail "gopkg.in/gomail.v2"
 
@@ -35,7 +36,7 @@ func NewMailer(cfg *model.EmailCfg, l *logger.Logger) *Mailer {
 
 // SendVerifyCode 发送验证码邮件
 func (m *Mailer) SendVerifyCode(to, code string) error {
-	body := fmt.Sprintf(verifyCodeTemplate, code)
+	body := strings.Replace(verifyCodeTemplate, "{CODE}", code, 1)
 
 	msg := gomail.NewMessage()
 	msg.SetHeader("From", m.from)

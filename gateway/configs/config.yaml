@@ -23,6 +23,6 @@ storage:
 
 grpc_clients:
   targets:
-    user_server: "localhost:50051"
-    repo_server: "localhost:50052"
-    ai_server: "localhost:50053"
+    user_server: "user-server:50051"
+    repo_server: "repo-server:50052"
+    ai_server: "ai-server:50053"

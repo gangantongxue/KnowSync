@@ -476,6 +476,7 @@ type LoginResponse struct {
 	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	AccessToken   string                 `protobuf:"bytes,3,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
 	RefreshToken  string                 `protobuf:"bytes,4,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
+	User          *User                  `protobuf:"bytes,5,opt,name=user,proto3" json:"user,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -536,6 +537,13 @@ func (x *LoginResponse) GetRefreshToken() string {
 		return x.RefreshToken
 	}
 	return ""
+}
+
+func (x *LoginResponse) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
 }
 
 type LogoutRequest struct {
@@ -1332,12 +1340,13 @@ const file_user_proto_rawDesc = "" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\"@\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x83\x01\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"\xa4\x01\n" +
 	"\rLoginResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\x12!\n" +
 	"\faccess_token\x18\x03 \x01(\tR\vaccessToken\x12#\n" +
-	"\rrefresh_token\x18\x04 \x01(\tR\frefreshToken\"4\n" +
+	"\rrefresh_token\x18\x04 \x01(\tR\frefreshToken\x12\x1f\n" +
+	"\x04user\x18\x05 \x01(\v2\v.proto.UserR\x04user\"4\n" +
 	"\rLogoutRequest\x12#\n" +
 	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"<\n" +
 	"\x0eLogoutResponse\x12\x18\n" +
@@ -1441,36 +1450,37 @@ var file_user_proto_goTypes = []any{
 }
 var file_user_proto_depIdxs = []int32{
 	0,  // 0: proto.RegisterResponse.user:type_name -> proto.User
-	0,  // 1: proto.GetUserResponse.user:type_name -> proto.User
-	0,  // 2: proto.UpdateUserInfoRequest.user:type_name -> proto.User
-	0,  // 3: proto.UpdateUserInfoResponse.user:type_name -> proto.User
-	1,  // 4: proto.UserService.Register:input_type -> proto.RegisterRequest
-	3,  // 5: proto.UserService.SetAvatar:input_type -> proto.SetAvatarRequest
-	5,  // 6: proto.UserService.VerifyCode:input_type -> proto.VerifyCodeRequest
-	7,  // 7: proto.UserService.Login:input_type -> proto.LoginRequest
-	9,  // 8: proto.UserService.Logout:input_type -> proto.LogoutRequest
-	11, // 9: proto.UserService.Refresh:input_type -> proto.RefreshRequest
-	13, // 10: proto.UserService.GetUser:input_type -> proto.GetUserRequest
-	15, // 11: proto.UserService.ForgetPassword:input_type -> proto.ForgetPasswordRequest
-	17, // 12: proto.UserService.ResetPassword:input_type -> proto.ResetPasswordRequest
-	19, // 13: proto.UserService.UpdateUserInfo:input_type -> proto.UpdateUserInfoRequest
-	21, // 14: proto.UserService.Unregister:input_type -> proto.UnregisterRequest
-	2,  // 15: proto.UserService.Register:output_type -> proto.RegisterResponse
-	4,  // 16: proto.UserService.SetAvatar:output_type -> proto.SetAvatarResponse
-	6,  // 17: proto.UserService.VerifyCode:output_type -> proto.VerifyCodeResponse
-	8,  // 18: proto.UserService.Login:output_type -> proto.LoginResponse
-	10, // 19: proto.UserService.Logout:output_type -> proto.LogoutResponse
-	12, // 20: proto.UserService.Refresh:output_type -> proto.RefreshResponse
-	14, // 21: proto.UserService.GetUser:output_type -> proto.GetUserResponse
-	16, // 22: proto.UserService.ForgetPassword:output_type -> proto.ForgetPasswordResponse
-	18, // 23: proto.UserService.ResetPassword:output_type -> proto.ResetPasswordResponse
-	20, // 24: proto.UserService.UpdateUserInfo:output_type -> proto.UpdateUserInfoResponse
-	22, // 25: proto.UserService.Unregister:output_type -> proto.UnregisterResponse
-	15, // [15:26] is the sub-list for method output_type
-	4,  // [4:15] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	0,  // 1: proto.LoginResponse.user:type_name -> proto.User
+	0,  // 2: proto.GetUserResponse.user:type_name -> proto.User
+	0,  // 3: proto.UpdateUserInfoRequest.user:type_name -> proto.User
+	0,  // 4: proto.UpdateUserInfoResponse.user:type_name -> proto.User
+	1,  // 5: proto.UserService.Register:input_type -> proto.RegisterRequest
+	3,  // 6: proto.UserService.SetAvatar:input_type -> proto.SetAvatarRequest
+	5,  // 7: proto.UserService.VerifyCode:input_type -> proto.VerifyCodeRequest
+	7,  // 8: proto.UserService.Login:input_type -> proto.LoginRequest
+	9,  // 9: proto.UserService.Logout:input_type -> proto.LogoutRequest
+	11, // 10: proto.UserService.Refresh:input_type -> proto.RefreshRequest
+	13, // 11: proto.UserService.GetUser:input_type -> proto.GetUserRequest
+	15, // 12: proto.UserService.ForgetPassword:input_type -> proto.ForgetPasswordRequest
+	17, // 13: proto.UserService.ResetPassword:input_type -> proto.ResetPasswordRequest
+	19, // 14: proto.UserService.UpdateUserInfo:input_type -> proto.UpdateUserInfoRequest
+	21, // 15: proto.UserService.Unregister:input_type -> proto.UnregisterRequest
+	2,  // 16: proto.UserService.Register:output_type -> proto.RegisterResponse
+	4,  // 17: proto.UserService.SetAvatar:output_type -> proto.SetAvatarResponse
+	6,  // 18: proto.UserService.VerifyCode:output_type -> proto.VerifyCodeResponse
+	8,  // 19: proto.UserService.Login:output_type -> proto.LoginResponse
+	10, // 20: proto.UserService.Logout:output_type -> proto.LogoutResponse
+	12, // 21: proto.UserService.Refresh:output_type -> proto.RefreshResponse
+	14, // 22: proto.UserService.GetUser:output_type -> proto.GetUserResponse
+	16, // 23: proto.UserService.ForgetPassword:output_type -> proto.ForgetPasswordResponse
+	18, // 24: proto.UserService.ResetPassword:output_type -> proto.ResetPasswordResponse
+	20, // 25: proto.UserService.UpdateUserInfo:output_type -> proto.UpdateUserInfoResponse
+	22, // 26: proto.UserService.Unregister:output_type -> proto.UnregisterResponse
+	16, // [16:27] is the sub-list for method output_type
+	5,  // [5:16] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_user_proto_init() }

@@ -35,7 +35,7 @@ func (h *Handler) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Re
 // Login 用户登录
 func (h *Handler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	clientIP := getClientIP(ctx)
-	accessToken, refreshToken, err := h.Service.Login(ctx, req.GetEmail(), req.GetPassword(), clientIP)
+	user, accessToken, refreshToken, err := h.Service.Login(ctx, req.GetEmail(), req.GetPassword(), clientIP)
 	if err != nil {
 		return &pb.LoginResponse{
 			Success: false,
@@ -47,6 +47,12 @@ func (h *Handler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRes
 		Msg:          "login success",
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
+		User: &pb.User{
+			Id:     user.ID,
+			Name:   user.Name,
+			Email:  user.Email,
+			Avatar: user.Avatar,
+		},
 	}, nil
 }
 

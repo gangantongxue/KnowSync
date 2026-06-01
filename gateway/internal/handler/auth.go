@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"net/http"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/gangantongxue/knowsync/gateway/pkg/errcode"
@@ -46,10 +45,15 @@ func (h *Handler) Register() app.HandlerFunc {
 			return
 		}
 
-		// --- 处理可选的头像文件 ---
-		var avatarReader io.Reader
-		var avatarExt string
-		if fileHeader, err := ctx.FormFile("avatar"); err == nil {
+	// --- 处理可选的头像文件 ---
+	var avatarReader io.Reader
+	var avatarExt string
+
+	mf, _ := ctx.MultipartForm()
+	if mf != nil && mf.File != nil {
+		fhs := mf.File["avatar"]
+		if len(fhs) > 0 {
+			fileHeader := fhs[0]
 			f, err := fileHeader.Open()
 			if err != nil {
 				response.Error(c, ctx, 500, errcode.ErrBadReq, "头像文件读取失败")
@@ -68,17 +72,13 @@ func (h *Handler) Register() app.HandlerFunc {
 			// 通过文件头魔数判断真实类型，防止伪造扩展名
 			switch {
 			case n >= 3 && head[0] == 0xFF && head[1] == 0xD8 && head[2] == 0xFF:
-				// JPEG: 以 FFD8FF 开头
 				avatarExt = ".jpg"
 			case n >= 4 && head[0] == 0x89 && head[1] == 0x50 && head[2] == 0x4E && head[3] == 0x47:
-				// PNG: 以 89504E47 开头
 				avatarExt = ".png"
 			case n >= 4 && head[0] == 0x47 && head[1] == 0x49 && head[2] == 0x46 && head[3] == 0x38:
-				// GIF: 以 47494638 开头（GIF8）
 				avatarExt = ".gif"
 			case n >= 12 && head[0] == 0x52 && head[1] == 0x49 && head[2] == 0x46 && head[3] == 0x46 &&
 				head[8] == 0x57 && head[9] == 0x45 && head[10] == 0x42 && head[11] == 0x50:
-				// WebP: RIFF 文件头 + WEBP 标识
 				avatarExt = ".webp"
 			default:
 				response.Error(c, ctx, 400, errcode.ErrBadReq, "不支持的头像文件格式，仅支持 JPG/PNG/GIF/WebP")
@@ -87,10 +87,8 @@ func (h *Handler) Register() app.HandlerFunc {
 
 			// 将已读取的魔数头部与剩余文件拼回完整流
 			avatarReader = io.MultiReader(bytes.NewReader(head[:n]), f)
-		} else if err != http.ErrMissingFile {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, "头像文件上传失败")
-			return
 		}
+	}
 
 		// --- 调用 Register gRPC ---
 		conn := h.grpcClient.GetConn("user_server")
@@ -174,9 +172,19 @@ func (h *Handler) Login() app.HandlerFunc {
 			return
 		}
 
+		userInfo := map[string]any{}
+		if loginResp.User != nil {
+			userInfo = map[string]any{
+				"id":     loginResp.User.Id,
+				"name":   loginResp.User.Name,
+				"email":  loginResp.User.Email,
+				"avatar": loginResp.User.Avatar,
+			}
+		}
 		response.Success(c, ctx, map[string]any{
 			"access_token":  loginResp.AccessToken,
 			"refresh_token": loginResp.RefreshToken,
+			"user":          userInfo,
 		})
 	}
 }

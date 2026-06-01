@@ -17,6 +17,7 @@ import (
 	"github.com/gangantongxue/knowsync/user-server/internal/service"
 	"github.com/gangantongxue/knowsync/user-server/pkg/config"
 	"github.com/gangantongxue/knowsync/user-server/pkg/database"
+	"github.com/gangantongxue/knowsync/user-server/pkg/database/schema"
 	"github.com/gangantongxue/knowsync/user-server/pkg/logger"
 	"github.com/gangantongxue/knowsync/user-server/pkg/mail"
 	"github.com/gangantongxue/knowsync/user-server/pkg/redis"
@@ -43,6 +44,12 @@ func NewApp() error {
 	db, err := database.NewDatabase(cfg, logger)
 	if err != nil {
 		slog.Error("初始化数据库失败", "error", err)
+		return err
+	}
+
+	// 自动迁移数据库表结构
+	if err := db.DB.AutoMigrate(&schema.User{}, &schema.UserSession{}); err != nil {
+		slog.Error("数据库迁移失败", "error", err)
 		return err
 	}
 
