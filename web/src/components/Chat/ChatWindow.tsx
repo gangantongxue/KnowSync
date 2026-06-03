@@ -3,18 +3,42 @@ import { useChat } from '../../store/chat-context'
 import MessageBubble from './MessageBubble'
 import AskUserModal from './AskUserModal'
 
+const WELCOME_MESSAGE = {
+  content: '你好！我是KnowSync的AI助手KK，很高兴为你服务。\n\n有什么问题都可以问我哦，我会结合知识库内容回答你的问题。',
+}
+
 interface ChatWindowProps {
 }
 
 export default function ChatWindow(_props: ChatWindowProps) {
-  const { messages, isStreaming, sendMessage } = useChat()
+  const { messages, isStreaming, sendMessage, virtualSession, loadMoreMessages, hasMoreMessages, isLoadingMessages } = useChat()
   const [input, setInput] = useState('')
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  const handleScroll = async () => {
+    const container = containerRef.current
+    if (!container || isLoadingMore || !hasMoreMessages) return
+
+    const { scrollTop, scrollHeight } = container
+    if (scrollTop < 200) {
+      setIsLoadingMore(true)
+      const prevScrollHeight = scrollHeight
+      await loadMoreMessages()
+      // Maintain scroll position after loading
+      if (containerRef.current) {
+        const newScrollHeight = containerRef.current.scrollHeight
+        containerRef.current.scrollTop = scrollTop + (newScrollHeight - prevScrollHeight)
+      }
+      setIsLoadingMore(false)
+    }
+  }
 
   const handleSubmit = () => {
     const trimmed = input.trim()
@@ -44,7 +68,22 @@ export default function ChatWindow(_props: ChatWindowProps) {
 
   return (
     <>
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div 
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto px-4 py-4"
+      >
+        {isLoadingMore && (
+          <div className="text-center py-2">
+            <span className="text-gray-500 text-sm">加载更多消息...</span>
+          </div>
+        )}
+        {isLoadingMessages && (
+          <div className="h-full flex flex-col items-center justify-center text-gray-400">
+            <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+            <p className="mt-2 text-sm">加载中...</p>
+          </div>
+        )}
         {hasMessages ? (
           messages.map(msg => (
             <MessageBubble
@@ -55,11 +94,17 @@ export default function ChatWindow(_props: ChatWindowProps) {
               isStreaming={msg.isStreaming}
             />
           ))
+        ) : virtualSession ? (
+          <div className="h-full flex flex-col items-center justify-center text-center text-gray-400">
+            <div className="text-4xl mb-3">💡</div>
+            <h2 className="text-lg font-medium text-gray-700 mb-2">输入你的问题开始对话</h2>
+            <p className="text-sm mb-6 max-w-md">AI 知识助手，帮你快速找到所需信息</p>
+          </div>
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-center text-gray-400">
             <div className="text-4xl mb-3">💡</div>
             <h2 className="text-lg font-medium text-gray-700 mb-2">开始与 KnowSync 对话</h2>
-            <p className="text-sm mb-6 max-w-md">AI 知识助手，帮你快速找到所需信息</p>
+            <p className="text-sm mb-6 max-w-md">{WELCOME_MESSAGE.content}</p>
             <div className="space-y-2 w-64">
               {['搜索某篇文章', '帮我总结某个知识库', '解释某个概念'].map(q => (
                 <button
@@ -75,6 +120,19 @@ export default function ChatWindow(_props: ChatWindowProps) {
         )}
         <div ref={bottomRef} />
       </div>
+
+      {isStreaming && (
+        <div className="px-4 py-1 border-t border-gray-100 bg-gray-50">
+          <div className="flex items-center gap-2 text-gray-400 text-xs">
+            <div className="flex gap-1">
+              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+            <span>AI 正在思考...</span>
+          </div>
+        </div>
+      )}
 
       <div className="border-t border-gray-200 p-3">
         <div className="flex gap-2 items-end">

@@ -1,36 +1,46 @@
 const BASE_URL = ''
 
+let refreshPromise: Promise<boolean> | null = null
+
 function getToken(): string | null {
   return localStorage.getItem('access_token')
 }
 
-function getRefreshToken(): string | null {
-  return localStorage.getItem('refresh_token')
+function setToken(token: string) {
+  localStorage.setItem('access_token', token)
 }
 
-function setTokens(access: string, refresh: string) {
-  localStorage.setItem('access_token', access)
-  localStorage.setItem('refresh_token', refresh)
-}
-
-function clearTokens() {
+function clearToken() {
   localStorage.removeItem('access_token')
-  localStorage.removeItem('refresh_token')
 }
 
 async function refreshAccessToken(): Promise<boolean> {
-  const refresh = getRefreshToken()
-  if (!refresh) return false
+  if (refreshPromise) return refreshPromise
+
+  refreshPromise = doRefresh()
+  const result = await refreshPromise
+
+  if (result) {
+    // Keep promise for 1 second to batch concurrent requests
+    setTimeout(() => { refreshPromise = null }, 1000)
+  } else {
+    refreshPromise = null
+  }
+
+  return result
+}
+
+// 刷新 access_token（refresh_token 通过 httpOnly cookie 自动携带）
+async function doRefresh(): Promise<boolean> {
   try {
     const res = await fetch(`${BASE_URL}/api/v1/auth/refresh`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: refresh }),
+      credentials: 'same-origin', // 携带 cookie
     })
     if (!res.ok) return false
     const data = await res.json()
     if (data.code === 0 || data.code === 200) {
-      setTokens(data.data.access_token, data.data.refresh_token)
+      setToken(data.data.access_token)
       return true
     }
     return false
@@ -72,7 +82,7 @@ export async function request<T>(
         headers,
       })
     } else {
-      clearTokens()
+      clearToken()
       window.location.href = '/login'
       throw new Error('Unauthorized')
     }
@@ -94,16 +104,30 @@ export async function uploadFile<T>(
   const headers: Record<string, string> = {}
   if (token) headers['Authorization'] = `Bearer ${token}`
 
-  const res = await fetch(`${BASE_URL}/api/v1${path}`, {
+  // Clone FormData before first request (it's consumed after use)
+  // Using cast because FormData.clone() isn't in TypeScript's DOM lib types yet
+  const formDataClone = (formData as any).clone() as FormData
+
+  let res = await fetch(`${BASE_URL}/api/v1${path}`, {
     method: 'PUT',
     headers,
     body: formData,
   })
 
   if (res.status === 401) {
-    clearTokens()
-    window.location.href = '/login'
-    throw new Error('Unauthorized')
+    const refreshed = await refreshAccessToken()
+    if (refreshed) {
+      headers['Authorization'] = `Bearer ${getToken()}`
+      res = await fetch(`${BASE_URL}/api/v1${path}`, {
+        method: 'PUT',
+        headers,
+        body: formDataClone,
+      })
+    } else {
+      clearToken()
+      window.location.href = '/login'
+      throw new Error('Unauthorized')
+    }
   }
 
   if (!res.ok) {
@@ -114,4 +138,4 @@ export async function uploadFile<T>(
   return res.json()
 }
 
-export { getToken, setTokens, clearTokens, getRefreshToken }
+export { getToken, setToken, clearToken }

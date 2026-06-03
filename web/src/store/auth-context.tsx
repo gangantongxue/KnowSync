@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react'
-import { getToken, clearTokens, getRefreshToken } from '../lib/client'
+import { getToken, clearToken } from '../lib/client'
 import * as authApi from '../lib/auth'
 
 interface AuthState {
@@ -71,12 +71,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      const refresh = getRefreshToken()
-      if (refresh) await authApi.logout(refresh)
+      await authApi.logout()
     } catch {
       // ignore logout errors
     }
-    clearTokens()
+    clearToken()
     dispatch({ type: 'CLEAR_USER' })
   }
 

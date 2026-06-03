@@ -13,7 +13,7 @@ func (h *Handler) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Re
 		return &pb.RegisterResponse{
 			Success: false,
 			Msg:     err.Error(),
-		}, err
+		}, nil
 	}
 	if user == nil {
 		return &pb.RegisterResponse{
@@ -40,7 +40,7 @@ func (h *Handler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRes
 		return &pb.LoginResponse{
 			Success: false,
 			Msg:     err.Error(),
-		}, err
+		}, nil
 	}
 	return &pb.LoginResponse{
 		Success:      true,
@@ -64,7 +64,7 @@ func (h *Handler) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.Logout
 		return &pb.LogoutResponse{
 			Success: false,
 			Msg:     err.Error(),
-		}, err
+		}, nil
 	}
 	return &pb.LogoutResponse{
 		Success: true,
@@ -80,7 +80,7 @@ func (h *Handler) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.Refr
 		return &pb.RefreshResponse{
 			Success: false,
 			Msg:     err.Error(),
-		}, err
+		}, nil
 	}
 	return &pb.RefreshResponse{
 		Success:      true,

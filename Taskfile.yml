@@ -1,0 +1,95 @@
+version: '3'
+
+tasks:
+  default:
+    silent: true
+    cmds:
+      - task: help
+
+  help:
+    desc: 显示帮助信息
+    silent: true
+    cmds:
+      - |
+        cat << 'EOF'
+        KnowSync 构建工具
+
+        可用命令:
+          task image        - 构建所有服务的 Docker 镜像
+          task up           - 启动所有服务 (docker compose)
+          task down         - 停止所有服务
+          task logs         - 查看所有服务日志
+          task clean        - 清除所有编译产物
+          task help         - 显示此帮助信息
+
+        使用方法:
+          task                    - 默认显示帮助信息
+          task image              - 构建所有镜像
+          task up                 - 启动所有服务
+          task up -- -d           - 后台启动
+          task down               - 停止所有服务
+          task logs               - 查看日志
+        EOF
+
+  image:
+    desc: 构建所有服务的 Docker 镜像
+    silent: true
+    cmds:
+      - |
+        echo "=================================================="
+        echo "构建 user-server 镜像..."
+        echo "=================================================="
+        cd user-server && task image
+      - |
+        echo "=================================================="
+        echo "构建 repo-server 镜像..."
+        echo "=================================================="
+        cd repo-server && task image
+      - |
+        echo "=================================================="
+        echo "构建 gateway 镜像..."
+        echo "=================================================="
+        cd gateway && task image
+      - |
+        echo "=================================================="
+        echo "构建 ai-server 镜像..."
+        echo "=================================================="
+        cd ai-server && task image
+      - |
+        echo "=================================================="
+        echo "构建 web 镜像..."
+        echo "=================================================="
+        cd web && task image
+      - |
+        echo "=================================================="
+        echo "所有镜像构建完成!"
+        echo "=================================================="
+
+  up:
+    desc: 启动所有服务
+    silent: true
+    cmds:
+      - docker compose up {{.CLI_ARGS}}
+
+  down:
+    desc: 停止所有服务
+    silent: true
+    cmds:
+      - docker compose down
+
+  logs:
+    desc: 查看所有服务日志
+    silent: true
+    cmds:
+      - docker compose logs -f {{.CLI_ARGS}}
+
+  clean:
+    desc: 清除所有编译产物
+    silent: true
+    cmds:
+      - cd user-server && task clean
+      - cd repo-server && task clean
+      - cd gateway && task clean
+      - cd ai-server && task clean
+      - cd web && task clean
+      - echo "已清除所有编译产物"

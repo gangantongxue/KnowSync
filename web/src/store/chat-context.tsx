@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useReducer, useCallback, useEffect, useRef, type ReactNode } from 'react'
 import * as chatApi from '../lib/chat'
 
 interface Message {
@@ -16,16 +16,25 @@ interface ChatState {
   messages: Message[]
   hasMoreMessages: boolean
   isStreaming: boolean
+  virtualSession: chatApi.ChatSession | null
+  isLoadingSessions: boolean
+  isLoadingMessages: boolean
 }
 
 type ChatAction =
   | { type: 'SET_SESSIONS'; sessions: chatApi.ChatSession[] }
   | { type: 'SET_CURRENT_SESSION'; sessionId: string | null }
   | { type: 'SET_MESSAGES'; messages: chatApi.ChatMessage[]; hasMore: boolean }
+  | { type: 'SET_CACHED_MESSAGES'; messages: Message[]; hasMore: boolean }
+  | { type: 'LOAD_MORE_MESSAGES'; messages: Message[]; hasMore: boolean }
   | { type: 'APPEND_MESSAGE'; message: Message }
-  | { type: 'UPDATE_LAST_MESSAGE'; content: string }
+  | { type: 'UPDATE_LAST_MESSAGE'; content?: string; thinking?: string }
   | { type: 'SET_STREAMING'; streaming: boolean }
   | { type: 'ADD_SESSION'; session: chatApi.ChatSession }
+  | { type: 'SET_VIRTUAL_SESSION'; session: chatApi.ChatSession | null }
+  | { type: 'UPDATE_SESSION_TITLE'; sessionId: string; title: string }
+  | { type: 'SET_LOADING_SESSIONS'; loading: boolean }
+  | { type: 'SET_LOADING_MESSAGES'; loading: boolean }
 
 function chatReducer(state: ChatState, action: ChatAction): ChatState {
   switch (action.type) {
@@ -37,13 +46,21 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
       return { ...state, messages: action.messages.map(m => ({
         id: m.id, role: m.role, content: m.content, thinking: m.thinking, createdAt: m.created_at,
       })), hasMoreMessages: action.hasMore }
+    case 'SET_CACHED_MESSAGES':
+      return { ...state, messages: action.messages, hasMoreMessages: action.hasMore }
+    case 'LOAD_MORE_MESSAGES':
+      return { ...state, messages: [...action.messages, ...state.messages], hasMoreMessages: action.hasMore }
     case 'APPEND_MESSAGE':
       return { ...state, messages: [...state.messages, action.message] }
     case 'UPDATE_LAST_MESSAGE': {
       const msgs = [...state.messages]
       const last = msgs[msgs.length - 1]
       if (last && last.isStreaming) {
-        msgs[msgs.length - 1] = { ...last, content: last.content + action.content }
+        msgs[msgs.length - 1] = {
+          ...last,
+          content: action.content !== undefined ? last.content + action.content : last.content,
+          thinking: action.thinking !== undefined ? last.thinking + action.thinking : last.thinking,
+        }
       }
       return { ...state, messages: msgs }
     }
@@ -51,15 +68,30 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
       return { ...state, isStreaming: action.streaming }
     case 'ADD_SESSION':
       return { ...state, sessions: [action.session, ...state.sessions] }
+    case 'SET_VIRTUAL_SESSION':
+      return { ...state, virtualSession: action.session }
+    case 'UPDATE_SESSION_TITLE':
+      return {
+        ...state,
+        sessions: state.sessions.map(s =>
+          s.id === action.sessionId ? { ...s, title: action.title } : s
+        ),
+      }
+    case 'SET_LOADING_SESSIONS':
+      return { ...state, isLoadingSessions: action.loading }
+    case 'SET_LOADING_MESSAGES':
+      return { ...state, isLoadingMessages: action.loading }
   }
 }
 
 interface ChatContextValue extends ChatState {
   loadSessions: () => Promise<void>
   loadMessages: (sessionId: string) => Promise<void>
+  loadMoreMessages: () => Promise<boolean>
   sendMessage: (message: string) => Promise<void>
   deleteSession: (sessionId: string) => Promise<void>
   setCurrentSession: (sessionId: string | null) => void
+  createNewSession: () => void
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null)
@@ -71,29 +103,109 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     messages: [],
     hasMoreMessages: false,
     isStreaming: false,
+    virtualSession: null,
+    isLoadingSessions: false,
+    isLoadingMessages: false,
   })
+
+  const messagesCacheRef = useRef<Map<string, Message[]>>(new Map())
+
+  useEffect(() => {
+    if (!state.isStreaming && state.currentSessionId && state.messages.length > 0) {
+      messagesCacheRef.current.set(state.currentSessionId, state.messages)
+    }
+  }, [state.isStreaming, state.currentSessionId, state.messages])
 
   const loadSessions = useCallback(async () => {
     try {
+      dispatch({ type: 'SET_LOADING_SESSIONS', loading: true })
       const { sessions } = await chatApi.listSessions()
       dispatch({ type: 'SET_SESSIONS', sessions })
     } catch {
       // ignore
+    } finally {
+      dispatch({ type: 'SET_LOADING_SESSIONS', loading: false })
     }
+  }, [])
+
+  const createNewSession = useCallback(() => {
+    const virtualSession: chatApi.ChatSession = {
+      id: `virtual_${Date.now()}`,
+      title: '新对话',
+      created_at: Math.floor(Date.now() / 1000),
+      updated_at: Math.floor(Date.now() / 1000),
+    }
+    dispatch({ type: 'SET_VIRTUAL_SESSION', session: virtualSession })
+    dispatch({ type: 'SET_CURRENT_SESSION', sessionId: virtualSession.id })
+    // Removed redundant SET_MESSAGES - SET_CURRENT_SESSION already clears messages
   }, [])
 
   const loadMessages = useCallback(async (sessionId: string) => {
+    // Check cache first
+    const cached = messagesCacheRef.current.get(sessionId)
+    if (cached) {
+      dispatch({ type: 'SET_CURRENT_SESSION', sessionId })
+      dispatch({ type: 'SET_CACHED_MESSAGES', messages: cached, hasMore: false })
+      return
+    }
+
     try {
       dispatch({ type: 'SET_CURRENT_SESSION', sessionId })
+      dispatch({ type: 'SET_LOADING_MESSAGES', loading: true })
       const { messages, has_more } = await chatApi.getMessages(sessionId)
-      dispatch({ type: 'SET_MESSAGES', messages: messages.reverse(), hasMore: has_more })
+      const formattedMessages = messages.reverse().map(m => ({
+        id: m.id, role: m.role, content: m.content, thinking: m.thinking, createdAt: m.created_at,
+      }))
+      // Cache the messages
+      messagesCacheRef.current.set(sessionId, formattedMessages)
+      dispatch({ type: 'SET_CACHED_MESSAGES', messages: formattedMessages, hasMore: has_more })
     } catch {
       // ignore
+    } finally {
+      dispatch({ type: 'SET_LOADING_MESSAGES', loading: false })
     }
   }, [])
 
+  const loadMoreMessages = useCallback(async (): Promise<boolean> => {
+    const { currentSessionId, messages, hasMoreMessages } = state
+    if (!currentSessionId || !hasMoreMessages) {
+      return false
+    }
+
+    // Use the oldest message's createdAt as cursor (backend expects timestamp, not offset)
+    const oldestMessage = messages[0]
+    const cursor = oldestMessage?.createdAt || 0
+
+    try {
+      const { messages: newMessages, has_more } = await chatApi.getMessages(
+        currentSessionId,
+        cursor
+      )
+      const formattedMessages = newMessages.reverse().map(m => ({
+        id: m.id, role: m.role, content: m.content, thinking: m.thinking, createdAt: m.created_at,
+      }))
+      
+      dispatch({ type: 'LOAD_MORE_MESSAGES', messages: formattedMessages, hasMore: has_more })
+      
+      // Update cache
+      const cached = messagesCacheRef.current.get(currentSessionId) || []
+      messagesCacheRef.current.set(currentSessionId, [...formattedMessages, ...cached])
+      
+      return formattedMessages.length > 0
+    } catch {
+      return false
+    }
+  }, [state.currentSessionId, state.messages, state.hasMoreMessages])
+
   const sendMessage = useCallback(async (message: string) => {
-    const sessionId = state.currentSessionId || ''
+    // Guard against concurrent streams
+    if (state.isStreaming) return
+    
+    let sessionId = state.currentSessionId || ''
+    const isVirtual = sessionId.startsWith('virtual_')
+    
+    // If virtual session, send without session_id to create new one
+    const sessionIdToSend = isVirtual ? '' : sessionId
 
     dispatch({ type: 'SET_STREAMING', streaming: true })
 
@@ -111,23 +223,39 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     })
 
     try {
-      await chatApi.createChatStream(sessionId, message, (event) => {
+      await chatApi.createChatStream(sessionIdToSend, message, (event) => {
         switch (event.event) {
           case 'thinking':
-            dispatch({ type: 'UPDATE_LAST_MESSAGE', content: event.data.content as string })
+            dispatch({ type: 'UPDATE_LAST_MESSAGE', thinking: event.data.content as string })
             break
           case 'content':
             dispatch({ type: 'UPDATE_LAST_MESSAGE', content: event.data.content as string })
             break
           case 'done': {
             const evData = event.data as { session_id: string; title?: string; title_updated?: boolean }
-            if (evData.title_updated) {
-              // 更新会话标题
+            // Handle new session creation (virtual -> real)
+            if (isVirtual && evData.session_id) {
+              sessionId = evData.session_id
+              dispatch({ type: 'SET_CURRENT_SESSION', sessionId: evData.session_id })
+              dispatch({ type: 'SET_VIRTUAL_SESSION', session: null })
+              // Add new session to list
+              dispatch({
+                type: 'ADD_SESSION',
+                session: {
+                  id: evData.session_id,
+                  title: evData.title || '新对话',
+                  created_at: Math.floor(Date.now() / 1000),
+                  updated_at: Math.floor(Date.now() / 1000),
+                },
+              })
+            }
+            // Handle title update
+            if (evData.title_updated && evData.title) {
+              dispatch({ type: 'UPDATE_SESSION_TITLE', sessionId: evData.session_id, title: evData.title })
             }
             break
           }
           case 'ask_user':
-            // 弹窗由 UI 组件处理，这里触发事件
             window.dispatchEvent(new CustomEvent('ask-user', { detail: event.data }))
             break
         }
@@ -142,6 +270,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const deleteSession = useCallback(async (sessionId: string) => {
     await chatApi.deleteSession(sessionId)
+    messagesCacheRef.current.delete(sessionId)  // Clear cache
     loadSessions()
     if (state.currentSessionId === sessionId) {
       dispatch({ type: 'SET_CURRENT_SESSION', sessionId: null })
@@ -150,10 +279,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const setCurrentSession = useCallback((sessionId: string | null) => {
     dispatch({ type: 'SET_CURRENT_SESSION', sessionId })
+    // Clear virtual session when switching to a real session
+    if (sessionId && !sessionId.startsWith('virtual_')) {
+      dispatch({ type: 'SET_VIRTUAL_SESSION', session: null })
+    }
   }, [])
 
   return (
-    <ChatContext.Provider value={{ ...state, loadSessions, loadMessages, sendMessage, deleteSession, setCurrentSession }}>
+    <ChatContext.Provider value={{ ...state, loadSessions, loadMessages, loadMoreMessages, sendMessage, deleteSession, setCurrentSession, createNewSession }}>
       {children}
     </ChatContext.Provider>
   )

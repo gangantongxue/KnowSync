@@ -8,6 +8,7 @@ import (
 	"log/slog"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/gangantongxue/knowsync/gateway/pkg/errcode"
 	"github.com/gangantongxue/knowsync/gateway/pkg/response"
 	"github.com/gangantongxue/knowsync/gateway/pkg/storage"
@@ -28,6 +29,13 @@ type LogoutRequest struct {
 // RefreshRequest 刷新令牌请求体
 type RefreshRequest struct {
 	RefreshToken string `json:"refresh_token"`
+}
+
+// setRefreshTokenCookie 设置 refresh_token 为 httpOnly cookie
+func setRefreshTokenCookie(ctx *app.RequestContext, token string) {
+	// 7天过期
+	maxAge := 7 * 24 * 60 * 60
+	ctx.SetCookie("refresh_token", token, maxAge, "/api/v1/auth", "", protocol.CookieSameSiteLaxMode, false, true)
 }
 
 // Register 用户注册（multipart/form-data）
@@ -172,6 +180,9 @@ func (h *Handler) Login() app.HandlerFunc {
 			return
 		}
 
+		// 设置 refresh_token 为 httpOnly cookie（安全存储）
+		setRefreshTokenCookie(ctx, loginResp.RefreshToken)
+
 		userInfo := map[string]any{}
 		if loginResp.User != nil {
 			userInfo = map[string]any{
@@ -181,10 +192,10 @@ func (h *Handler) Login() app.HandlerFunc {
 				"avatar": loginResp.User.Avatar,
 			}
 		}
+		// 只返回 access_token（前端存储在 localStorage）
 		response.Success(c, ctx, map[string]any{
-			"access_token":  loginResp.AccessToken,
-			"refresh_token": loginResp.RefreshToken,
-			"user":          userInfo,
+			"access_token": loginResp.AccessToken,
+			"user":         userInfo,
 		})
 	}
 }
@@ -222,11 +233,13 @@ func (h *Handler) Logout() app.HandlerFunc {
 }
 
 // Refresh 刷新 access token
+// 前端 401 时自动调用，refresh_token 通过 httpOnly cookie 自动携带
 func (h *Handler) Refresh() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
-		var req RefreshRequest
-		if err := ctx.BindAndValidate(&req); err != nil {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, "请求参数错误")
+		// 从 httpOnly cookie 读取 refresh_token
+		refreshToken := string(ctx.Cookie("refresh_token"))
+		if refreshToken == "" {
+			response.Error(c, ctx, 401, errcode.ErrUnauth, "未登录")
 			return
 		}
 
@@ -238,20 +251,25 @@ func (h *Handler) Refresh() app.HandlerFunc {
 
 		userClient := pb.NewUserServiceClient(conn)
 		refreshResp, err := userClient.Refresh(c, &pb.RefreshRequest{
-			RefreshToken: req.RefreshToken,
+			RefreshToken: refreshToken,
 		})
 		if err != nil {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "刷新令牌失败")
 			return
 		}
 		if !refreshResp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, refreshResp.Msg)
+			// 刷新失败，清除 cookie
+			ctx.SetCookie("refresh_token", "", -1, "/api/v1/auth", "", protocol.CookieSameSiteLaxMode, false, true)
+			response.Error(c, ctx, 401, errcode.ErrUnauth, refreshResp.Msg)
 			return
 		}
 
+		// 设置新的 refresh_token cookie
+		setRefreshTokenCookie(ctx, refreshResp.RefreshToken)
+
+		// 只返回新的 access_token
 		response.Success(c, ctx, map[string]any{
-			"access_token":  refreshResp.AccessToken,
-			"refresh_token": refreshResp.RefreshToken,
+			"access_token": refreshResp.AccessToken,
 		})
 	}
 }

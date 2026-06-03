@@ -1,8 +1,7 @@
-import { request, setTokens } from './client'
+import { request, setToken } from './client'
 
 export interface LoginData {
   access_token: string
-  refresh_token: string
   user: UserInfo
 }
 
@@ -19,7 +18,8 @@ export async function login(email: string, password: string): Promise<LoginData>
     body: JSON.stringify({ email, password }),
     skipAuth: true,
   })
-  setTokens(res.data.access_token, res.data.refresh_token)
+  // 只存储 access_token，refresh_token 由后端设置为 httpOnly cookie
+  setToken(res.data.access_token)
   return res.data
 }
 
@@ -48,10 +48,9 @@ export async function register(
   return data.data
 }
 
-export async function logout(refreshToken: string): Promise<void> {
+export async function logout(): Promise<void> {
   await request('/auth/logout', {
     method: 'POST',
-    body: JSON.stringify({ refresh_token: refreshToken }),
   })
 }
 
