@@ -106,32 +106,24 @@ func (w *Worker) processTask(ctx context.Context, task *service.VectorizeTask) {
 	logger := slog.With(
 		"user_id", task.UserID,
 		"repo_id", task.RepoID,
-		"node_id", task.NodeID,
+		"file_path", task.FilePath,
 	)
 	logger.Info("开始处理向量化任务")
 
-	// 1. 从 repo-server 获取节点信息
-	node, err := w.svc.Client.GetNode(ctx, task.UserID, task.RepoID, task.NodeID)
-	if err != nil {
-		logger.Error("获取节点信息失败", "error", err)
-		w.handleFailure("获取节点信息失败", task, err)
+	if task.FilePath == "" {
+		logger.Warn("文件路径为空")
 		return
 	}
 
-	if node.FilePath == "" {
-		logger.Warn("节点没有关联文件")
-		return
-	}
-
-	// 2. 从 gateway 获取文章内容
-	content, err := w.svc.Client.GetArticleContent(ctx, node.FilePath)
+	// 1. 从 gateway 获取文章内容
+	content, err := w.svc.Client.GetArticleContent(ctx, task.UserID, task.RepoID, task.FilePath)
 	if err != nil {
 		logger.Error("获取文章内容失败", "error", err)
 		w.handleFailure("获取文章内容失败", task, err)
 		return
 	}
 
-	// 3. 语义切分
+	// 2. 语义切分
 	chunks := w.chunker.Split(content)
 	if len(chunks) == 0 {
 		logger.Warn("文章内容为空")
@@ -139,7 +131,7 @@ func (w *Worker) processTask(ctx context.Context, task *service.VectorizeTask) {
 	}
 	logger.Info("文章切分完成", "chunks", len(chunks))
 
-	// 4. 批量向量化（Eino 内部处理分批）
+	// 3. 批量向量化
 	var chunkTexts []string
 	for _, chunk := range chunks {
 		chunkTexts = append(chunkTexts, chunk.Text)
@@ -154,8 +146,8 @@ func (w *Worker) processTask(ctx context.Context, task *service.VectorizeTask) {
 
 	logger.Info("向量化完成", "total_vectors", len(allEmbeddings))
 
-	// 5. 存储到 chromem-go
-	if err := w.vectorStore.StoreChunks(ctx, task.RepoID, task.NodeID, chunks, allEmbeddings); err != nil {
+	// 4. 存储到 chromem-go
+	if err := w.vectorStore.StoreChunks(ctx, task.RepoID, task.FilePath, chunks, allEmbeddings); err != nil {
 		logger.Error("存储向量失败", "error", err)
 		w.handleFailure("存储向量失败", task, err)
 		return
@@ -169,7 +161,7 @@ func (w *Worker) handleFailure(reason string, task *service.VectorizeTask, err e
 	task.RetryCount++
 	if task.RetryCount > w.maxRetries {
 		slog.Error("任务超过最大重试次数，丢弃",
-			"node_id", task.NodeID,
+			"file_path", task.FilePath,
 			"retry_count", task.RetryCount,
 			"reason", reason,
 			"error", err,
@@ -182,13 +174,13 @@ func (w *Worker) handleFailure(reason string, task *service.VectorizeTask, err e
 	data, _ := json.Marshal(task)
 
 	if err := w.rdb.RPush(context.Background(), queueKey, data).Err(); err != nil {
-		slog.Error("任务重新入队失败", "node_id", task.NodeID, "error", err)
+		slog.Error("任务重新入队失败", "file_path", task.FilePath, "error", err)
 		return
 	}
 
 	backoff := time.Duration(1<<task.RetryCount) * time.Second
 	slog.Warn("任务重新入队",
-		"node_id", task.NodeID,
+		"file_path", task.FilePath,
 		"retry_count", task.RetryCount,
 		"backoff", backoff,
 		"reason", reason,

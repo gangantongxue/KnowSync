@@ -1141,7 +1141,7 @@ type VectorizeArticleRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	RepoId        string                 `protobuf:"bytes,2,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	NodeId        string                 `protobuf:"bytes,3,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	FilePath      string                 `protobuf:"bytes,3,opt,name=file_path,json=filePath,proto3" json:"file_path,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1190,9 +1190,9 @@ func (x *VectorizeArticleRequest) GetRepoId() string {
 	return ""
 }
 
-func (x *VectorizeArticleRequest) GetNodeId() string {
+func (x *VectorizeArticleRequest) GetFilePath() string {
 	if x != nil {
-		return x.NodeId
+		return x.FilePath
 	}
 	return ""
 }
@@ -1344,11 +1344,11 @@ const file_ai_proto_rawDesc = "" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x1b\n" +
 	"\tis_public\x18\x02 \x01(\bR\bisPublic\"8\n" +
 	"\x1cUpdateRepoVisibilityResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"d\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"h\n" +
 	"\x17VectorizeArticleRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x17\n" +
-	"\arepo_id\x18\x02 \x01(\tR\x06repoId\x12\x17\n" +
-	"\anode_id\x18\x03 \x01(\tR\x06nodeId\"F\n" +
+	"\arepo_id\x18\x02 \x01(\tR\x06repoId\x12\x1b\n" +
+	"\tfile_path\x18\x03 \x01(\tR\bfilePath\"F\n" +
 	"\x18VectorizeArticleResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg2\xa7\x04\n" +

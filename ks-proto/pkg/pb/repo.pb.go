@@ -70,55 +70,6 @@ func (RepoVisibility) EnumDescriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{0}
 }
 
-type NodeType int32
-
-const (
-	NodeType_NODE_TYPE_UNSPECIFIED NodeType = 0
-	NodeType_FOLDER                NodeType = 1
-	NodeType_ARTICLE               NodeType = 2
-)
-
-// Enum value maps for NodeType.
-var (
-	NodeType_name = map[int32]string{
-		0: "NODE_TYPE_UNSPECIFIED",
-		1: "FOLDER",
-		2: "ARTICLE",
-	}
-	NodeType_value = map[string]int32{
-		"NODE_TYPE_UNSPECIFIED": 0,
-		"FOLDER":                1,
-		"ARTICLE":               2,
-	}
-)
-
-func (x NodeType) Enum() *NodeType {
-	p := new(NodeType)
-	*p = x
-	return p
-}
-
-func (x NodeType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (NodeType) Descriptor() protoreflect.EnumDescriptor {
-	return file_repo_proto_enumTypes[1].Descriptor()
-}
-
-func (NodeType) Type() protoreflect.EnumType {
-	return &file_repo_proto_enumTypes[1]
-}
-
-func (x NodeType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use NodeType.Descriptor instead.
-func (NodeType) EnumDescriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{1}
-}
-
 type CollaboratorRole int32
 
 const (
@@ -155,11 +106,11 @@ func (x CollaboratorRole) String() string {
 }
 
 func (CollaboratorRole) Descriptor() protoreflect.EnumDescriptor {
-	return file_repo_proto_enumTypes[2].Descriptor()
+	return file_repo_proto_enumTypes[1].Descriptor()
 }
 
 func (CollaboratorRole) Type() protoreflect.EnumType {
-	return &file_repo_proto_enumTypes[2]
+	return &file_repo_proto_enumTypes[1]
 }
 
 func (x CollaboratorRole) Number() protoreflect.EnumNumber {
@@ -168,7 +119,7 @@ func (x CollaboratorRole) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use CollaboratorRole.Descriptor instead.
 func (CollaboratorRole) EnumDescriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{2}
+	return file_repo_proto_rawDescGZIP(), []int{1}
 }
 
 type Repo struct {
@@ -271,114 +222,6 @@ func (x *Repo) GetUpdatedAt() string {
 	return ""
 }
 
-type Node struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	RepoId        string                 `protobuf:"bytes,2,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	ParentId      string                 `protobuf:"bytes,3,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
-	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-	Type          NodeType               `protobuf:"varint,5,opt,name=type,proto3,enum=proto.NodeType" json:"type,omitempty"`
-	FilePath      string                 `protobuf:"bytes,6,opt,name=file_path,json=filePath,proto3" json:"file_path,omitempty"`
-	Size          int64                  `protobuf:"varint,7,opt,name=size,proto3" json:"size,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     string                 `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Node) Reset() {
-	*x = Node{}
-	mi := &file_repo_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Node) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Node) ProtoMessage() {}
-
-func (x *Node) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Node.ProtoReflect.Descriptor instead.
-func (*Node) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *Node) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *Node) GetRepoId() string {
-	if x != nil {
-		return x.RepoId
-	}
-	return ""
-}
-
-func (x *Node) GetParentId() string {
-	if x != nil {
-		return x.ParentId
-	}
-	return ""
-}
-
-func (x *Node) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Node) GetType() NodeType {
-	if x != nil {
-		return x.Type
-	}
-	return NodeType_NODE_TYPE_UNSPECIFIED
-}
-
-func (x *Node) GetFilePath() string {
-	if x != nil {
-		return x.FilePath
-	}
-	return ""
-}
-
-func (x *Node) GetSize() int64 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-func (x *Node) GetCreatedAt() string {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return ""
-}
-
-func (x *Node) GetUpdatedAt() string {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return ""
-}
-
 type Collaborator struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
@@ -390,7 +233,7 @@ type Collaborator struct {
 
 func (x *Collaborator) Reset() {
 	*x = Collaborator{}
-	mi := &file_repo_proto_msgTypes[2]
+	mi := &file_repo_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -402,7 +245,7 @@ func (x *Collaborator) String() string {
 func (*Collaborator) ProtoMessage() {}
 
 func (x *Collaborator) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[2]
+	mi := &file_repo_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -415,7 +258,7 @@ func (x *Collaborator) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Collaborator.ProtoReflect.Descriptor instead.
 func (*Collaborator) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{2}
+	return file_repo_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Collaborator) GetRepoId() string {
@@ -451,7 +294,7 @@ type CreateRepoRequest struct {
 
 func (x *CreateRepoRequest) Reset() {
 	*x = CreateRepoRequest{}
-	mi := &file_repo_proto_msgTypes[3]
+	mi := &file_repo_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -463,7 +306,7 @@ func (x *CreateRepoRequest) String() string {
 func (*CreateRepoRequest) ProtoMessage() {}
 
 func (x *CreateRepoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[3]
+	mi := &file_repo_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -476,7 +319,7 @@ func (x *CreateRepoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRepoRequest.ProtoReflect.Descriptor instead.
 func (*CreateRepoRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{3}
+	return file_repo_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *CreateRepoRequest) GetOwnerId() string {
@@ -518,7 +361,7 @@ type CreateRepoResponse struct {
 
 func (x *CreateRepoResponse) Reset() {
 	*x = CreateRepoResponse{}
-	mi := &file_repo_proto_msgTypes[4]
+	mi := &file_repo_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -530,7 +373,7 @@ func (x *CreateRepoResponse) String() string {
 func (*CreateRepoResponse) ProtoMessage() {}
 
 func (x *CreateRepoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[4]
+	mi := &file_repo_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -543,7 +386,7 @@ func (x *CreateRepoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRepoResponse.ProtoReflect.Descriptor instead.
 func (*CreateRepoResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{4}
+	return file_repo_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *CreateRepoResponse) GetSuccess() bool {
@@ -577,7 +420,7 @@ type GetRepoRequest struct {
 
 func (x *GetRepoRequest) Reset() {
 	*x = GetRepoRequest{}
-	mi := &file_repo_proto_msgTypes[5]
+	mi := &file_repo_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -589,7 +432,7 @@ func (x *GetRepoRequest) String() string {
 func (*GetRepoRequest) ProtoMessage() {}
 
 func (x *GetRepoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[5]
+	mi := &file_repo_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -602,7 +445,7 @@ func (x *GetRepoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRepoRequest.ProtoReflect.Descriptor instead.
 func (*GetRepoRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{5}
+	return file_repo_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetRepoRequest) GetRepoId() string {
@@ -631,7 +474,7 @@ type GetRepoResponse struct {
 
 func (x *GetRepoResponse) Reset() {
 	*x = GetRepoResponse{}
-	mi := &file_repo_proto_msgTypes[6]
+	mi := &file_repo_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -643,7 +486,7 @@ func (x *GetRepoResponse) String() string {
 func (*GetRepoResponse) ProtoMessage() {}
 
 func (x *GetRepoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[6]
+	mi := &file_repo_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -656,7 +499,7 @@ func (x *GetRepoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRepoResponse.ProtoReflect.Descriptor instead.
 func (*GetRepoResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{6}
+	return file_repo_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetRepoResponse) GetSuccess() bool {
@@ -700,7 +543,7 @@ type UpdateRepoRequest struct {
 
 func (x *UpdateRepoRequest) Reset() {
 	*x = UpdateRepoRequest{}
-	mi := &file_repo_proto_msgTypes[7]
+	mi := &file_repo_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -712,7 +555,7 @@ func (x *UpdateRepoRequest) String() string {
 func (*UpdateRepoRequest) ProtoMessage() {}
 
 func (x *UpdateRepoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[7]
+	mi := &file_repo_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -725,7 +568,7 @@ func (x *UpdateRepoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRepoRequest.ProtoReflect.Descriptor instead.
 func (*UpdateRepoRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{7}
+	return file_repo_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *UpdateRepoRequest) GetRepoId() string {
@@ -774,7 +617,7 @@ type UpdateRepoResponse struct {
 
 func (x *UpdateRepoResponse) Reset() {
 	*x = UpdateRepoResponse{}
-	mi := &file_repo_proto_msgTypes[8]
+	mi := &file_repo_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -786,7 +629,7 @@ func (x *UpdateRepoResponse) String() string {
 func (*UpdateRepoResponse) ProtoMessage() {}
 
 func (x *UpdateRepoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[8]
+	mi := &file_repo_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -799,7 +642,7 @@ func (x *UpdateRepoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRepoResponse.ProtoReflect.Descriptor instead.
 func (*UpdateRepoResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{8}
+	return file_repo_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UpdateRepoResponse) GetSuccess() bool {
@@ -833,7 +676,7 @@ type DeleteRepoRequest struct {
 
 func (x *DeleteRepoRequest) Reset() {
 	*x = DeleteRepoRequest{}
-	mi := &file_repo_proto_msgTypes[9]
+	mi := &file_repo_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -845,7 +688,7 @@ func (x *DeleteRepoRequest) String() string {
 func (*DeleteRepoRequest) ProtoMessage() {}
 
 func (x *DeleteRepoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[9]
+	mi := &file_repo_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -858,7 +701,7 @@ func (x *DeleteRepoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteRepoRequest.ProtoReflect.Descriptor instead.
 func (*DeleteRepoRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{9}
+	return file_repo_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *DeleteRepoRequest) GetRepoId() string {
@@ -885,7 +728,7 @@ type DeleteRepoResponse struct {
 
 func (x *DeleteRepoResponse) Reset() {
 	*x = DeleteRepoResponse{}
-	mi := &file_repo_proto_msgTypes[10]
+	mi := &file_repo_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -897,7 +740,7 @@ func (x *DeleteRepoResponse) String() string {
 func (*DeleteRepoResponse) ProtoMessage() {}
 
 func (x *DeleteRepoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[10]
+	mi := &file_repo_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -910,7 +753,7 @@ func (x *DeleteRepoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteRepoResponse.ProtoReflect.Descriptor instead.
 func (*DeleteRepoResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{10}
+	return file_repo_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *DeleteRepoResponse) GetSuccess() bool {
@@ -936,7 +779,7 @@ type ListUserReposRequest struct {
 
 func (x *ListUserReposRequest) Reset() {
 	*x = ListUserReposRequest{}
-	mi := &file_repo_proto_msgTypes[11]
+	mi := &file_repo_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -948,7 +791,7 @@ func (x *ListUserReposRequest) String() string {
 func (*ListUserReposRequest) ProtoMessage() {}
 
 func (x *ListUserReposRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[11]
+	mi := &file_repo_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -961,7 +804,7 @@ func (x *ListUserReposRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUserReposRequest.ProtoReflect.Descriptor instead.
 func (*ListUserReposRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{11}
+	return file_repo_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ListUserReposRequest) GetUserId() string {
@@ -979,7 +822,7 @@ type ListPublicReposRequest struct {
 
 func (x *ListPublicReposRequest) Reset() {
 	*x = ListPublicReposRequest{}
-	mi := &file_repo_proto_msgTypes[12]
+	mi := &file_repo_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -991,7 +834,7 @@ func (x *ListPublicReposRequest) String() string {
 func (*ListPublicReposRequest) ProtoMessage() {}
 
 func (x *ListPublicReposRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[12]
+	mi := &file_repo_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1004,7 +847,7 @@ func (x *ListPublicReposRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPublicReposRequest.ProtoReflect.Descriptor instead.
 func (*ListPublicReposRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{12}
+	return file_repo_proto_rawDescGZIP(), []int{11}
 }
 
 type ListPublicReposResponse struct {
@@ -1017,7 +860,7 @@ type ListPublicReposResponse struct {
 
 func (x *ListPublicReposResponse) Reset() {
 	*x = ListPublicReposResponse{}
-	mi := &file_repo_proto_msgTypes[13]
+	mi := &file_repo_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1029,7 +872,7 @@ func (x *ListPublicReposResponse) String() string {
 func (*ListPublicReposResponse) ProtoMessage() {}
 
 func (x *ListPublicReposResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[13]
+	mi := &file_repo_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1042,7 +885,7 @@ func (x *ListPublicReposResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPublicReposResponse.ProtoReflect.Descriptor instead.
 func (*ListPublicReposResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{13}
+	return file_repo_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ListPublicReposResponse) GetSuccess() bool {
@@ -1069,7 +912,7 @@ type ListUserReposResponse struct {
 
 func (x *ListUserReposResponse) Reset() {
 	*x = ListUserReposResponse{}
-	mi := &file_repo_proto_msgTypes[14]
+	mi := &file_repo_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1081,7 +924,7 @@ func (x *ListUserReposResponse) String() string {
 func (*ListUserReposResponse) ProtoMessage() {}
 
 func (x *ListUserReposResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[14]
+	mi := &file_repo_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1094,7 +937,7 @@ func (x *ListUserReposResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUserReposResponse.ProtoReflect.Descriptor instead.
 func (*ListUserReposResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{14}
+	return file_repo_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListUserReposResponse) GetSuccess() bool {
@@ -1111,774 +954,6 @@ func (x *ListUserReposResponse) GetRepos() []*Repo {
 	return nil
 }
 
-type CreateNodeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	ParentId      string                 `protobuf:"bytes,3,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
-	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-	Type          NodeType               `protobuf:"varint,5,opt,name=type,proto3,enum=proto.NodeType" json:"type,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateNodeRequest) Reset() {
-	*x = CreateNodeRequest{}
-	mi := &file_repo_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateNodeRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateNodeRequest) ProtoMessage() {}
-
-func (x *CreateNodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateNodeRequest.ProtoReflect.Descriptor instead.
-func (*CreateNodeRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *CreateNodeRequest) GetRepoId() string {
-	if x != nil {
-		return x.RepoId
-	}
-	return ""
-}
-
-func (x *CreateNodeRequest) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-func (x *CreateNodeRequest) GetParentId() string {
-	if x != nil {
-		return x.ParentId
-	}
-	return ""
-}
-
-func (x *CreateNodeRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *CreateNodeRequest) GetType() NodeType {
-	if x != nil {
-		return x.Type
-	}
-	return NodeType_NODE_TYPE_UNSPECIFIED
-}
-
-type CreateNodeResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Node          *Node                  `protobuf:"bytes,3,opt,name=node,proto3" json:"node,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateNodeResponse) Reset() {
-	*x = CreateNodeResponse{}
-	mi := &file_repo_proto_msgTypes[16]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateNodeResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateNodeResponse) ProtoMessage() {}
-
-func (x *CreateNodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[16]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateNodeResponse.ProtoReflect.Descriptor instead.
-func (*CreateNodeResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *CreateNodeResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *CreateNodeResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
-}
-
-func (x *CreateNodeResponse) GetNode() *Node {
-	if x != nil {
-		return x.Node
-	}
-	return nil
-}
-
-type GetNodeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	NodeId        string                 `protobuf:"bytes,2,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
-	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetNodeRequest) Reset() {
-	*x = GetNodeRequest{}
-	mi := &file_repo_proto_msgTypes[17]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetNodeRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetNodeRequest) ProtoMessage() {}
-
-func (x *GetNodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[17]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetNodeRequest.ProtoReflect.Descriptor instead.
-func (*GetNodeRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *GetNodeRequest) GetRepoId() string {
-	if x != nil {
-		return x.RepoId
-	}
-	return ""
-}
-
-func (x *GetNodeRequest) GetNodeId() string {
-	if x != nil {
-		return x.NodeId
-	}
-	return ""
-}
-
-func (x *GetNodeRequest) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-type GetNodeResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Node          *Node                  `protobuf:"bytes,3,opt,name=node,proto3" json:"node,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetNodeResponse) Reset() {
-	*x = GetNodeResponse{}
-	mi := &file_repo_proto_msgTypes[18]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetNodeResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetNodeResponse) ProtoMessage() {}
-
-func (x *GetNodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[18]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetNodeResponse.ProtoReflect.Descriptor instead.
-func (*GetNodeResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *GetNodeResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetNodeResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
-}
-
-func (x *GetNodeResponse) GetNode() *Node {
-	if x != nil {
-		return x.Node
-	}
-	return nil
-}
-
-type UpdateNodeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	NodeId        string                 `protobuf:"bytes,3,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
-	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-	ParentId      string                 `protobuf:"bytes,5,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateNodeRequest) Reset() {
-	*x = UpdateNodeRequest{}
-	mi := &file_repo_proto_msgTypes[19]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateNodeRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateNodeRequest) ProtoMessage() {}
-
-func (x *UpdateNodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[19]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateNodeRequest.ProtoReflect.Descriptor instead.
-func (*UpdateNodeRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{19}
-}
-
-func (x *UpdateNodeRequest) GetRepoId() string {
-	if x != nil {
-		return x.RepoId
-	}
-	return ""
-}
-
-func (x *UpdateNodeRequest) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-func (x *UpdateNodeRequest) GetNodeId() string {
-	if x != nil {
-		return x.NodeId
-	}
-	return ""
-}
-
-func (x *UpdateNodeRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *UpdateNodeRequest) GetParentId() string {
-	if x != nil {
-		return x.ParentId
-	}
-	return ""
-}
-
-type UpdateNodeResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Node          *Node                  `protobuf:"bytes,3,opt,name=node,proto3" json:"node,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateNodeResponse) Reset() {
-	*x = UpdateNodeResponse{}
-	mi := &file_repo_proto_msgTypes[20]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateNodeResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateNodeResponse) ProtoMessage() {}
-
-func (x *UpdateNodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[20]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateNodeResponse.ProtoReflect.Descriptor instead.
-func (*UpdateNodeResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{20}
-}
-
-func (x *UpdateNodeResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *UpdateNodeResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
-}
-
-func (x *UpdateNodeResponse) GetNode() *Node {
-	if x != nil {
-		return x.Node
-	}
-	return nil
-}
-
-type DeleteNodeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	NodeId        string                 `protobuf:"bytes,3,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteNodeRequest) Reset() {
-	*x = DeleteNodeRequest{}
-	mi := &file_repo_proto_msgTypes[21]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteNodeRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteNodeRequest) ProtoMessage() {}
-
-func (x *DeleteNodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[21]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteNodeRequest.ProtoReflect.Descriptor instead.
-func (*DeleteNodeRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{21}
-}
-
-func (x *DeleteNodeRequest) GetRepoId() string {
-	if x != nil {
-		return x.RepoId
-	}
-	return ""
-}
-
-func (x *DeleteNodeRequest) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-func (x *DeleteNodeRequest) GetNodeId() string {
-	if x != nil {
-		return x.NodeId
-	}
-	return ""
-}
-
-type DeleteNodeResponse struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Success          bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg              string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	DeletedNodeIds   []string               `protobuf:"bytes,3,rep,name=deleted_node_ids,json=deletedNodeIds,proto3" json:"deleted_node_ids,omitempty"`
-	DeletedFilePaths []string               `protobuf:"bytes,4,rep,name=deleted_file_paths,json=deletedFilePaths,proto3" json:"deleted_file_paths,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
-}
-
-func (x *DeleteNodeResponse) Reset() {
-	*x = DeleteNodeResponse{}
-	mi := &file_repo_proto_msgTypes[22]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteNodeResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteNodeResponse) ProtoMessage() {}
-
-func (x *DeleteNodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[22]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteNodeResponse.ProtoReflect.Descriptor instead.
-func (*DeleteNodeResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{22}
-}
-
-func (x *DeleteNodeResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *DeleteNodeResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
-}
-
-func (x *DeleteNodeResponse) GetDeletedNodeIds() []string {
-	if x != nil {
-		return x.DeletedNodeIds
-	}
-	return nil
-}
-
-func (x *DeleteNodeResponse) GetDeletedFilePaths() []string {
-	if x != nil {
-		return x.DeletedFilePaths
-	}
-	return nil
-}
-
-type ListNodesRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	ParentId      string                 `protobuf:"bytes,3,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListNodesRequest) Reset() {
-	*x = ListNodesRequest{}
-	mi := &file_repo_proto_msgTypes[23]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListNodesRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListNodesRequest) ProtoMessage() {}
-
-func (x *ListNodesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[23]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListNodesRequest.ProtoReflect.Descriptor instead.
-func (*ListNodesRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{23}
-}
-
-func (x *ListNodesRequest) GetRepoId() string {
-	if x != nil {
-		return x.RepoId
-	}
-	return ""
-}
-
-func (x *ListNodesRequest) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-func (x *ListNodesRequest) GetParentId() string {
-	if x != nil {
-		return x.ParentId
-	}
-	return ""
-}
-
-type ListNodesResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Nodes         []*Node                `protobuf:"bytes,2,rep,name=nodes,proto3" json:"nodes,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListNodesResponse) Reset() {
-	*x = ListNodesResponse{}
-	mi := &file_repo_proto_msgTypes[24]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListNodesResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListNodesResponse) ProtoMessage() {}
-
-func (x *ListNodesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[24]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListNodesResponse.ProtoReflect.Descriptor instead.
-func (*ListNodesResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{24}
-}
-
-func (x *ListNodesResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *ListNodesResponse) GetNodes() []*Node {
-	if x != nil {
-		return x.Nodes
-	}
-	return nil
-}
-
-type SetArticleContentRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	NodeId        string                 `protobuf:"bytes,3,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
-	FilePath      string                 `protobuf:"bytes,4,opt,name=file_path,json=filePath,proto3" json:"file_path,omitempty"`
-	Size          int64                  `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SetArticleContentRequest) Reset() {
-	*x = SetArticleContentRequest{}
-	mi := &file_repo_proto_msgTypes[25]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SetArticleContentRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SetArticleContentRequest) ProtoMessage() {}
-
-func (x *SetArticleContentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[25]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SetArticleContentRequest.ProtoReflect.Descriptor instead.
-func (*SetArticleContentRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{25}
-}
-
-func (x *SetArticleContentRequest) GetRepoId() string {
-	if x != nil {
-		return x.RepoId
-	}
-	return ""
-}
-
-func (x *SetArticleContentRequest) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-func (x *SetArticleContentRequest) GetNodeId() string {
-	if x != nil {
-		return x.NodeId
-	}
-	return ""
-}
-
-func (x *SetArticleContentRequest) GetFilePath() string {
-	if x != nil {
-		return x.FilePath
-	}
-	return ""
-}
-
-func (x *SetArticleContentRequest) GetSize() int64 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-type SetArticleContentResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Node          *Node                  `protobuf:"bytes,3,opt,name=node,proto3" json:"node,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SetArticleContentResponse) Reset() {
-	*x = SetArticleContentResponse{}
-	mi := &file_repo_proto_msgTypes[26]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SetArticleContentResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SetArticleContentResponse) ProtoMessage() {}
-
-func (x *SetArticleContentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[26]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SetArticleContentResponse.ProtoReflect.Descriptor instead.
-func (*SetArticleContentResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{26}
-}
-
-func (x *SetArticleContentResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *SetArticleContentResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
-}
-
-func (x *SetArticleContentResponse) GetNode() *Node {
-	if x != nil {
-		return x.Node
-	}
-	return nil
-}
-
 type AddCollaboratorRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
@@ -1891,7 +966,7 @@ type AddCollaboratorRequest struct {
 
 func (x *AddCollaboratorRequest) Reset() {
 	*x = AddCollaboratorRequest{}
-	mi := &file_repo_proto_msgTypes[27]
+	mi := &file_repo_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1903,7 +978,7 @@ func (x *AddCollaboratorRequest) String() string {
 func (*AddCollaboratorRequest) ProtoMessage() {}
 
 func (x *AddCollaboratorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[27]
+	mi := &file_repo_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1916,7 +991,7 @@ func (x *AddCollaboratorRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddCollaboratorRequest.ProtoReflect.Descriptor instead.
 func (*AddCollaboratorRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{27}
+	return file_repo_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *AddCollaboratorRequest) GetRepoId() string {
@@ -1957,7 +1032,7 @@ type AddCollaboratorResponse struct {
 
 func (x *AddCollaboratorResponse) Reset() {
 	*x = AddCollaboratorResponse{}
-	mi := &file_repo_proto_msgTypes[28]
+	mi := &file_repo_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1969,7 +1044,7 @@ func (x *AddCollaboratorResponse) String() string {
 func (*AddCollaboratorResponse) ProtoMessage() {}
 
 func (x *AddCollaboratorResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[28]
+	mi := &file_repo_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1982,7 +1057,7 @@ func (x *AddCollaboratorResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddCollaboratorResponse.ProtoReflect.Descriptor instead.
 func (*AddCollaboratorResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{28}
+	return file_repo_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *AddCollaboratorResponse) GetSuccess() bool {
@@ -2011,7 +1086,7 @@ type UpdateCollaboratorRequest struct {
 
 func (x *UpdateCollaboratorRequest) Reset() {
 	*x = UpdateCollaboratorRequest{}
-	mi := &file_repo_proto_msgTypes[29]
+	mi := &file_repo_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2023,7 +1098,7 @@ func (x *UpdateCollaboratorRequest) String() string {
 func (*UpdateCollaboratorRequest) ProtoMessage() {}
 
 func (x *UpdateCollaboratorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[29]
+	mi := &file_repo_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2036,7 +1111,7 @@ func (x *UpdateCollaboratorRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateCollaboratorRequest.ProtoReflect.Descriptor instead.
 func (*UpdateCollaboratorRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{29}
+	return file_repo_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *UpdateCollaboratorRequest) GetRepoId() string {
@@ -2077,7 +1152,7 @@ type UpdateCollaboratorResponse struct {
 
 func (x *UpdateCollaboratorResponse) Reset() {
 	*x = UpdateCollaboratorResponse{}
-	mi := &file_repo_proto_msgTypes[30]
+	mi := &file_repo_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2089,7 +1164,7 @@ func (x *UpdateCollaboratorResponse) String() string {
 func (*UpdateCollaboratorResponse) ProtoMessage() {}
 
 func (x *UpdateCollaboratorResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[30]
+	mi := &file_repo_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2102,7 +1177,7 @@ func (x *UpdateCollaboratorResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateCollaboratorResponse.ProtoReflect.Descriptor instead.
 func (*UpdateCollaboratorResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{30}
+	return file_repo_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *UpdateCollaboratorResponse) GetSuccess() bool {
@@ -2130,7 +1205,7 @@ type RemoveCollaboratorRequest struct {
 
 func (x *RemoveCollaboratorRequest) Reset() {
 	*x = RemoveCollaboratorRequest{}
-	mi := &file_repo_proto_msgTypes[31]
+	mi := &file_repo_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2142,7 +1217,7 @@ func (x *RemoveCollaboratorRequest) String() string {
 func (*RemoveCollaboratorRequest) ProtoMessage() {}
 
 func (x *RemoveCollaboratorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[31]
+	mi := &file_repo_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2155,7 +1230,7 @@ func (x *RemoveCollaboratorRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveCollaboratorRequest.ProtoReflect.Descriptor instead.
 func (*RemoveCollaboratorRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{31}
+	return file_repo_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *RemoveCollaboratorRequest) GetRepoId() string {
@@ -2189,7 +1264,7 @@ type RemoveCollaboratorResponse struct {
 
 func (x *RemoveCollaboratorResponse) Reset() {
 	*x = RemoveCollaboratorResponse{}
-	mi := &file_repo_proto_msgTypes[32]
+	mi := &file_repo_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2201,7 +1276,7 @@ func (x *RemoveCollaboratorResponse) String() string {
 func (*RemoveCollaboratorResponse) ProtoMessage() {}
 
 func (x *RemoveCollaboratorResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[32]
+	mi := &file_repo_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2214,7 +1289,7 @@ func (x *RemoveCollaboratorResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveCollaboratorResponse.ProtoReflect.Descriptor instead.
 func (*RemoveCollaboratorResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{32}
+	return file_repo_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *RemoveCollaboratorResponse) GetSuccess() bool {
@@ -2241,7 +1316,7 @@ type ListCollaboratorsRequest struct {
 
 func (x *ListCollaboratorsRequest) Reset() {
 	*x = ListCollaboratorsRequest{}
-	mi := &file_repo_proto_msgTypes[33]
+	mi := &file_repo_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2253,7 +1328,7 @@ func (x *ListCollaboratorsRequest) String() string {
 func (*ListCollaboratorsRequest) ProtoMessage() {}
 
 func (x *ListCollaboratorsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[33]
+	mi := &file_repo_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2266,7 +1341,7 @@ func (x *ListCollaboratorsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCollaboratorsRequest.ProtoReflect.Descriptor instead.
 func (*ListCollaboratorsRequest) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{33}
+	return file_repo_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ListCollaboratorsRequest) GetRepoId() string {
@@ -2293,7 +1368,7 @@ type ListCollaboratorsResponse struct {
 
 func (x *ListCollaboratorsResponse) Reset() {
 	*x = ListCollaboratorsResponse{}
-	mi := &file_repo_proto_msgTypes[34]
+	mi := &file_repo_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2305,7 +1380,7 @@ func (x *ListCollaboratorsResponse) String() string {
 func (*ListCollaboratorsResponse) ProtoMessage() {}
 
 func (x *ListCollaboratorsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_repo_proto_msgTypes[34]
+	mi := &file_repo_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2318,7 +1393,7 @@ func (x *ListCollaboratorsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCollaboratorsResponse.ProtoReflect.Descriptor instead.
 func (*ListCollaboratorsResponse) Descriptor() ([]byte, []int) {
-	return file_repo_proto_rawDescGZIP(), []int{34}
+	return file_repo_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *ListCollaboratorsResponse) GetSuccess() bool {
@@ -2353,19 +1428,7 @@ const file_repo_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\a \x01(\tR\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\b \x01(\tR\tupdatedAt\"\xf4\x01\n" +
-	"\x04Node\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
-	"\arepo_id\x18\x02 \x01(\tR\x06repoId\x12\x1b\n" +
-	"\tparent_id\x18\x03 \x01(\tR\bparentId\x12\x12\n" +
-	"\x04name\x18\x04 \x01(\tR\x04name\x12#\n" +
-	"\x04type\x18\x05 \x01(\x0e2\x0f.proto.NodeTypeR\x04type\x12\x1b\n" +
-	"\tfile_path\x18\x06 \x01(\tR\bfilePath\x12\x12\n" +
-	"\x04size\x18\a \x01(\x03R\x04size\x12\x1d\n" +
-	"\n" +
-	"created_at\x18\b \x01(\tR\tcreatedAt\x12\x1d\n" +
-	"\n" +
-	"updated_at\x18\t \x01(\tR\tupdatedAt\"m\n" +
+	"updated_at\x18\b \x01(\tR\tupdatedAt\"m\n" +
 	"\fCollaborator\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12+\n" +
@@ -2415,61 +1478,7 @@ const file_repo_proto_rawDesc = "" +
 	"\x05repos\x18\x02 \x03(\v2\v.proto.RepoR\x05repos\"T\n" +
 	"\x15ListUserReposResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12!\n" +
-	"\x05repos\x18\x02 \x03(\v2\v.proto.RepoR\x05repos\"\x9b\x01\n" +
-	"\x11CreateNodeRequest\x12\x17\n" +
-	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1b\n" +
-	"\tparent_id\x18\x03 \x01(\tR\bparentId\x12\x12\n" +
-	"\x04name\x18\x04 \x01(\tR\x04name\x12#\n" +
-	"\x04type\x18\x05 \x01(\x0e2\x0f.proto.NodeTypeR\x04type\"a\n" +
-	"\x12CreateNodeResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
-	"\x04node\x18\x03 \x01(\v2\v.proto.NodeR\x04node\"[\n" +
-	"\x0eGetNodeRequest\x12\x17\n" +
-	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
-	"\anode_id\x18\x02 \x01(\tR\x06nodeId\x12\x17\n" +
-	"\auser_id\x18\x03 \x01(\tR\x06userId\"^\n" +
-	"\x0fGetNodeResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
-	"\x04node\x18\x03 \x01(\v2\v.proto.NodeR\x04node\"\x8f\x01\n" +
-	"\x11UpdateNodeRequest\x12\x17\n" +
-	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x17\n" +
-	"\anode_id\x18\x03 \x01(\tR\x06nodeId\x12\x12\n" +
-	"\x04name\x18\x04 \x01(\tR\x04name\x12\x1b\n" +
-	"\tparent_id\x18\x05 \x01(\tR\bparentId\"a\n" +
-	"\x12UpdateNodeResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
-	"\x04node\x18\x03 \x01(\v2\v.proto.NodeR\x04node\"^\n" +
-	"\x11DeleteNodeRequest\x12\x17\n" +
-	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x17\n" +
-	"\anode_id\x18\x03 \x01(\tR\x06nodeId\"\x98\x01\n" +
-	"\x12DeleteNodeResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12(\n" +
-	"\x10deleted_node_ids\x18\x03 \x03(\tR\x0edeletedNodeIds\x12,\n" +
-	"\x12deleted_file_paths\x18\x04 \x03(\tR\x10deletedFilePaths\"a\n" +
-	"\x10ListNodesRequest\x12\x17\n" +
-	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1b\n" +
-	"\tparent_id\x18\x03 \x01(\tR\bparentId\"P\n" +
-	"\x11ListNodesResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12!\n" +
-	"\x05nodes\x18\x02 \x03(\v2\v.proto.NodeR\x05nodes\"\x96\x01\n" +
-	"\x18SetArticleContentRequest\x12\x17\n" +
-	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x17\n" +
-	"\anode_id\x18\x03 \x01(\tR\x06nodeId\x12\x1b\n" +
-	"\tfile_path\x18\x04 \x01(\tR\bfilePath\x12\x12\n" +
-	"\x04size\x18\x05 \x01(\x03R\x04size\"h\n" +
-	"\x19SetArticleContentResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
-	"\x04node\x18\x03 \x01(\v2\v.proto.NodeR\x04node\"\x98\x01\n" +
+	"\x05repos\x18\x02 \x03(\v2\v.proto.RepoR\x05repos\"\x98\x01\n" +
 	"\x16AddCollaboratorRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x1f\n" +
 	"\voperator_id\x18\x02 \x01(\tR\n" +
@@ -2506,18 +1515,13 @@ const file_repo_proto_rawDesc = "" +
 	"\x1bREPO_VISIBILITY_UNSPECIFIED\x10\x00\x12\n" +
 	"\n" +
 	"\x06PUBLIC\x10\x01\x12\v\n" +
-	"\aPRIVATE\x10\x02*>\n" +
-	"\bNodeType\x12\x19\n" +
-	"\x15NODE_TYPE_UNSPECIFIED\x10\x00\x12\n" +
-	"\n" +
-	"\x06FOLDER\x10\x01\x12\v\n" +
-	"\aARTICLE\x10\x02*[\n" +
+	"\aPRIVATE\x10\x02*[\n" +
 	"\x10CollaboratorRole\x12!\n" +
 	"\x1dCOLLABORATOR_ROLE_UNSPECIFIED\x10\x00\x12\t\n" +
 	"\x05ADMIN\x10\x01\x12\r\n" +
 	"\tDEVELOPER\x10\x02\x12\n" +
 	"\n" +
-	"\x06VIEWER\x10\x032\xa9\t\n" +
+	"\x06VIEWER\x10\x032\x8e\x06\n" +
 	"\vRepoService\x12A\n" +
 	"\n" +
 	"CreateRepo\x12\x18.proto.CreateRepoRequest\x1a\x19.proto.CreateRepoResponse\x128\n" +
@@ -2527,16 +1531,7 @@ const file_repo_proto_rawDesc = "" +
 	"\n" +
 	"DeleteRepo\x12\x18.proto.DeleteRepoRequest\x1a\x19.proto.DeleteRepoResponse\x12J\n" +
 	"\rListUserRepos\x12\x1b.proto.ListUserReposRequest\x1a\x1c.proto.ListUserReposResponse\x12P\n" +
-	"\x0fListPublicRepos\x12\x1d.proto.ListPublicReposRequest\x1a\x1e.proto.ListPublicReposResponse\x12A\n" +
-	"\n" +
-	"CreateNode\x12\x18.proto.CreateNodeRequest\x1a\x19.proto.CreateNodeResponse\x128\n" +
-	"\aGetNode\x12\x15.proto.GetNodeRequest\x1a\x16.proto.GetNodeResponse\x12A\n" +
-	"\n" +
-	"UpdateNode\x12\x18.proto.UpdateNodeRequest\x1a\x19.proto.UpdateNodeResponse\x12A\n" +
-	"\n" +
-	"DeleteNode\x12\x18.proto.DeleteNodeRequest\x1a\x19.proto.DeleteNodeResponse\x12>\n" +
-	"\tListNodes\x12\x17.proto.ListNodesRequest\x1a\x18.proto.ListNodesResponse\x12V\n" +
-	"\x11SetArticleContent\x12\x1f.proto.SetArticleContentRequest\x1a .proto.SetArticleContentResponse\x12P\n" +
+	"\x0fListPublicRepos\x12\x1d.proto.ListPublicReposRequest\x1a\x1e.proto.ListPublicReposResponse\x12P\n" +
 	"\x0fAddCollaborator\x12\x1d.proto.AddCollaboratorRequest\x1a\x1e.proto.AddCollaboratorResponse\x12Y\n" +
 	"\x12UpdateCollaborator\x12 .proto.UpdateCollaboratorRequest\x1a!.proto.UpdateCollaboratorResponse\x12Y\n" +
 	"\x12RemoveCollaborator\x12 .proto.RemoveCollaboratorRequest\x1a!.proto.RemoveCollaboratorResponse\x12V\n" +
@@ -2554,106 +1549,73 @@ func file_repo_proto_rawDescGZIP() []byte {
 	return file_repo_proto_rawDescData
 }
 
-var file_repo_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_repo_proto_msgTypes = make([]protoimpl.MessageInfo, 35)
+var file_repo_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_repo_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
 var file_repo_proto_goTypes = []any{
 	(RepoVisibility)(0),                // 0: proto.RepoVisibility
-	(NodeType)(0),                      // 1: proto.NodeType
-	(CollaboratorRole)(0),              // 2: proto.CollaboratorRole
-	(*Repo)(nil),                       // 3: proto.Repo
-	(*Node)(nil),                       // 4: proto.Node
-	(*Collaborator)(nil),               // 5: proto.Collaborator
-	(*CreateRepoRequest)(nil),          // 6: proto.CreateRepoRequest
-	(*CreateRepoResponse)(nil),         // 7: proto.CreateRepoResponse
-	(*GetRepoRequest)(nil),             // 8: proto.GetRepoRequest
-	(*GetRepoResponse)(nil),            // 9: proto.GetRepoResponse
-	(*UpdateRepoRequest)(nil),          // 10: proto.UpdateRepoRequest
-	(*UpdateRepoResponse)(nil),         // 11: proto.UpdateRepoResponse
-	(*DeleteRepoRequest)(nil),          // 12: proto.DeleteRepoRequest
-	(*DeleteRepoResponse)(nil),         // 13: proto.DeleteRepoResponse
-	(*ListUserReposRequest)(nil),       // 14: proto.ListUserReposRequest
-	(*ListPublicReposRequest)(nil),     // 15: proto.ListPublicReposRequest
-	(*ListPublicReposResponse)(nil),    // 16: proto.ListPublicReposResponse
-	(*ListUserReposResponse)(nil),      // 17: proto.ListUserReposResponse
-	(*CreateNodeRequest)(nil),          // 18: proto.CreateNodeRequest
-	(*CreateNodeResponse)(nil),         // 19: proto.CreateNodeResponse
-	(*GetNodeRequest)(nil),             // 20: proto.GetNodeRequest
-	(*GetNodeResponse)(nil),            // 21: proto.GetNodeResponse
-	(*UpdateNodeRequest)(nil),          // 22: proto.UpdateNodeRequest
-	(*UpdateNodeResponse)(nil),         // 23: proto.UpdateNodeResponse
-	(*DeleteNodeRequest)(nil),          // 24: proto.DeleteNodeRequest
-	(*DeleteNodeResponse)(nil),         // 25: proto.DeleteNodeResponse
-	(*ListNodesRequest)(nil),           // 26: proto.ListNodesRequest
-	(*ListNodesResponse)(nil),          // 27: proto.ListNodesResponse
-	(*SetArticleContentRequest)(nil),   // 28: proto.SetArticleContentRequest
-	(*SetArticleContentResponse)(nil),  // 29: proto.SetArticleContentResponse
-	(*AddCollaboratorRequest)(nil),     // 30: proto.AddCollaboratorRequest
-	(*AddCollaboratorResponse)(nil),    // 31: proto.AddCollaboratorResponse
-	(*UpdateCollaboratorRequest)(nil),  // 32: proto.UpdateCollaboratorRequest
-	(*UpdateCollaboratorResponse)(nil), // 33: proto.UpdateCollaboratorResponse
-	(*RemoveCollaboratorRequest)(nil),  // 34: proto.RemoveCollaboratorRequest
-	(*RemoveCollaboratorResponse)(nil), // 35: proto.RemoveCollaboratorResponse
-	(*ListCollaboratorsRequest)(nil),   // 36: proto.ListCollaboratorsRequest
-	(*ListCollaboratorsResponse)(nil),  // 37: proto.ListCollaboratorsResponse
+	(CollaboratorRole)(0),              // 1: proto.CollaboratorRole
+	(*Repo)(nil),                       // 2: proto.Repo
+	(*Collaborator)(nil),               // 3: proto.Collaborator
+	(*CreateRepoRequest)(nil),          // 4: proto.CreateRepoRequest
+	(*CreateRepoResponse)(nil),         // 5: proto.CreateRepoResponse
+	(*GetRepoRequest)(nil),             // 6: proto.GetRepoRequest
+	(*GetRepoResponse)(nil),            // 7: proto.GetRepoResponse
+	(*UpdateRepoRequest)(nil),          // 8: proto.UpdateRepoRequest
+	(*UpdateRepoResponse)(nil),         // 9: proto.UpdateRepoResponse
+	(*DeleteRepoRequest)(nil),          // 10: proto.DeleteRepoRequest
+	(*DeleteRepoResponse)(nil),         // 11: proto.DeleteRepoResponse
+	(*ListUserReposRequest)(nil),       // 12: proto.ListUserReposRequest
+	(*ListPublicReposRequest)(nil),     // 13: proto.ListPublicReposRequest
+	(*ListPublicReposResponse)(nil),    // 14: proto.ListPublicReposResponse
+	(*ListUserReposResponse)(nil),      // 15: proto.ListUserReposResponse
+	(*AddCollaboratorRequest)(nil),     // 16: proto.AddCollaboratorRequest
+	(*AddCollaboratorResponse)(nil),    // 17: proto.AddCollaboratorResponse
+	(*UpdateCollaboratorRequest)(nil),  // 18: proto.UpdateCollaboratorRequest
+	(*UpdateCollaboratorResponse)(nil), // 19: proto.UpdateCollaboratorResponse
+	(*RemoveCollaboratorRequest)(nil),  // 20: proto.RemoveCollaboratorRequest
+	(*RemoveCollaboratorResponse)(nil), // 21: proto.RemoveCollaboratorResponse
+	(*ListCollaboratorsRequest)(nil),   // 22: proto.ListCollaboratorsRequest
+	(*ListCollaboratorsResponse)(nil),  // 23: proto.ListCollaboratorsResponse
 }
 var file_repo_proto_depIdxs = []int32{
 	0,  // 0: proto.Repo.visibility:type_name -> proto.RepoVisibility
-	1,  // 1: proto.Node.type:type_name -> proto.NodeType
-	2,  // 2: proto.Collaborator.role:type_name -> proto.CollaboratorRole
-	0,  // 3: proto.CreateRepoRequest.visibility:type_name -> proto.RepoVisibility
-	3,  // 4: proto.CreateRepoResponse.repo:type_name -> proto.Repo
-	3,  // 5: proto.GetRepoResponse.repo:type_name -> proto.Repo
-	2,  // 6: proto.GetRepoResponse.my_role:type_name -> proto.CollaboratorRole
-	0,  // 7: proto.UpdateRepoRequest.visibility:type_name -> proto.RepoVisibility
-	3,  // 8: proto.UpdateRepoResponse.repo:type_name -> proto.Repo
-	3,  // 9: proto.ListPublicReposResponse.repos:type_name -> proto.Repo
-	3,  // 10: proto.ListUserReposResponse.repos:type_name -> proto.Repo
-	1,  // 11: proto.CreateNodeRequest.type:type_name -> proto.NodeType
-	4,  // 12: proto.CreateNodeResponse.node:type_name -> proto.Node
-	4,  // 13: proto.GetNodeResponse.node:type_name -> proto.Node
-	4,  // 14: proto.UpdateNodeResponse.node:type_name -> proto.Node
-	4,  // 15: proto.ListNodesResponse.nodes:type_name -> proto.Node
-	4,  // 16: proto.SetArticleContentResponse.node:type_name -> proto.Node
-	2,  // 17: proto.AddCollaboratorRequest.role:type_name -> proto.CollaboratorRole
-	2,  // 18: proto.UpdateCollaboratorRequest.role:type_name -> proto.CollaboratorRole
-	5,  // 19: proto.ListCollaboratorsResponse.collaborators:type_name -> proto.Collaborator
-	6,  // 20: proto.RepoService.CreateRepo:input_type -> proto.CreateRepoRequest
-	8,  // 21: proto.RepoService.GetRepo:input_type -> proto.GetRepoRequest
-	10, // 22: proto.RepoService.UpdateRepo:input_type -> proto.UpdateRepoRequest
-	12, // 23: proto.RepoService.DeleteRepo:input_type -> proto.DeleteRepoRequest
-	14, // 24: proto.RepoService.ListUserRepos:input_type -> proto.ListUserReposRequest
-	15, // 25: proto.RepoService.ListPublicRepos:input_type -> proto.ListPublicReposRequest
-	18, // 26: proto.RepoService.CreateNode:input_type -> proto.CreateNodeRequest
-	20, // 27: proto.RepoService.GetNode:input_type -> proto.GetNodeRequest
-	22, // 28: proto.RepoService.UpdateNode:input_type -> proto.UpdateNodeRequest
-	24, // 29: proto.RepoService.DeleteNode:input_type -> proto.DeleteNodeRequest
-	26, // 30: proto.RepoService.ListNodes:input_type -> proto.ListNodesRequest
-	28, // 31: proto.RepoService.SetArticleContent:input_type -> proto.SetArticleContentRequest
-	30, // 32: proto.RepoService.AddCollaborator:input_type -> proto.AddCollaboratorRequest
-	32, // 33: proto.RepoService.UpdateCollaborator:input_type -> proto.UpdateCollaboratorRequest
-	34, // 34: proto.RepoService.RemoveCollaborator:input_type -> proto.RemoveCollaboratorRequest
-	36, // 35: proto.RepoService.ListCollaborators:input_type -> proto.ListCollaboratorsRequest
-	7,  // 36: proto.RepoService.CreateRepo:output_type -> proto.CreateRepoResponse
-	9,  // 37: proto.RepoService.GetRepo:output_type -> proto.GetRepoResponse
-	11, // 38: proto.RepoService.UpdateRepo:output_type -> proto.UpdateRepoResponse
-	13, // 39: proto.RepoService.DeleteRepo:output_type -> proto.DeleteRepoResponse
-	17, // 40: proto.RepoService.ListUserRepos:output_type -> proto.ListUserReposResponse
-	16, // 41: proto.RepoService.ListPublicRepos:output_type -> proto.ListPublicReposResponse
-	19, // 42: proto.RepoService.CreateNode:output_type -> proto.CreateNodeResponse
-	21, // 43: proto.RepoService.GetNode:output_type -> proto.GetNodeResponse
-	23, // 44: proto.RepoService.UpdateNode:output_type -> proto.UpdateNodeResponse
-	25, // 45: proto.RepoService.DeleteNode:output_type -> proto.DeleteNodeResponse
-	27, // 46: proto.RepoService.ListNodes:output_type -> proto.ListNodesResponse
-	29, // 47: proto.RepoService.SetArticleContent:output_type -> proto.SetArticleContentResponse
-	31, // 48: proto.RepoService.AddCollaborator:output_type -> proto.AddCollaboratorResponse
-	33, // 49: proto.RepoService.UpdateCollaborator:output_type -> proto.UpdateCollaboratorResponse
-	35, // 50: proto.RepoService.RemoveCollaborator:output_type -> proto.RemoveCollaboratorResponse
-	37, // 51: proto.RepoService.ListCollaborators:output_type -> proto.ListCollaboratorsResponse
-	36, // [36:52] is the sub-list for method output_type
-	20, // [20:36] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	1,  // 1: proto.Collaborator.role:type_name -> proto.CollaboratorRole
+	0,  // 2: proto.CreateRepoRequest.visibility:type_name -> proto.RepoVisibility
+	2,  // 3: proto.CreateRepoResponse.repo:type_name -> proto.Repo
+	2,  // 4: proto.GetRepoResponse.repo:type_name -> proto.Repo
+	1,  // 5: proto.GetRepoResponse.my_role:type_name -> proto.CollaboratorRole
+	0,  // 6: proto.UpdateRepoRequest.visibility:type_name -> proto.RepoVisibility
+	2,  // 7: proto.UpdateRepoResponse.repo:type_name -> proto.Repo
+	2,  // 8: proto.ListPublicReposResponse.repos:type_name -> proto.Repo
+	2,  // 9: proto.ListUserReposResponse.repos:type_name -> proto.Repo
+	1,  // 10: proto.AddCollaboratorRequest.role:type_name -> proto.CollaboratorRole
+	1,  // 11: proto.UpdateCollaboratorRequest.role:type_name -> proto.CollaboratorRole
+	3,  // 12: proto.ListCollaboratorsResponse.collaborators:type_name -> proto.Collaborator
+	4,  // 13: proto.RepoService.CreateRepo:input_type -> proto.CreateRepoRequest
+	6,  // 14: proto.RepoService.GetRepo:input_type -> proto.GetRepoRequest
+	8,  // 15: proto.RepoService.UpdateRepo:input_type -> proto.UpdateRepoRequest
+	10, // 16: proto.RepoService.DeleteRepo:input_type -> proto.DeleteRepoRequest
+	12, // 17: proto.RepoService.ListUserRepos:input_type -> proto.ListUserReposRequest
+	13, // 18: proto.RepoService.ListPublicRepos:input_type -> proto.ListPublicReposRequest
+	16, // 19: proto.RepoService.AddCollaborator:input_type -> proto.AddCollaboratorRequest
+	18, // 20: proto.RepoService.UpdateCollaborator:input_type -> proto.UpdateCollaboratorRequest
+	20, // 21: proto.RepoService.RemoveCollaborator:input_type -> proto.RemoveCollaboratorRequest
+	22, // 22: proto.RepoService.ListCollaborators:input_type -> proto.ListCollaboratorsRequest
+	5,  // 23: proto.RepoService.CreateRepo:output_type -> proto.CreateRepoResponse
+	7,  // 24: proto.RepoService.GetRepo:output_type -> proto.GetRepoResponse
+	9,  // 25: proto.RepoService.UpdateRepo:output_type -> proto.UpdateRepoResponse
+	11, // 26: proto.RepoService.DeleteRepo:output_type -> proto.DeleteRepoResponse
+	15, // 27: proto.RepoService.ListUserRepos:output_type -> proto.ListUserReposResponse
+	14, // 28: proto.RepoService.ListPublicRepos:output_type -> proto.ListPublicReposResponse
+	17, // 29: proto.RepoService.AddCollaborator:output_type -> proto.AddCollaboratorResponse
+	19, // 30: proto.RepoService.UpdateCollaborator:output_type -> proto.UpdateCollaboratorResponse
+	21, // 31: proto.RepoService.RemoveCollaborator:output_type -> proto.RemoveCollaboratorResponse
+	23, // 32: proto.RepoService.ListCollaborators:output_type -> proto.ListCollaboratorsResponse
+	23, // [23:33] is the sub-list for method output_type
+	13, // [13:23] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_repo_proto_init() }
@@ -2666,8 +1628,8 @@ func file_repo_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_repo_proto_rawDesc), len(file_repo_proto_rawDesc)),
-			NumEnums:      3,
-			NumMessages:   35,
+			NumEnums:      2,
+			NumMessages:   22,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

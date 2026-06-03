@@ -138,7 +138,7 @@ message UpdateRepoVisibilityResponse {
 message VectorizeArticleRequest {
   string user_id = 1;
   string repo_id = 2;
-  string node_id = 3;
+  string file_path = 3;
 }
 
 // VectorizeArticleResponse 向量化文章响应

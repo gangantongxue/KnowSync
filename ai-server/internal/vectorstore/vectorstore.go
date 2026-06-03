@@ -57,8 +57,8 @@ func (s *Store) getOrCreateCollection(ctx context.Context, repoID string) (*chro
 	return col, nil
 }
 
-// StoreChunks 存储文档块的向量，embeddings 为每个 chunk 对应的向量
-func (s *Store) StoreChunks(ctx context.Context, repoID, nodeID string, chunks []chunker.Chunk, embeddings [][]float64) error {
+// StoreChunks 存储文档块的向量，embeddings 为每个 chunk 对应的向量，filePath 作为唯一标识
+func (s *Store) StoreChunks(ctx context.Context, repoID, filePath string, chunks []chunker.Chunk, embeddings [][]float64) error {
 	if len(chunks) == 0 {
 		return nil
 	}
@@ -66,9 +66,9 @@ func (s *Store) StoreChunks(ctx context.Context, repoID, nodeID string, chunks [
 		return fmt.Errorf("chunks 与 embeddings 数量不匹配: %d vs %d", len(chunks), len(embeddings))
 	}
 
-	// 先删除该 node_id 的旧向量
-	if err := s.DeleteNodeVectors(ctx, repoID, nodeID); err != nil {
-		slog.Warn("删除旧向量失败", "node_id", nodeID, "error", err)
+	// 先删除该 file_path 的旧向量
+	if err := s.DeleteFileVectors(ctx, repoID, filePath); err != nil {
+		slog.Warn("删除旧向量失败", "file_path", filePath, "error", err)
 	}
 
 	col, err := s.getOrCreateCollection(ctx, repoID)
@@ -91,13 +91,13 @@ func (s *Store) StoreChunks(ctx context.Context, repoID, nodeID string, chunks [
 				chunkEmbedding[k] = float32(v)
 			}
 
-			docID := fmt.Sprintf("%s_%d", nodeID, chunks[j].Index)
+			docID := fmt.Sprintf("%s_%d", strings.ReplaceAll(filePath, "/", "_"), chunks[j].Index)
 
 			doc := chromem.Document{
 				ID:      docID,
 				Content: chunks[j].Text,
 				Metadata: map[string]string{
-					"node_id":      nodeID,
+					"file_path":    filePath,
 					"repo_id":      repoID,
 					"chunk_index":  fmt.Sprintf("%d", chunks[j].Index),
 					"total_chunks": fmt.Sprintf("%d", totalChunks),
@@ -113,7 +113,7 @@ func (s *Store) StoreChunks(ctx context.Context, repoID, nodeID string, chunks [
 	}
 
 	slog.Info("存储向量完成",
-		"node_id", nodeID,
+		"file_path", filePath,
 		"repo_id", repoID,
 		"chunks", totalChunks,
 	)
@@ -121,15 +121,15 @@ func (s *Store) StoreChunks(ctx context.Context, repoID, nodeID string, chunks [
 	return nil
 }
 
-// DeleteNodeVectors 删除指定 node_id 的所有向量
-func (s *Store) DeleteNodeVectors(ctx context.Context, repoID, nodeID string) error {
+// DeleteFileVectors 删除指定 file_path 的所有向量
+func (s *Store) DeleteFileVectors(ctx context.Context, repoID, filePath string) error {
 	col := s.db.GetCollection(collectionName(repoID), nil)
 	if col == nil {
 		return nil
 	}
 
-	if err := col.Delete(ctx, map[string]string{"node_id": nodeID}, nil); err != nil {
-		return fmt.Errorf("删除节点向量失败: %w", err)
+	if err := col.Delete(ctx, map[string]string{"file_path": filePath}, nil); err != nil {
+		return fmt.Errorf("删除文件向量失败: %w", err)
 	}
 
 	return nil

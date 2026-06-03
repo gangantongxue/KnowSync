@@ -43,7 +43,7 @@ func NewApp() error {
 	}
 
 	// 自动迁移数据库表结构
-	if err := db.DB.AutoMigrate(&schema.Repo{}, &schema.Node{}, &schema.Collaborator{}); err != nil {
+	if err := db.DB.AutoMigrate(&schema.Repo{}, &schema.Collaborator{}); err != nil {
 		slog.Error("数据库迁移失败", "error", err)
 		return err
 	}

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Outlet, useParams, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../store/auth-context'
 import { useRepo } from '../../store/repo-context'
 import TopBar from './TopBar'
@@ -8,7 +8,6 @@ import Sidebar from './Sidebar'
 export default function AppLayout() {
   const { isAuthenticated, isLoading } = useAuth()
   const { loadRepos } = useRepo()
-  const { repoId } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -22,7 +21,7 @@ export default function AppLayout() {
     loadRepos()
   }, [loadRepos])
 
-  const isRepoRoute = location.pathname.startsWith('/repos')
+  const isInsideRepo = /^\/repos\/[^/]/.test(location.pathname)
   const isSearchRoute = location.pathname.startsWith('/search')
 
   if (isLoading) {
@@ -51,11 +50,7 @@ export default function AppLayout() {
     <div className="h-screen flex flex-col">
       <TopBar />
       <div className="flex-1 flex overflow-hidden">
-        <Sidebar
-          isFileTree={isRepoRoute}
-          repoId={repoId}
-          onBack={() => navigate('/chat')}
-        />
+        {!isInsideRepo && <Sidebar />}
         <main className="flex-1 overflow-y-auto">
           <Outlet />
         </main>

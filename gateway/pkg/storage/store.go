@@ -117,7 +117,7 @@ func (s *Store) Rename(oldSubpath, newSubpath string) error {
 	return os.Rename(oldFull, newFull)
 }
 
-// ListDir 列出目录内容
+// ListDir 列出目录内容，自动过滤 .hertz.gz 等临时文件
 func (s *Store) ListDir(subpath string) ([]DirEntry, error) {
 	fullPath, err := s.Resolve(subpath)
 	if err != nil {
@@ -132,6 +132,9 @@ func (s *Store) ListDir(subpath string) ([]DirEntry, error) {
 	}
 	result := make([]DirEntry, 0, len(entries))
 	for _, e := range entries {
+		if strings.HasSuffix(e.Name(), ".hertz.gz") {
+			continue
+		}
 		info, _ := e.Info()
 		var size int64
 		if info != nil {

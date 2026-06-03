@@ -3,11 +3,14 @@ package handler
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"path/filepath"
+	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/gangantongxue/knowsync/gateway/pkg/errcode"
 	"github.com/gangantongxue/knowsync/gateway/pkg/response"
+	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
 // RenameFileReq 文件重命名/移动请求体
@@ -83,12 +86,52 @@ func (h *Handler) UploadFile() app.HandlerFunc {
 			return
 		}
 
+		// 异步触发向量化（仅对文本文件）
+		ext := strings.ToLower(filepath.Ext(filePath))
+		if isTextFile(ext) {
+			go h.triggerVectorize(uid, repoID, filePath)
+		}
+
 		response.Success(c, ctx, map[string]any{
 			"path":     filePath,
 			"size":     size,
 			"file_url": fmt.Sprintf("files/%s/%s/%s", uid, repoID, filePath),
 		})
 	}
+}
+
+// triggerVectorize 异步触发向量化
+func (h *Handler) triggerVectorize(uid, repoID, filePath string) {
+	conn := h.grpcClient.GetConn("ai_server")
+	if conn == nil {
+		slog.Warn("AI 服务连接不可用，跳过向量化", "file_path", filePath)
+		return
+	}
+
+	client := pb.NewAIServiceClient(conn)
+	resp, err := client.VectorizeArticle(context.Background(), &pb.VectorizeArticleRequest{
+		UserId:   uid,
+		RepoId:   repoID,
+		FilePath: filePath,
+	})
+	if err != nil {
+		slog.Warn("向量化请求失败", "file_path", filePath, "error", err)
+		return
+	}
+	if !resp.Success {
+		slog.Warn("向量化请求被拒绝", "file_path", filePath, "msg", resp.Msg)
+		return
+	}
+	slog.Info("向量化任务已提交", "file_path", filePath)
+}
+
+// isTextFile 判断是否为需要向量化的文本文件
+func isTextFile(ext string) bool {
+	switch ext {
+	case ".md", ".txt", ".markdown", ".rst", ".adoc", ".asciidoc":
+		return true
+	}
+	return false
 }
 
 // DeleteFile 删除知识库中的文件或目录

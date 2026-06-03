@@ -43,35 +43,15 @@ func NewClient(cfg *model.Config) (*Client, error) {
 	}, nil
 }
 
-// GetNode 从 repo-server 获取节点信息（含 file_path）
-func (c *Client) GetNode(ctx context.Context, userID, repoID, nodeID string) (*pb.Node, error) {
-	resp, err := c.repoClient.GetNode(ctx, &pb.GetNodeRequest{
-		RepoId: repoID,
-		NodeId: nodeID,
-		UserId: userID,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("调用 repo-server GetNode 失败: %w", err)
-	}
-	if resp == nil || !resp.Success {
-		msg := "获取节点失败"
-		if resp != nil {
-			msg = resp.Msg
-		}
-		return nil, errors.New(msg)
-	}
-
-	return resp.Node, nil
-}
-
-// GetArticleContent 从 gateway 获取文章内容
-func (c *Client) GetArticleContent(ctx context.Context, filePath string) (string, error) {
+// GetArticleContent 从 gateway 获取文章内容，传入 user_id/repo_id/filePath 构成的完整子路径
+func (c *Client) GetArticleContent(ctx context.Context, userID, repoID, filePath string) (string, error) {
 	u, err := url.Parse(c.gatewayAddr + "/internal/file")
 	if err != nil {
 		return "", fmt.Errorf("解析 gateway 地址失败: %w", err)
 	}
+	subpath := userID + "/" + repoID + "/" + filePath
 	q := u.Query()
-	q.Set("path", filePath)
+	q.Set("path", subpath)
 	u.RawQuery = q.Encode()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)

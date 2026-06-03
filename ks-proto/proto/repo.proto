@@ -10,12 +10,6 @@ enum RepoVisibility {
   PRIVATE = 2;
 }
 
-enum NodeType {
-  NODE_TYPE_UNSPECIFIED = 0;
-  FOLDER = 1;
-  ARTICLE = 2;
-}
-
 enum CollaboratorRole {
   COLLABORATOR_ROLE_UNSPECIFIED = 0;
   ADMIN = 1;
@@ -32,18 +26,6 @@ message Repo {
   int64 article_count = 6;
   string created_at = 7;
   string updated_at = 8;
-}
-
-message Node {
-  string id = 1;
-  string repo_id = 2;
-  string parent_id = 3;
-  string name = 4;
-  NodeType type = 5;
-  string file_path = 6;
-  int64 size = 7;
-  string created_at = 8;
-  string updated_at = 9;
 }
 
 message Collaborator {
@@ -117,84 +99,6 @@ message ListUserReposResponse {
   repeated Repo repos = 2;
 }
 
-message CreateNodeRequest {
-  string repo_id = 1;
-  string user_id = 2;
-  string parent_id = 3;
-  string name = 4;
-  NodeType type = 5;
-}
-
-message CreateNodeResponse {
-  bool success = 1;
-  string msg = 2;
-  Node node = 3;
-}
-
-message GetNodeRequest {
-  string repo_id = 1;
-  string node_id = 2;
-  string user_id = 3;
-}
-
-message GetNodeResponse {
-  bool success = 1;
-  string msg = 2;
-  Node node = 3;
-}
-
-message UpdateNodeRequest {
-  string repo_id = 1;
-  string user_id = 2;
-  string node_id = 3;
-  string name = 4;
-  string parent_id = 5;
-}
-
-message UpdateNodeResponse {
-  bool success = 1;
-  string msg = 2;
-  Node node = 3;
-}
-
-message DeleteNodeRequest {
-  string repo_id = 1;
-  string user_id = 2;
-  string node_id = 3;
-}
-
-message DeleteNodeResponse {
-  bool success = 1;
-  string msg = 2;
-  repeated string deleted_node_ids = 3;
-  repeated string deleted_file_paths = 4;
-}
-
-message ListNodesRequest {
-  string repo_id = 1;
-  string user_id = 2;
-  string parent_id = 3;
-}
-
-message ListNodesResponse {
-  bool success = 1;
-  repeated Node nodes = 2;
-}
-
-message SetArticleContentRequest {
-  string repo_id = 1;
-  string user_id = 2;
-  string node_id = 3;
-  string file_path = 4;
-  int64 size = 5;
-}
-
-message SetArticleContentResponse {
-  bool success = 1;
-  string msg = 2;
-  Node node = 3;
-}
-
 message AddCollaboratorRequest {
   string repo_id = 1;
   string operator_id = 2;
@@ -247,14 +151,6 @@ service RepoService {
   rpc DeleteRepo(DeleteRepoRequest) returns (DeleteRepoResponse);
   rpc ListUserRepos(ListUserReposRequest) returns (ListUserReposResponse);
   rpc ListPublicRepos(ListPublicReposRequest) returns (ListPublicReposResponse);
-
-  rpc CreateNode(CreateNodeRequest) returns (CreateNodeResponse);
-  rpc GetNode(GetNodeRequest) returns (GetNodeResponse);
-  rpc UpdateNode(UpdateNodeRequest) returns (UpdateNodeResponse);
-  rpc DeleteNode(DeleteNodeRequest) returns (DeleteNodeResponse);
-  rpc ListNodes(ListNodesRequest) returns (ListNodesResponse);
-
-  rpc SetArticleContent(SetArticleContentRequest) returns (SetArticleContentResponse);
 
   rpc AddCollaborator(AddCollaboratorRequest) returns (AddCollaboratorResponse);
   rpc UpdateCollaborator(UpdateCollaboratorRequest) returns (UpdateCollaboratorResponse);

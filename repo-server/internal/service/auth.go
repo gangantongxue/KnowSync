@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"log/slog"
-	"slices"
 )
 
 // CheckRepoPermission 校验用户在知识库中的权限
@@ -26,7 +25,7 @@ func (s *Service) CheckRepoPermission(ctx context.Context, repoID, userID string
 		return ErrPermissionDenied
 	}
 
-	if slices.Contains(requiredRoles, role) {
+	if isRoleSufficient(role, requiredRoles) {
 		return nil
 	}
 	return ErrPermissionDenied

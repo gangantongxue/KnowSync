@@ -14,17 +14,17 @@ const queueKey = "queue:vectorize"
 type VectorizeTask struct {
 	UserID     string `json:"user_id"`
 	RepoID     string `json:"repo_id"`
-	NodeID     string `json:"node_id"`
+	FilePath   string `json:"file_path"`
 	CreatedAt  string `json:"created_at"`
 	RetryCount int    `json:"retry_count"`
 }
 
 // VectorizeArticle 将向量化任务推入队列后立即返回
-func (s *Service) VectorizeArticle(ctx context.Context, userID, repoID, nodeID string) error {
+func (s *Service) VectorizeArticle(ctx context.Context, userID, repoID, filePath string) error {
 	task := VectorizeTask{
 		UserID:    userID,
 		RepoID:    repoID,
-		NodeID:    nodeID,
+		FilePath:  filePath,
 		CreatedAt: time.Now().UTC().Format(time.RFC3339),
 	}
 
@@ -40,7 +40,7 @@ func (s *Service) VectorizeArticle(ctx context.Context, userID, repoID, nodeID s
 	slog.Info("向量化任务已入队",
 		"user_id", userID,
 		"repo_id", repoID,
-		"node_id", nodeID,
+		"file_path", filePath,
 	)
 
 	return nil

@@ -32,9 +32,11 @@ export default function App() {
             {/* 登录后页面 — AppLayout */}
             <Route element={<AppLayout />}>
               <Route path="/repos" element={<RepoList />} />
-              <Route path="/repos/:repoId" element={<RepoDetail />} />
-              <Route path="/repos/:repoId/view/*" element={<ArticleView />} />
-              <Route path="/repos/:repoId/edit/*" element={<ArticleEditor />} />
+              {/* 仓库页面包含文件树 + 设置面板，子路由用于文章查看/编辑 */}
+              <Route path="/repos/:repoId" element={<RepoDetail />}>
+                <Route path="view/*" element={<ArticleView />} />
+                <Route path="edit/*" element={<ArticleEditor />} />
+              </Route>
               <Route path="/chat" element={<Chat />} />
               <Route path="/chat/:sessionId" element={<Chat />} />
               <Route path="/search" element={<SearchResult />} />

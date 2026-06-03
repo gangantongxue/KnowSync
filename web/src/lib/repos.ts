@@ -17,8 +17,8 @@ export async function listRepos(): Promise<Repo[]> {
 }
 
 export async function getRepo(repoId: string): Promise<Repo & { my_role: string }> {
-  const res = await request<Repo & { my_role: string }>(`/repos/${repoId}`)
-  return res.data
+  const res = await request<{ repo: Repo; my_role: string }>(`/repos/${repoId}`)
+  return { ...res.data.repo, my_role: res.data.my_role }
 }
 
 export async function createRepo(name: string, description?: string, visibility?: string): Promise<Repo> {
