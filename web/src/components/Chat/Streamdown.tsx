@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import type { Components } from 'react-markdown'
@@ -24,12 +25,21 @@ const components: Components = {
   pre({ children }) {
     return <div className="my-2">{children}</div>
   },
+  table({ children }) {
+    return <div className="overflow-x-auto my-3"><table className="min-w-full border-collapse border border-gray-300 text-sm">{children}</table></div>
+  },
+  th({ children }) {
+    return <th className="border border-gray-300 px-3 py-2 bg-gray-100 font-medium text-left">{children}</th>
+  },
+  td({ children }) {
+    return <td className="border border-gray-300 px-3 py-2">{children}</td>
+  },
 }
 
 function StreamdownInner({ content }: StreamdownProps) {
   return (
     <div className="prose prose-sm max-w-none prose-headings:text-gray-800 prose-p:text-gray-700 prose-a:text-emerald-600 prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded prose-code:text-sm">
-      <ReactMarkdown components={components}>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
         {content || ''}
       </ReactMarkdown>
     </div>

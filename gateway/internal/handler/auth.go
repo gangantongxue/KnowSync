@@ -267,9 +267,15 @@ func (h *Handler) Refresh() app.HandlerFunc {
 		// 设置新的 refresh_token cookie
 		setRefreshTokenCookie(ctx, refreshResp.RefreshToken)
 
-		// 只返回新的 access_token
+		// 返回新的 access_token 和用户信息
 		response.Success(c, ctx, map[string]any{
 			"access_token": refreshResp.AccessToken,
+			"user": map[string]any{
+				"id":     refreshResp.User.Id,
+				"name":   refreshResp.User.Name,
+				"email":  refreshResp.User.Email,
+				"avatar": refreshResp.User.Avatar,
+			},
 		})
 	}
 }

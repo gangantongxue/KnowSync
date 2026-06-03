@@ -3,32 +3,58 @@ package tool
 import (
 	"context"
 	"encoding/json"
+
+	"github.com/cloudwego/eino/components/tool"
+	"github.com/cloudwego/eino/schema"
 )
 
-// AskQuestion 反问用户工具
+// OnAskUser 反问用户回调，当工具被调用时触发，传入工具返回的 JSON 结果
+type OnAskUser func(resultJSON string)
+
+// AskQuestion 反问用户工具，实现 Eino InvokableTool 接口
 // 当 LLM 需要更多信息才能回答用户问题时，通过此工具向用户提问
 type AskQuestion struct {
-	Tool
+	onAskUser OnAskUser
 }
 
 // NewAskQuestion 创建反问用户工具
-func NewAskQuestion() *AskQuestion {
-	return &AskQuestion{
-		Tool: Tool{
-			Name:        "ask_user",
-			Description: "当你需要更多信息才能回答用户问题时，使用此工具向用户提问。支持单选和多选，始终包含自由输入选项。请尽量提供完整的选项供用户选择。",
-			ParamsJSON:  askQuestionSchema(),
-			Handler:     nil,
-		},
-	}
+// onAskUser: 可选，当非 nil 时，工具被调用后会回调此函数
+func NewAskQuestion(onAskUser OnAskUser) *AskQuestion {
+	return &AskQuestion{onAskUser: onAskUser}
 }
 
-// Init 初始化 Handler
-func (a *AskQuestion) Init() *Tool {
-	a.Tool.Handler = func(ctx context.Context, paramsJSON string) (string, error) {
-		return executeAskQuestion(ctx, paramsJSON)
+// Info 返回工具元信息
+func (a *AskQuestion) Info(ctx context.Context) (*schema.ToolInfo, error) {
+	return &schema.ToolInfo{
+		Name: "ask_user",
+		Desc: "当你需要更多信息才能回答用户问题时，使用此工具向用户提问。支持单选和多选，始终包含自由输入选项。请尽量提供完整的选项供用户选择。",
+		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
+			"question": {
+				Type:     "string",
+				Desc:     "向用户提出的问题，描述需要什么信息",
+				Required: true,
+			},
+			"type": {
+				Type:     "string",
+				Desc:     "选项类型：single-单选, multiple-多选",
+				Required: true,
+			},
+			"options": {
+				Type:     "array",
+				Desc:     "提供的选项列表，每个选项为一个字符串",
+				Required: true,
+			},
+		}),
+	}, nil
+}
+
+// InvokableRun 执行工具调用
+func (a *AskQuestion) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+	result, err := executeAskQuestion(ctx, arguments)
+	if err == nil && a.onAskUser != nil {
+		a.onAskUser(result)
 	}
-	return &a.Tool
+	return result, err
 }
 
 // AskQuestionParams 工具参数
@@ -38,18 +64,10 @@ type AskQuestionParams struct {
 	Options  []string `json:"options"`
 }
 
-// AskQuestionResult 返回给服务层的结果（不会被 LLM 直接使用）
-type AskQuestionResult struct {
-	Action   string   `json:"action"`
-	Question string   `json:"question"`
-	Type     string   `json:"type"`
-	Options  []string `json:"options"`
-}
-
 func executeAskQuestion(ctx context.Context, paramsJSON string) (string, error) {
 	var params AskQuestionParams
 	if err := json.Unmarshal([]byte(paramsJSON), &params); err != nil {
-		return `{"action": "ask_user_error", "message": "参数解析失败"}`, nil
+		return "", err
 	}
 
 	if params.Question == "" {
@@ -59,38 +77,11 @@ func executeAskQuestion(ctx context.Context, paramsJSON string) (string, error) 
 		params.Type = "single"
 	}
 
-	result := AskQuestionResult{
-		Action:   "ask_user",
-		Question: params.Question,
-		Type:     params.Type,
-		Options:  params.Options,
-	}
-
-	data, _ := json.Marshal(result)
+	data, _ := json.Marshal(map[string]any{
+		"action":   "ask_user",
+		"question": params.Question,
+		"type":     params.Type,
+		"options":  params.Options,
+	})
 	return string(data), nil
-}
-
-func askQuestionSchema() json.RawMessage {
-	return json.RawMessage(`{
-		"type": "object",
-		"properties": {
-			"question": {
-				"type": "string",
-				"description": "向用户提出的问题，描述需要什么信息"
-			},
-			"type": {
-				"type": "string",
-				"enum": ["single", "multiple"],
-				"description": "选项类型：single-单选, multiple-多选"
-			},
-			"options": {
-				"type": "array",
-				"items": {
-					"type": "string"
-				},
-				"description": "提供的选项列表，每个选项为一个字符串"
-			}
-		},
-		"required": ["question", "type", "options"]
-	}`)
 }

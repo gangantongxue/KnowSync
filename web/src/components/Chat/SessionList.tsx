@@ -5,22 +5,24 @@ export default function SessionList() {
   const { sessions, virtualSession, createNewSession, isLoadingSessions, currentSessionId, loadMessages, deleteSession } = useChat()
 
   const displaySessions = virtualSession ? [virtualSession, ...sessions] : sessions
+  const hasSessions = displaySessions.length > 0
 
   return (
     <div className="p-2">
       <div className="text-xs text-gray-400 font-medium px-2 py-1">会话列表</div>
+
+      <div className="py-1">
+        <button
+          onClick={createNewSession}
+          className="w-full px-3 py-2 text-sm text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-50 transition-colors"
+        >
+          新建对话
+        </button>
+      </div>
+
       {isLoadingSessions && displaySessions.length === 0 ? (
         <LoadingSpinner />
-      ) : displaySessions.length === 0 ? (
-        <div className="py-4">
-          <button
-            onClick={createNewSession}
-            className="w-full px-3 py-2 text-sm text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-50 transition-colors"
-          >
-            开始新对话
-          </button>
-        </div>
-      ) : (
+      ) : hasSessions ? (
         displaySessions.map(session => {
           const isVirtual = virtualSession && session.id === virtualSession.id
           return (
@@ -46,7 +48,7 @@ export default function SessionList() {
             </div>
           )
         })
-      )}
+      ) : null}
     </div>
   )
 }

@@ -6,7 +6,6 @@ require (
 	github.com/cloudwego/eino v0.9.1
 	github.com/cloudwego/eino-ext/components/embedding/openai v0.0.0-20260527130239-95019b303cc6
 	github.com/cloudwego/eino-ext/components/model/openai v0.1.13
-	github.com/eino-contrib/jsonschema v1.0.3
 	github.com/gangantongxue/knowsync/ks-proto v0.0.0-00010101000000-000000000000
 	github.com/philippgille/chromem-go v0.7.0
 	github.com/redis/go-redis/v9 v9.7.3
@@ -29,6 +28,7 @@ require (
 	github.com/cloudwego/eino-ext/libs/acl/openai v0.1.17 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/eino-contrib/jsonschema v1.0.3 // indirect
 	github.com/evanphx/json-patch v0.5.2 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect

@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react'
-import { getToken, clearToken } from '../lib/client'
+import { getToken, setToken, clearToken } from '../lib/client'
 import * as authApi from '../lib/auth'
 
 interface AuthState {
@@ -46,10 +46,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'CLEAR_USER' })
         return
       }
-      // 用任意需要认证的请求验证 token，这里先不做具体用户请求
-      // 路由守卫中会做具体处理
-      dispatch({ type: 'SET_LOADING', loading: false })
+
+      // 尝试用 refresh_token cookie 刷新 access_token
+      const response = await fetch('/api/v1/auth/refresh', {
+        method: 'POST',
+        credentials: 'same-origin',
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.code === 0 || data.code === 200) {
+          // 刷新成功，更新 token 并设置用户信息
+          setToken(data.data.access_token)
+          dispatch({ type: 'SET_USER', user: data.data.user })
+        } else {
+          // 刷新失败，清除 token
+          clearToken()
+          dispatch({ type: 'CLEAR_USER' })
+        }
+      } else {
+        clearToken()
+        dispatch({ type: 'CLEAR_USER' })
+      }
     } catch {
+      clearToken()
       dispatch({ type: 'CLEAR_USER' })
     }
   }
@@ -57,9 +77,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const token = getToken()
     if (token) {
-      dispatch({ type: 'SET_LOADING', loading: false })
-      // 实际用户信息在页面加载时通过具体接口获取
+      // 有 access_token，尝试用 refresh_token 刷新验证
+      refreshUser()
     } else {
+      // 没有 access_token，直接清除状态
       dispatch({ type: 'CLEAR_USER' })
     }
   }, [])

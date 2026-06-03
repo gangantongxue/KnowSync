@@ -22,20 +22,34 @@ export default function ChatWindow(_props: ChatWindowProps) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const handleScroll = async () => {
+  const isNearBottomRef = useRef(true)
+
+  useEffect(() => {
+    if (isNearBottomRef.current && bottomRef.current) {
+      const container = containerRef.current
+      if (container) {
+        container.scrollTop = container.scrollHeight
+      }
+    }
+  }, [messages])
+
+  const handleScrollBeforeLoading = async () => {
     const container = containerRef.current
     if (!container || isLoadingMore || !hasMoreMessages) return
 
-    const { scrollTop, scrollHeight } = container
+    const { scrollTop } = container
+    // 追踪用户是否在底部附近
+    isNearBottomRef.current = container.scrollHeight - container.scrollTop - container.clientHeight < 100
     if (scrollTop < 200) {
       setIsLoadingMore(true)
-      const prevScrollHeight = scrollHeight
+      const prevScrollHeight = container.scrollHeight
       await loadMoreMessages()
-      // Maintain scroll position after loading
-      if (containerRef.current) {
-        const newScrollHeight = containerRef.current.scrollHeight
-        containerRef.current.scrollTop = scrollTop + (newScrollHeight - prevScrollHeight)
-      }
+      requestAnimationFrame(() => {
+        if (containerRef.current) {
+          const newScrollHeight = containerRef.current.scrollHeight
+          containerRef.current.scrollTop = newScrollHeight - prevScrollHeight
+        }
+      })
       setIsLoadingMore(false)
     }
   }
@@ -51,7 +65,7 @@ export default function ChatWindow(_props: ChatWindowProps) {
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault()
       handleSubmit()
     }
@@ -70,7 +84,11 @@ export default function ChatWindow(_props: ChatWindowProps) {
     <>
       <div 
         ref={containerRef}
-        onScroll={handleScroll}
+        onScroll={(e) => {
+          const c = e.currentTarget
+          isNearBottomRef.current = c.scrollHeight - c.scrollTop - c.clientHeight < 100
+          handleScrollBeforeLoading()
+        }}
         className="flex-1 overflow-y-auto px-4 py-4"
       >
         {isLoadingMore && (
@@ -85,7 +103,7 @@ export default function ChatWindow(_props: ChatWindowProps) {
           </div>
         )}
         {hasMessages ? (
-          messages.map(msg => (
+          messages.filter(m => !m.hidden).map(msg => (
             <MessageBubble
               key={msg.id}
               role={msg.role}

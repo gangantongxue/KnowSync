@@ -75,6 +75,7 @@ message RefreshResponse {
   string msg = 2;
   string access_token = 3;
   string refresh_token = 4;
+  User user = 5;
 }
 
 message GetUserRequest {

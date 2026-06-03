@@ -75,7 +75,7 @@ func (h *Handler) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.Logout
 // Refresh 刷新登录凭证
 func (h *Handler) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.RefreshResponse, error) {
 	clientIP := getClientIP(ctx)
-	accessToken, refreshToken, err := h.Service.Refresh(ctx, req.GetRefreshToken(), clientIP)
+	accessToken, refreshToken, user, err := h.Service.Refresh(ctx, req.GetRefreshToken(), clientIP)
 	if err != nil {
 		return &pb.RefreshResponse{
 			Success: false,
@@ -87,5 +87,11 @@ func (h *Handler) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.Refr
 		Msg:          "refresh success",
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
+		User: &pb.User{
+			Id:     user.ID,
+			Name:   user.Name,
+			Email:  user.Email,
+			Avatar: user.Avatar,
+		},
 	}, nil
 }

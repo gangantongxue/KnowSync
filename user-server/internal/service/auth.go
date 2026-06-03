@@ -134,45 +134,51 @@ func (s *Service) Logout(ctx context.Context, refreshToken, clientIP string) err
 }
 
 // Refresh 刷新登录凭证
-func (s *Service) Refresh(ctx context.Context, refreshToken, clientIP string) (string, string, error) {
+func (s *Service) Refresh(ctx context.Context, refreshToken, clientIP string) (string, string, *schema.User, error) {
 	// 1. 通过 refresh token 哈希值查找会话
 	session, err := s.Repository.GetSessionByRefreshToken(ctx, hashRefreshToken(refreshToken))
 	if err != nil {
-		return "", "", fmt.Errorf("刷新凭证无效或已过期")
+		return "", "", nil, fmt.Errorf("刷新凭证无效或已过期")
 	}
 
 	// 2. 检查会话是否已退出
 	if session.LogoutAt != nil {
-		return "", "", fmt.Errorf("刷新凭证已失效")
+		return "", "", nil, fmt.Errorf("刷新凭证已失效")
 	}
 
 	// 3. 检查 refresh token 是否过期
 	if time.Now().After(session.ExpireAt) {
-		return "", "", fmt.Errorf("刷新凭证已过期")
+		return "", "", nil, fmt.Errorf("刷新凭证已过期")
 	}
 
-	// 4. 生成新的 access token
+	// 4. 获取用户信息
+	user, err := s.Repository.GetUser(ctx, session.UserID)
+	if err != nil {
+		return "", "", nil, fmt.Errorf("获取用户信息失败")
+	}
+
+	// 5. 生成新的 access token
 	accessToken, err := auth.GenerateAccessToken(session.UserID, s.privateKey, s.Cfg.Auth.AccessTTL)
 	if err != nil {
 		slog.Error("刷新时生成 access token 失败", "user_id", session.UserID, "error", err)
-		return "", "", fmt.Errorf("生成访问凭证失败")
+		return "", "", nil, fmt.Errorf("生成访问凭证失败")
 	}
 
-	// 5. 生成新的 refresh token
+	// 6. 生成新的 refresh token
 	newRefreshToken, err := generateRefreshToken()
 	if err != nil {
 		slog.Error("刷新时生成 refresh token 失败", "user_id", session.UserID, "error", err)
-		return "", "", fmt.Errorf("生成刷新凭证失败")
+		return "", "", nil, fmt.Errorf("生成刷新凭证失败")
 	}
 
-	// 6. 更新会话
+	// 7. 更新会话
 	session.RefreshTokenHash = hashRefreshToken(newRefreshToken)
 	session.ClientIP = clientIP
 	if err := s.Repository.UpdateSession(ctx, session); err != nil {
 		slog.Error("刷新时更新会话失败", "user_id", session.UserID, "error", err)
-		return "", "", fmt.Errorf("更新会话失败")
+		return "", "", nil, fmt.Errorf("更新会话失败")
 	}
 
 	slog.Info("刷新凭证成功", "user_id", session.UserID)
-	return accessToken, newRefreshToken, nil
+	return accessToken, newRefreshToken, user, nil
 }

@@ -6,36 +6,44 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
+
+	"github.com/cloudwego/eino/components/tool"
+	"github.com/cloudwego/eino/schema"
 )
 
-// UpdateTitle 更新会话标题工具
+// UpdateTitle 更新会话标题工具，实现 Eino InvokableTool 接口
 type UpdateTitle struct {
-	Tool
 	titleUpdater SessionTitleUpdater
 }
 
 // NewUpdateTitle 创建更新会话标题工具
 func NewUpdateTitle(tu SessionTitleUpdater) *UpdateTitle {
-	return &UpdateTitle{
-		titleUpdater: tu,
-		Tool: Tool{
-			Name:        "update_session_title",
-			Description: "根据对话内容更新会话标题，使其贴近当前对话的主题。请根据用户的第一条消息总结出最贴合的简短标题。",
-			ParamsJSON:  updateTitleSchema(),
-			Handler:     nil,
-		},
-	}
+	return &UpdateTitle{titleUpdater: tu}
 }
 
-// Init 初始化 Handler（需要在工具被添加到 Set 前调用）
-func (u *UpdateTitle) Init(sessionID string) *Tool {
-	u.Tool.Handler = func(ctx context.Context, paramsJSON string) (string, error) {
-		return u.execute(ctx, sessionID, paramsJSON)
-	}
-	return &u.Tool
+// Info 返回工具元信息
+func (u *UpdateTitle) Info(ctx context.Context) (*schema.ToolInfo, error) {
+	return &schema.ToolInfo{
+		Name: "update_session_title",
+		Desc: "根据对话内容更新会话标题，使其贴近当前对话的主题。请根据用户的第一条消息总结出最贴合的简短标题。",
+		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
+			"title": {
+				Type:     "string",
+				Desc:     "与当前会话内容最贴合的简短标题（不超过50个字）",
+				Required: true,
+			},
+		}),
+	}, nil
 }
 
-func (u *UpdateTitle) execute(ctx context.Context, sessionID, paramsJSON string) (string, error) {
+// InvokableRun 执行工具调用
+func (u *UpdateTitle) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+	return u.execute(ctx, arguments)
+}
+
+func (u *UpdateTitle) execute(ctx context.Context, paramsJSON string) (string, error) {
+	sessionID, _ := ctx.Value(CtxKeySessionID).(string)
+
 	var params struct {
 		Title string `json:"title"`
 	}
@@ -65,17 +73,4 @@ func (u *UpdateTitle) execute(ctx context.Context, sessionID, paramsJSON string)
 		"title":   title,
 	})
 	return string(data), nil
-}
-
-func updateTitleSchema() json.RawMessage {
-	return json.RawMessage(`{
-		"type": "object",
-		"properties": {
-			"title": {
-				"type": "string",
-				"description": "与当前会话内容最贴合的简短标题（不超过50个字）"
-			}
-		},
-		"required": ["title"]
-	}`)
 }

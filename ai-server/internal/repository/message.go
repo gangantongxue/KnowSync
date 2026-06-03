@@ -34,19 +34,19 @@ func (r *Repository) CreateMessage(msg *ChatMessage) error {
 	return r.DB.Create(msg).Error
 }
 
-// ListMessages 获取会话的消息列表（按创建时间正序游标分页）
-// cursor 为 created_at 时间戳（秒），首次传 0 表示从头开始
-// 返回消息列表及是否有更多数据
+// ListMessages 获取会话的消息列表（按创建时间倒序游标分页）
+// cursor 为 created_at 时间戳（秒），首次传 0 表示从最新开始
+// 返回消息列表及是否有更多数据（按 created_at DESC，最新在前）
 func (r *Repository) ListMessages(sessionID string, cursor int64, limit int) ([]ChatMessage, bool, error) {
 	var messages []ChatMessage
 
 	query := r.DB.Model(&ChatMessage{}).Where("session_id = ?", sessionID)
 
 	if cursor > 0 {
-		query = query.Where("created_at > ?", time.Unix(cursor, 0))
+		query = query.Where("created_at < ?", time.Unix(cursor, 0))
 	}
 
-	if err := query.Order("created_at ASC").Limit(limit + 1).Find(&messages).Error; err != nil {
+	if err := query.Order("created_at DESC").Limit(limit + 1).Find(&messages).Error; err != nil {
 		return nil, false, err
 	}
 

@@ -1,5 +1,3 @@
-# KnowSync 项目规则
-
 ## 日志规范
 
 项目通过 `slog.SetDefault` 设置全局默认日志记录器。

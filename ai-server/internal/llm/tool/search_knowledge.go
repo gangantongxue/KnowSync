@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/cloudwego/eino/components/tool"
+	"github.com/cloudwego/eino/schema"
+
 	"github.com/gangantongxue/knowsync/ai-server/internal/vectorstore"
 )
 
-// SearchKnowledge 搜索知识库工具
+// SearchKnowledge 搜索知识库工具，实现 Eino InvokableTool 接口
 type SearchKnowledge struct {
-	Tool
 	embedder    Embedder
 	vectorStore VectorStore
 	repoClient  RepoClient
@@ -25,31 +27,35 @@ func NewSearchKnowledge(embedd Embedder, vs VectorStore, rc RepoClient, threshol
 	if threshold <= 0 {
 		threshold = 0.5
 	}
-
 	return &SearchKnowledge{
 		embedder:    embedd,
 		vectorStore: vs,
 		repoClient:  rc,
 		threshold:   threshold,
-		Tool: Tool{
-			Name:        "search_knowledge",
-			Description: "在用户知识库中搜索与问题相关的文章内容。通过语义理解匹配用户的文章，返回最相关的内容片段。仅搜索用户自己的文章或公开文章。",
-			ParamsJSON:  searchKnowledgeSchema(),
-			Handler:     nil, // 在 Init 中设置
-		},
 	}
 }
 
-// Init 初始化 Handler（需要在工具被添加到 Set 前调用）
-// userID 被闭包捕获，用于限制搜索范围为该用户的仓库
-func (s *SearchKnowledge) Init(userID string) *Tool {
-	s.Tool.Handler = func(ctx context.Context, paramsJSON string) (string, error) {
-		return s.execute(ctx, userID, paramsJSON)
-	}
-	return &s.Tool
+// Info 返回工具元信息
+func (s *SearchKnowledge) Info(ctx context.Context) (*schema.ToolInfo, error) {
+	return &schema.ToolInfo{
+		Name: "search_knowledge",
+		Desc: "在用户知识库中搜索与问题相关的文章内容。通过语义理解匹配用户的文章，返回最相关的内容片段。仅搜索用户自己的文章或公开文章。",
+		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
+			"query": {
+				Type:     "string",
+				Desc:     "用户的搜索关键词，从用户问题中提取核心搜索词",
+				Required: true,
+			},
+		}),
+	}, nil
 }
 
-func (s *SearchKnowledge) execute(ctx context.Context, userID, paramsJSON string) (string, error) {
+// InvokableRun 执行工具调用
+func (s *SearchKnowledge) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+	return s.execute(ctx, arguments)
+}
+
+func (s *SearchKnowledge) execute(ctx context.Context, paramsJSON string) (string, error) {
 	var params struct {
 		Query string `json:"query"`
 	}
@@ -61,6 +67,7 @@ func (s *SearchKnowledge) execute(ctx context.Context, userID, paramsJSON string
 		return noResultsJSON("搜索关键词为空"), nil
 	}
 
+	userID, _ := ctx.Value(CtxKeyUserID).(string)
 	slog.Info("搜索知识库", "query", params.Query, "user_id", userID, "threshold", s.threshold)
 
 	// 1. 获取用户可访问的仓库
@@ -136,17 +143,4 @@ func noResultsJSON(msg string) string {
 		"results": []any{},
 	})
 	return string(data)
-}
-
-func searchKnowledgeSchema() json.RawMessage {
-	return json.RawMessage(`{
-		"type": "object",
-		"properties": {
-			"query": {
-				"type": "string",
-				"description": "用户的搜索关键词，从用户问题中提取核心搜索词"
-			}
-		},
-		"required": ["query"]
-	}`)
 }

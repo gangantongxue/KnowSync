@@ -9,11 +9,10 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/gangantongxue/knowsync/ai-server/internal/llm/tool"
 	"github.com/gangantongxue/knowsync/ai-server/internal/repository"
+	"github.com/gangantongxue/knowsync/ai-server/internal/llm/tool"
 )
 
 // AskUserOption 用户问题选项
@@ -67,8 +66,8 @@ func (s *Service) Chat(ctx context.Context, reqUserID, reqSessionID, message str
 		return
 	}
 
-	// 3. 构建对话消息列表
-	messages, err := s.buildMessages(ctx, session.ID, message)
+	// 3. 构建对话消息列表（不含 system prompt，由 agent 的 MessageModifier 注入）
+	messages, err := s.buildMessages(ctx, session.ID)
 	if err != nil {
 		_ = cb(&ChatEvent{Error: fmt.Errorf("构建消息失败: %w", err)})
 		return
@@ -82,114 +81,26 @@ func (s *Service) Chat(ctx context.Context, reqUserID, reqSessionID, message str
 		isFirstRound = msgCount <= 1
 	}
 
-	// 5. 构建工具集合
-	toolSet := s.buildToolSet(ctx, session.ID, reqUserID)
-
-	// 6. 流式对话循环（支持工具调用递归）
-	var finalContent, finalThinking strings.Builder
-
-	var askedUser bool
-
-	for range 10 {
-		toolModel, err := s.LLM.GetToolModel(toolSet.GetToolInfos())
-		if err != nil {
-			_ = cb(&ChatEvent{Error: fmt.Errorf("获取工具模型失败: %w", err)})
-			return
-		}
-
-		done, err := s.streamAndProcess(ctx, toolModel, messages, toolSet, &finalContent, &finalThinking, cb)
-		if err != nil {
-			_ = cb(&ChatEvent{Error: err})
-			return
-		}
-
-		if len(done.ToolCalls) > 0 {
-			for _, tc := range done.ToolCalls {
-				toolResult, isAskUser := s.executeTool(ctx, toolSet, tc, cb)
-				askedUser = askedUser || isAskUser
-				if toolResult != nil {
-					messages = append(messages, toolResult)
-				}
-			}
-			if askedUser {
-				break
-			}
-			continue
-		}
-
-		break
+	// 5. 重置 ask_user 标记（Agent 复用，每次对话开始时清零）
+	if s.AskedUser != nil {
+		s.AskedUser.Triggered.Store(false)
+		s.AskedUser.LastResult.Store("")
 	}
 
-	// 7. 保存助手消息（ask_user 时保存带空内容的记录）
-	assistantMsg := &repository.ChatMessage{
-		SessionID: session.ID,
-		Role:      "assistant",
-		Content:   finalContent.String(),
-		Thinking:  finalThinking.String(),
-	}
-	if askedUser {
-		assistantMsg.Content = "[系统消息] 已向用户提问，等待回答"
-	}
-	if err = s.Repo.CreateMessage(assistantMsg); err != nil {
-		slog.Error("保存助手消息失败", "error", err)
-	}
+	// 6. 注入请求级上下文，供工具读取
+	agentCtx := context.WithValue(ctx, tool.CtxKeyUserID, reqUserID)
+	agentCtx = context.WithValue(agentCtx, tool.CtxKeySessionID, session.ID)
 
-	// 8. 首次对话自动更新标题（如果模型没有调用 update_session_title）
-	titleUpdated := false
-	if isFirstRound {
-		title := truncateTitle(message)
-		if err = s.Repo.UpdateSessionTitle(session.ID, title); err != nil {
-			slog.Error("更新会话标题失败", "error", err)
-		} else {
-			titleUpdated = true
-		}
-	}
-
-	// 9. 发送完成事件
-	_ = cb(&ChatEvent{
-		SessionID:    session.ID,
-		MessageID:    assistantMsg.ID,
-		Finished:     true,
-		Title:        session.Title,
-		TitleUpdated: titleUpdated,
-	})
-}
-
-// buildToolSet 构建当前会话的工具集合
-func (s *Service) buildToolSet(ctx context.Context, sessionID, userID string) *tool.Set {
-	toolSet := tool.NewSet()
-
-	// search_knowledge 工具：语义搜索知识库文章
-	sk := tool.NewSearchKnowledge(s.Embedder, s.VectorStore, s.Client, 0)
-	toolSet.Register(sk.Init(userID))
-
-	// update_session_title 工具：更新会话标题
-	ut := tool.NewUpdateTitle(s.Repo)
-	toolSet.Register(ut.Init(sessionID))
-
-	// ask_user 工具：反问用户获取更多信息
-	aq := tool.NewAskQuestion()
-	toolSet.Register(aq.Init())
-
-	return toolSet
-}
-
-// streamAndProcess 流式调用 LLM 并处理输出
-func (s *Service) streamAndProcess(
-	ctx context.Context,
-	toolModel model.ToolCallingChatModel,
-	messages []*schema.Message,
-	toolSet *tool.Set,
-	finalContent, finalThinking *strings.Builder,
-	cb ChatCallback,
-) (*schema.Message, error) {
-	stream, err := toolModel.Stream(ctx, messages)
+	// 7. 调用 Agent 流式对话（Agent 内部自动处理全部工具调用闭环）
+	stream, err := s.LLM.Stream(agentCtx, messages)
 	if err != nil {
-		return nil, fmt.Errorf("LLM 调用失败: %w", err)
+		_ = cb(&ChatEvent{Error: fmt.Errorf("Agent 调用失败: %w", err)})
+		return
 	}
 	defer stream.Close()
 
-	var accumulated *schema.Message
+	// 8. 处理流式输出
+	var finalContent, finalThinking strings.Builder
 
 	const (
 		stateNone        = 0
@@ -204,17 +115,8 @@ func (s *Service) streamAndProcess(
 			break
 		}
 		if err != nil {
-			return nil, fmt.Errorf("流式读取失败: %w", err)
-		}
-
-		if accumulated == nil {
-			accumulated = chunk
-		} else {
-			accumulated, err = schema.ConcatMessages([]*schema.Message{accumulated, chunk})
-			if err != nil {
-				slog.Error("合并消息失败", "error", err)
-				accumulated = chunk
-			}
+			_ = cb(&ChatEvent{Error: fmt.Errorf("流式读取失败: %w", err)})
+			return
 		}
 
 		// 检测思考 → 内容的转换点
@@ -223,6 +125,7 @@ func (s *Service) streamAndProcess(
 			_ = cb(&ChatEvent{ThinkingFinished: true})
 		}
 
+		// 思考内容
 		if chunk.ReasoningContent != "" {
 			if state == stateNone {
 				state = stateThinking
@@ -231,6 +134,7 @@ func (s *Service) streamAndProcess(
 			_ = cb(&ChatEvent{ThinkingChunk: chunk.ReasoningContent})
 		}
 
+		// 正文内容
 		if chunk.Content != "" {
 			finalContent.WriteString(chunk.Content)
 			_ = cb(&ChatEvent{ContentChunk: chunk.Content})
@@ -241,58 +145,69 @@ func (s *Service) streamAndProcess(
 		_ = cb(&ChatEvent{ThinkingFinished: true})
 	}
 
-	if accumulated == nil {
-		return &schema.Message{}, nil
-	}
-	return accumulated, nil
-}
-
-// executeTool 执行工具调用并返回工具结果消息
-// 返回 (message, askedUser) — askedUser 为 true 表示工具触发了反问用户
-func (s *Service) executeTool(ctx context.Context, toolSet *tool.Set, tc schema.ToolCall, cb ChatCallback) (*schema.Message, bool) {
-	slog.Info("执行工具调用", "tool", tc.Function.Name)
-
-	result, err := toolSet.Execute(ctx, tc.Function.Name, tc.Function.Arguments)
-	if err != nil {
-		slog.Error("工具执行失败", "tool", tc.Function.Name, "error", err)
-		result = fmt.Sprintf(`{"error": "工具执行失败: %s"}`, err.Error())
-		return schema.ToolMessage(result, tc.ID, schema.WithToolName(tc.Function.Name)), false
-	}
-
-	// 检测 ask_user 动作：需要反问用户
-	var action struct {
-		Action string `json:"action"`
-	}
-	if len(result) > 0 && json.Unmarshal([]byte(result), &action) == nil && action.Action == "ask_user" {
-		var askData struct {
+	// 9. 处理反问用户场景
+	askedUser := false
+	if s.AskedUser != nil && s.AskedUser.Triggered.Load() {
+		askedUser = true
+		lastResult, _ := s.AskedUser.LastResult.Load().(string)
+		// 解析 ask_user 工具返回的 JSON，构建反问事件
+		var askResult struct {
+			Action   string   `json:"action"`
 			Question string   `json:"question"`
 			Type     string   `json:"type"`
 			Options  []string `json:"options"`
 		}
-		if json.Unmarshal([]byte(result), &askData) == nil && askData.Question != "" {
-			slog.Info("工具触发反问用户", "question", askData.Question, "type", askData.Type, "options", askData.Options)
-
-			opts := make([]AskUserOption, 0, len(askData.Options)+1)
-			for _, o := range askData.Options {
-				opts = append(opts, AskUserOption{Label: o, Value: o})
+		if err := json.Unmarshal([]byte(lastResult), &askResult); err == nil && askResult.Question != "" {
+			slog.Info("工具触发反问用户", "question", askResult.Question, "type", askResult.Type, "options", askResult.Options)
+			opts := make([]AskUserOption, len(askResult.Options))
+			for i, o := range askResult.Options {
+				opts[i] = AskUserOption{Label: o, Value: o}
 			}
-			opts = append(opts, AskUserOption{Label: "其他（自定义输入）", Value: "__other__"})
-
+			// HasOther: true 由前端负责添加一个自定义输入选项，避免与工具返回的选项重复
 			_ = cb(&ChatEvent{
 				AskUser: &AskUserEvent{
-					Question: askData.Question,
-					Type:     askData.Type,
+					Question: askResult.Question,
+					Type:     askResult.Type,
 					Options:  opts,
 					HasOther: true,
 				},
 			})
-
-			return nil, true
 		}
 	}
 
-	slog.Info("工具执行完成", "tool", tc.Function.Name, "result_length", len(result))
-	return schema.ToolMessage(result, tc.ID, schema.WithToolName(tc.Function.Name)), false
+	// 10. 保存助手消息
+	assistantMsg := &repository.ChatMessage{
+		SessionID: session.ID,
+		Role:      "assistant",
+		Content:   finalContent.String(),
+		Thinking:  finalThinking.String(),
+	}
+	if askedUser {
+		assistantMsg.Content = "[系统消息] 已向用户提问，等待回答"
+	}
+	if err = s.Repo.CreateMessage(assistantMsg); err != nil {
+		slog.Error("保存助手消息失败", "error", err)
+	}
+
+	// 11. 首次对话自动更新标题（如果模型没有调用 update_session_title）
+	titleUpdated := false
+	if isFirstRound {
+		title := truncateTitle(message)
+		if err = s.Repo.UpdateSessionTitle(session.ID, title); err != nil {
+			slog.Error("更新会话标题失败", "error", err)
+		} else {
+			titleUpdated = true
+		}
+	}
+
+	// 12. 发送完成事件
+	_ = cb(&ChatEvent{
+		SessionID:    session.ID,
+		MessageID:    assistantMsg.ID,
+		Finished:     true,
+		Title:        session.Title,
+		TitleUpdated: titleUpdated,
+	})
 }
 
 // getOrCreateSession 获取或创建会话
@@ -316,11 +231,9 @@ func (s *Service) getOrCreateSession(ctx context.Context, userID, sessionID stri
 	return session, nil
 }
 
-// buildMessages 构建对话消息列表
-func (s *Service) buildMessages(ctx context.Context, sessionID, userMessage string) ([]*schema.Message, error) {
-	messages := []*schema.Message{
-		s.LLM.GetSystemMessage(),
-	}
+// buildMessages 构建对话消息列表（不含 system prompt，由 agent 的 MessageModifier 注入）
+func (s *Service) buildMessages(ctx context.Context, sessionID string) ([]*schema.Message, error) {
+	var messages []*schema.Message
 
 	history, err := s.Repo.GetSessionMessages(sessionID)
 	if err != nil {
@@ -338,8 +251,6 @@ func (s *Service) buildMessages(ctx context.Context, sessionID, userMessage stri
 			messages = append(messages, assistantMsg)
 		}
 	}
-
-	messages = append(messages, schema.UserMessage(userMessage))
 	return messages, nil
 }
 
