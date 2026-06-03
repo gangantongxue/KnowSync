@@ -1,73 +1,172 @@
 package storage
 
 import (
-	"crypto/rand"
-	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
-
-	"github.com/gangantongxue/knowsync/gateway/pkg/config"
 )
 
-// Bucket 存储桶类型
-type Bucket string
-
-const (
-	BucketPublic Bucket = "public" // 公共读桶，无需鉴权
-	BucketAuth   Bucket = "auth"   // 认证读桶，需 JWT 临时 URL
-)
-
-// FileInfo 文件元信息
-type FileInfo struct {
-	Key     string    `json:"key"`      // 文件相对路径
-	Size    int64     `json:"size"`     // 文件大小
-	ModTime time.Time `json:"mod_time"` // 最后修改时间
-	Bucket  Bucket    `json:"bucket"`   // 所属桶
+// DirEntry 目录条目信息
+type DirEntry struct {
+	Name  string `json:"name"`
+	IsDir bool   `json:"is_dir"`
+	Size  int64  `json:"size"`
 }
 
-// Store 本地文件存储，管理文件的增删查改及 JWT 临时访问
+// Store 本地文件存储，管理文件的增删查改
 type Store struct {
-	cfg       *config.Config
-	jwtSecret []byte // 每次启动随机生成，重启后旧临时 URL 自动失效
+	root string // 存储根目录绝对路径
 }
 
 // NewStore 创建 Store 实例
-// 自动在 rootDir 下创建 public/ 和 auth/ 子目录
-func NewStore(cfg *config.Config) (*Store, error) {
-	jwtSecret := make([]byte, 32)
-	if _, err := rand.Read(jwtSecret); err != nil {
-		return nil, fmt.Errorf("生成 JWT 密钥失败: %w", err)
+func NewStore(rootDir string) (*Store, error) {
+	abs, err := filepath.Abs(rootDir)
+	if err != nil {
+		return nil, err
 	}
-
-	s := &Store{cfg: cfg, jwtSecret: jwtSecret}
-	for _, b := range []Bucket{BucketPublic, BucketAuth} {
-		dir := filepath.Join(cfg.Storage.RootDir, string(b))
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			return nil, fmt.Errorf("创建 %s 目录失败: %w", b, err)
-		}
+	if err := os.MkdirAll(abs, 0755); err != nil {
+		return nil, err
 	}
-	return s, nil
+	return &Store{root: abs}, nil
 }
 
-// ResolvePath 校验并拼接完整文件路径，防止路径穿越攻击
-func (s *Store) ResolvePath(bucket Bucket, key string) (string, error) {
-	bucketDir := filepath.Join(s.cfg.Storage.RootDir, string(bucket))
-	cleanBucket := filepath.Clean(bucketDir)
-	fullPath := filepath.Join(cleanBucket, key)
-
-	if !strings.HasPrefix(fullPath, cleanBucket+string(filepath.Separator)) && fullPath != cleanBucket {
+// Resolve 校验并拼接完整文件路径，防止路径穿越攻击
+func (s *Store) Resolve(subpath string) (string, error) {
+	abs := filepath.Join(s.root, subpath)
+	abs = filepath.Clean(abs)
+	if !strings.HasPrefix(abs, s.root+string(filepath.Separator)) && abs != s.root {
 		return "", ErrInvalidPath
 	}
-	return fullPath, nil
+	return abs, nil
 }
 
-const defaultJWTTTL = 30 * time.Minute
-
-func (s *Store) jwtTTL() time.Duration {
-	if s.cfg.Storage.JWTTTL <= 0 {
-		return defaultJWTTTL
+// WriteFile 写入文件内容，自动创建父目录
+func (s *Store) WriteFile(subpath string, reader io.Reader) (int64, error) {
+	fullPath, err := s.Resolve(subpath)
+	if err != nil {
+		return 0, err
 	}
-	return s.cfg.Storage.JWTTTL
+	if err := os.MkdirAll(filepath.Dir(fullPath), 0755); err != nil {
+		return 0, err
+	}
+	f, err := os.Create(fullPath)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+	return io.Copy(f, reader)
+}
+
+// ReadFile 打开文件用于读取
+func (s *Store) ReadFile(subpath string) (io.ReadCloser, error) {
+	fullPath, err := s.Resolve(subpath)
+	if err != nil {
+		return nil, err
+	}
+	f, err := os.Open(fullPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, ErrFileNotFound
+		}
+		return nil, err
+	}
+	return f, nil
+}
+
+// Delete 删除单个文件
+func (s *Store) Delete(subpath string) error {
+	fullPath, err := s.Resolve(subpath)
+	if err != nil {
+		return err
+	}
+	if err := os.Remove(fullPath); err != nil {
+		if os.IsNotExist(err) {
+			return ErrFileNotFound
+		}
+		return err
+	}
+	return nil
+}
+
+// DeleteAll 递归删除目录及其所有内容
+func (s *Store) DeleteAll(subpath string) error {
+	fullPath, err := s.Resolve(subpath)
+	if err != nil {
+		return err
+	}
+	if fullPath == s.root {
+		return ErrInvalidPath
+	}
+	return os.RemoveAll(fullPath)
+}
+
+// Rename 移动/重命名文件或目录
+func (s *Store) Rename(oldSubpath, newSubpath string) error {
+	oldFull, err := s.Resolve(oldSubpath)
+	if err != nil {
+		return err
+	}
+	newFull, err := s.Resolve(newSubpath)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(newFull), 0755); err != nil {
+		return err
+	}
+	return os.Rename(oldFull, newFull)
+}
+
+// ListDir 列出目录内容
+func (s *Store) ListDir(subpath string) ([]DirEntry, error) {
+	fullPath, err := s.Resolve(subpath)
+	if err != nil {
+		return nil, err
+	}
+	entries, err := os.ReadDir(fullPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, ErrFileNotFound
+		}
+		return nil, err
+	}
+	result := make([]DirEntry, 0, len(entries))
+	for _, e := range entries {
+		info, _ := e.Info()
+		var size int64
+		if info != nil {
+			size = info.Size()
+		}
+		result = append(result, DirEntry{
+			Name:  e.Name(),
+			IsDir: e.IsDir(),
+			Size:  size,
+		})
+	}
+	return result, nil
+}
+
+// Stat 获取文件信息
+func (s *Store) Stat(subpath string) (os.FileInfo, error) {
+	fullPath, err := s.Resolve(subpath)
+	if err != nil {
+		return nil, err
+	}
+	info, err := os.Stat(fullPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, ErrFileNotFound
+		}
+		return nil, err
+	}
+	return info, nil
+}
+
+// MakeDir 创建目录（含父目录）
+func (s *Store) MakeDir(subpath string) error {
+	fullPath, err := s.Resolve(subpath)
+	if err != nil {
+		return err
+	}
+	return os.MkdirAll(fullPath, 0755)
 }

@@ -1,11 +1,9 @@
 import { createContext, useContext, useReducer, useCallback, type ReactNode } from 'react'
 import * as repoApi from '../lib/repos'
-import * as nodesApi from '../lib/nodes'
 
 interface RepoState {
   repos: repoApi.Repo[]
   currentRepoId: string | null
-  nodes: nodesApi.Node[]
   isLoading: boolean
 }
 
@@ -15,10 +13,6 @@ type RepoAction =
   | { type: 'UPDATE_REPO'; repo: repoApi.Repo }
   | { type: 'REMOVE_REPO'; repoId: string }
   | { type: 'SET_CURRENT_REPO'; repoId: string | null }
-  | { type: 'SET_NODES'; nodes: nodesApi.Node[] }
-  | { type: 'ADD_NODE'; node: nodesApi.Node }
-  | { type: 'UPDATE_NODE'; node: nodesApi.Node }
-  | { type: 'REMOVE_NODE'; nodeId: string }
   | { type: 'SET_LOADING'; loading: boolean }
 
 function repoReducer(state: RepoState, action: RepoAction): RepoState {
@@ -32,15 +26,7 @@ function repoReducer(state: RepoState, action: RepoAction): RepoState {
     case 'REMOVE_REPO':
       return { ...state, repos: state.repos.filter(r => r.id !== action.repoId) }
     case 'SET_CURRENT_REPO':
-      return { ...state, currentRepoId: action.repoId, nodes: [] }
-    case 'SET_NODES':
-      return { ...state, nodes: action.nodes }
-    case 'ADD_NODE':
-      return { ...state, nodes: [...state.nodes, action.node] }
-    case 'UPDATE_NODE':
-      return { ...state, nodes: state.nodes.map(n => n.id === action.node.id ? action.node : n) }
-    case 'REMOVE_NODE':
-      return { ...state, nodes: state.nodes.filter(n => n.id !== action.nodeId) }
+      return { ...state, currentRepoId: action.repoId }
     case 'SET_LOADING':
       return { ...state, isLoading: action.loading }
   }
@@ -48,7 +34,6 @@ function repoReducer(state: RepoState, action: RepoAction): RepoState {
 
 interface RepoContextValue extends RepoState {
   loadRepos: () => Promise<void>
-  loadNodes: (repoId: string, parentId?: string) => Promise<void>
   selectRepo: (repoId: string | null) => void
 }
 
@@ -58,7 +43,6 @@ export function RepoProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(repoReducer, {
     repos: [],
     currentRepoId: null,
-    nodes: [],
     isLoading: false,
   })
 
@@ -73,21 +57,12 @@ export function RepoProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'SET_LOADING', loading: false })
   }, [])
 
-  const loadNodes = useCallback(async (repoId: string, parentId?: string) => {
-    try {
-      const nodes = await nodesApi.listNodes(repoId, parentId)
-      dispatch({ type: 'SET_NODES', nodes })
-    } catch {
-      // ignore
-    }
-  }, [])
-
   const selectRepo = useCallback((repoId: string | null) => {
     dispatch({ type: 'SET_CURRENT_REPO', repoId })
   }, [])
 
   return (
-    <RepoContext.Provider value={{ ...state, loadRepos, loadNodes, selectRepo }}>
+    <RepoContext.Provider value={{ ...state, loadRepos, selectRepo }}>
       {children}
     </RepoContext.Provider>
   )

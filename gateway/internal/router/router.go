@@ -46,14 +46,14 @@ func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client
 			repos.PUT("/:repo_id", hdl.UpdateRepo())
 			repos.DELETE("/:repo_id", hdl.DeleteRepo())
 
-			nodes := repos.Group("/:repo_id/nodes")
-			nodes.POST("", hdl.CreateNode())
-			nodes.GET("", hdl.ListNodes())
-			nodes.GET("/:node_id", hdl.GetNode())
-			nodes.PUT("/:node_id", hdl.UpdateNode())
-			nodes.DELETE("/:node_id", hdl.DeleteNode())
-			nodes.PUT("/:node_id/content", hdl.UploadArticleContent())
-			nodes.GET("/:node_id/signed-url", hdl.GetArticleSignedURL())
+			files := repos.Group("/:repo_id/files")
+			files.GET("/tree", hdl.GetRepoTree())
+			files.POST("", hdl.UploadFile())
+			files.DELETE("", hdl.DeleteFile())
+			files.PUT("", hdl.RenameFile())
+
+			dirs := repos.Group("/:repo_id/dirs")
+			dirs.POST("", hdl.MakeDir())
 
 			collabs := repos.Group("/:repo_id/collaborators")
 			collabs.POST("", hdl.AddCollaborator())
@@ -70,8 +70,7 @@ func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client
 		}
 	}
 
-	h.GET("/files/public/*filepath", handler.FileHandler(store))
-	h.GET("/files/auth/:token", handler.FileHandler(store))
+	h.GET("/files/*filepath", handler.FileHandler(store))
 
 	internal := h.Group("/internal")
 	internal.GET("/file", handler.InternalFileHandler(store))

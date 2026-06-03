@@ -77,7 +77,7 @@ export async function updateUser(userId: string, data: Partial<{ name: string; e
 
 export async function uploadAvatar(userId: string, file: File): Promise<string> {
   const formData = new FormData()
-  formData.append('file', file)
+  formData.append('avatar', file)
   const res = await fetch(`/api/v1/users/${userId}/avatar`, {
     method: 'PUT',
     headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` },

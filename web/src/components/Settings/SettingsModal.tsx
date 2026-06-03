@@ -10,7 +10,7 @@ interface SettingsModalProps {
 }
 
 export default function SettingsModal({ onClose }: SettingsModalProps) {
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
@@ -35,6 +35,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     setSaving(true)
     try {
       await updateUser(user.id, { name, email })
+      await refreshUser()
       setMessage('个人信息已更新')
     } catch (err: any) {
       setMessage(err.message || '更新失败')
@@ -47,6 +48,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
     try {
       const url = await uploadAvatar(user.id, file)
       setAvatarUrl(url)
+      await refreshUser()
       setMessage('头像已更新')
     } catch (err: any) {
       setMessage(err.message || '头像上传失败')
@@ -77,7 +79,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
           </div>
 
           {/* Avatar */}
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex flex-col items-center mb-6">
             <ImgCrop rotationSlider>
               <Upload
                 showUploadList={false}
@@ -93,7 +95,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                 </div>
               </Upload>
             </ImgCrop>
-            <div>
+            <div className="mt-2 text-center">
               <div className="text-sm font-medium text-gray-800">{name}</div>
               <div className="text-xs text-gray-400">点击头像更换</div>
             </div>
@@ -108,8 +110,8 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">邮箱</label>
-              <input value={email} onChange={e => setEmail(e.target.value)} type="email"
-                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-emerald-400" />
+              <input value={email} type="email" readOnly
+                className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed focus:outline-none" />
             </div>
             <button onClick={handleSaveProfile} disabled={saving}
               className="px-4 py-1.5 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600 disabled:opacity-50">

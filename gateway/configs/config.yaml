@@ -19,7 +19,6 @@ auth:
 
 storage:
   root_dir: "./data"
-  jwt_ttl: 30m
 
 grpc_clients:
   targets:

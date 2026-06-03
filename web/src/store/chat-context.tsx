@@ -61,14 +61,13 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
     case 'APPEND_MESSAGE':
       return { ...state, messages: [...state.messages, action.message] }
     case 'UPDATE_LAST_MESSAGE': {
+      const last = state.messages[state.messages.length - 1]
+      if (!last || !last.isStreaming) return state
       const msgs = [...state.messages]
-      const last = msgs[msgs.length - 1]
-      if (last && last.isStreaming) {
-        msgs[msgs.length - 1] = {
-          ...last,
-          content: action.content !== undefined ? last.content + action.content : last.content,
-          thinking: action.thinking !== undefined ? last.thinking + action.thinking : last.thinking,
-        }
+      msgs[msgs.length - 1] = {
+        ...last,
+        content: action.content !== undefined ? last.content + action.content : last.content,
+        thinking: action.thinking !== undefined ? last.thinking + action.thinking : last.thinking,
       }
       return { ...state, messages: msgs }
     }

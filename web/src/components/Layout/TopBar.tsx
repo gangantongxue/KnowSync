@@ -37,29 +37,38 @@ export default function TopBar() {
   return (
     <>
       <header className="h-14 border-b border-gray-200 bg-white flex items-center px-4 gap-4 shrink-0">
-        <button
-          onClick={() => navigate('/chat')}
-          className="text-lg font-bold text-emerald-600 shrink-0 hover:text-emerald-700"
-        >
-          KnowSync
+        <button onClick={() => navigate('/chat')} className="shrink-0">
+          <img src="/img/logo-wide.jpg" alt="KnowSync" className="h-8 w-auto" />
         </button>
 
-        <form onSubmit={handleSearch} className="flex-1 max-w-xl">
-          <input
-            type="text"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="搜索知识库..."
-            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-emerald-400 bg-gray-50"
-          />
+        <form onSubmit={handleSearch} className="flex-1 flex justify-center">
+          <div className="flex items-center max-w-xl w-full">
+            <input
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="搜索知识库..."
+              className="flex-1 px-3 py-1.5 border border-gray-300 rounded-l-lg text-sm focus:outline-none focus:border-emerald-400 bg-gray-50"
+            />
+            <button
+              type="submit"
+              className="px-4 py-1.5 bg-emerald-500 text-white rounded-r-lg text-sm hover:bg-emerald-600 shrink-0"
+            >
+              搜索
+            </button>
+          </div>
         </form>
 
-        <div className="relative" ref={dropdownRef}>
+        <div className="relative shrink-0" ref={dropdownRef}>
           <button
             onClick={() => setShowDropdown(!showDropdown)}
-            className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 font-medium text-sm flex items-center justify-center hover:bg-emerald-200"
+            className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 font-medium text-sm flex items-center justify-center hover:bg-emerald-200 overflow-hidden"
           >
-            {user?.name?.charAt(0) || 'U'}
+            {user?.avatar ? (
+              <img src={user.avatar} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            ) : (
+              user?.name?.charAt(0) || 'U'
+            )}
           </button>
 
           {showDropdown && (

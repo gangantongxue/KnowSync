@@ -1,152 +1,193 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import type { Node, NodeType } from '../../lib/nodes'
-import { createNode, updateNode, deleteNode } from '../../lib/nodes'
+import { getRepoTree, deleteFile, renameFile, makeDir } from '../../lib/files'
+import type { FileEntry } from '../../lib/files'
 
 interface RepoTreeProps {
   repoId: string
-  nodes: Node[]
-  currentParentId: string | null
-  onNavigate: (parentId: string | null) => void
-  onRefresh: () => void
 }
 
-export default function RepoTree({ repoId, nodes, currentParentId, onNavigate, onRefresh }: RepoTreeProps) {
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; node?: Node } | null>(null)
+export default function RepoTree({ repoId }: RepoTreeProps) {
+  const [currentPath, setCurrentPath] = useState('')
+  const [entries, setEntries] = useState<FileEntry[]>([])
+  const [loading, setLoading] = useState(false)
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; entry?: FileEntry } | null>(null)
   const navigate = useNavigate()
 
-  const handleContextMenu = (e: React.MouseEvent, node?: Node) => {
-    e.preventDefault()
-    setContextMenu({ x: e.clientX, y: e.clientY, node })
-  }
-
-  const handleCreate = async (type: NodeType) => {
-    const name = prompt(`请输入${type === 'FOLDER' ? '文件夹' : '文章'}名称`)
-    if (!name?.trim()) return
-    const n = await createNode(repoId, name.trim(), type, currentParentId || undefined)
-    if (type === 'ARTICLE') {
-      navigate(`/repos/${repoId}/nodes/${n.id}/edit`)
-    }
-    onRefresh()
-    setContextMenu(null)
-  }
-
-  const handleRename = async (node: Node) => {
-    const name = prompt('新名称:', node.name)
-    if (name?.trim() && name !== node.name) {
-      await updateNode(repoId, node.id, { name: name.trim() })
-      onRefresh()
-    }
-    setContextMenu(null)
-  }
-
-  const handleMove = async (node: Node) => {
-    const newParentId = prompt('目标文件夹 ID:')
-    if (newParentId) {
-      await updateNode(repoId, node.id, { parent_id: newParentId })
-      onRefresh()
-    }
-    setContextMenu(null)
-  }
-
-  const handleDelete = async (node: Node) => {
-    if (confirm(`确定删除「${node.name}」？`)) {
-      await deleteNode(repoId, node.id)
-      onRefresh()
-    }
-    setContextMenu(null)
-  }
-
-  // 获取当前层级下的子节点
-  const childNodes = nodes.filter(n => n.parent_id === (currentParentId || ''))
-
-  // 开始拖拽
-  const handleDragStart = (e: React.DragEvent, node: Node) => {
-    e.dataTransfer.setData('text/plain', node.id)
-    e.dataTransfer.effectAllowed = 'move'
-  }
-
-  // 拖拽到文件夹上
-  const handleDrop = async (e: React.DragEvent, targetNode: Node) => {
-    e.preventDefault()
-    if (targetNode.type !== 'FOLDER') return
-    const nodeId = e.dataTransfer.getData('text/plain')
-    if (nodeId === targetNode.id) return
+  const loadDir = async (dirPath?: string) => {
+    setLoading(true)
     try {
-      await updateNode(repoId, nodeId, { parent_id: targetNode.id })
-      onRefresh()
+      const tree = await getRepoTree(repoId, dirPath)
+      setEntries(tree.entries)
+      setCurrentPath(tree.path || '')
     } catch {
-      // ignore
+      setEntries([])
     }
+    setLoading(false)
   }
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-  }
+  useEffect(() => { loadDir('') }, [repoId])
 
-  // 点击空白区域创建
-  const handleCanvasCreate = async () => {
-    const type = confirm('创建文件夹点确定，创建文章点取消') ? 'FOLDER' : 'ARTICLE'
-    const name = prompt(`请输入${type === 'FOLDER' ? '文件夹' : '文章'}名称`)
+  const handleCreateFile = async () => {
+    const name = prompt('请输入文件名称（含 .md 后缀）:')
     if (!name?.trim()) return
-    const n = await createNode(repoId, name.trim(), type as NodeType, currentParentId || undefined)
-    if (type === 'ARTICLE') {
-      navigate(`/repos/${repoId}/nodes/${n.id}/edit`)
-    }
-    onRefresh()
+    const filePath = currentPath ? `${currentPath}/${name.trim()}` : name.trim()
+    navigate(`/repos/${repoId}/edit/${filePath}`)
+    setContextMenu(null)
   }
+
+  const handleCreateDir = async () => {
+    const name = prompt('请输入文件夹名称:')
+    if (!name?.trim()) return
+    const dirPath = currentPath ? `${currentPath}/${name.trim()}` : name.trim()
+    try {
+      await makeDir(repoId, dirPath)
+      loadDir(currentPath)
+    } catch (err: any) {
+      alert('创建失败: ' + err.message)
+    }
+    setContextMenu(null)
+  }
+
+  const handleDelete = async (entry: FileEntry) => {
+    if (!confirm(`确定删除「${entry.name}」？`)) return
+    const filePath = currentPath ? `${currentPath}/${entry.name}` : entry.name
+    try {
+      await deleteFile(repoId, filePath)
+      loadDir(currentPath)
+    } catch (err: any) {
+      alert('删除失败: ' + err.message)
+    }
+    setContextMenu(null)
+  }
+
+  const handleRename = async (entry: FileEntry) => {
+    const newName = prompt('新名称:', entry.name)
+    if (!newName?.trim() || newName === entry.name) return
+    const oldPath = currentPath ? `${currentPath}/${entry.name}` : entry.name
+    const newPath = currentPath ? `${currentPath}/${newName.trim()}` : newName.trim()
+    try {
+      await renameFile(repoId, oldPath, newPath)
+      loadDir(currentPath)
+    } catch (err: any) {
+      alert('重命名失败: ' + err.message)
+    }
+    setContextMenu(null)
+  }
+
+  const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const filePath = currentPath ? `${currentPath}/${file.name}` : file.name
+    try {
+      // Upload via fetch directly
+      const token = localStorage.getItem('access_token')
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch(`/api/v1/repos/${repoId}/files?path=${encodeURIComponent(filePath)}`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Upload failed' }))
+        throw new Error(err.message || `HTTP ${res.status}`)
+      }
+
+      loadDir(currentPath)
+    } catch (err: any) {
+      alert('上传失败: ' + err.message)
+    }
+  }
+
+  const sorted = [...entries].sort((a, b) => {
+    if (a.type !== b.type) return a.type === 'dir' ? -1 : 1
+    return a.name.localeCompare(b.name)
+  })
+
+  const pathParts = currentPath ? currentPath.split('/').filter(Boolean) : []
 
   return (
-    <div onContextMenu={e => handleContextMenu(e)} onClick={() => setContextMenu(null)}>
-      {/* 面包屑导航 */}
-      <div className="flex items-center gap-1 text-xs text-gray-500 mb-2 px-1">
-        <button onClick={() => onNavigate(null)} className="hover:text-emerald-600">根目录</button>
-        {currentParentId && <span>/</span>}
+    <div onClick={() => setContextMenu(null)}>
+      {/* 面包屑 */}
+      <div className="flex items-center gap-1 text-xs text-gray-500 mb-2 px-1 flex-wrap">
+        <button onClick={() => loadDir('')} className="hover:text-emerald-600">根目录</button>
+        {pathParts.map((part, i) => {
+          const fullPath = pathParts.slice(0, i + 1).join('/')
+          return (
+            <span key={i} className="flex items-center gap-1">
+              <span>/</span>
+              <button onClick={() => loadDir(fullPath)} className="hover:text-emerald-600">{part}</button>
+            </span>
+          )
+        })}
       </div>
 
-      {/* 新建按钮 */}
-      <button onClick={handleCanvasCreate} className="w-full px-2 py-1 text-xs text-gray-400 hover:text-emerald-600 hover:bg-gray-100 rounded text-left mb-1">
-        + 新建
-      </button>
+      {/* 操作按钮 */}
+      <div className="flex items-center gap-1 mb-1" onContextMenu={e => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY }) }}>
+        <button onClick={handleCreateDir} className="px-2 py-1 text-xs text-gray-400 hover:text-emerald-600 hover:bg-gray-100 rounded">
+          + 文件夹
+        </button>
+        <button onClick={handleCreateFile} className="px-2 py-1 text-xs text-gray-400 hover:text-emerald-600 hover:bg-gray-100 rounded">
+          + 文章
+        </button>
+        <label className="px-2 py-1 text-xs text-gray-400 hover:text-emerald-600 hover:bg-gray-100 rounded cursor-pointer">
+          + 上传
+          <input type="file" onChange={handleUploadFile} className="hidden" />
+        </label>
+      </div>
 
-      {/* 节点列表 */}
-      {childNodes.map(node => (
-        <NodeItem
-          key={node.id}
-          node={node}
-          repoId={repoId}
-          onContextMenu={handleContextMenu}
-          onNavigate={onNavigate}
-          onDragStart={handleDragStart}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-        />
-      ))}
-
-      {childNodes.length === 0 && (
-        <div className="text-xs text-gray-400 px-2 py-4 text-center">
-          暂无内容，点击上方"+ 新建"创建
-        </div>
+      {/* 目录内容 */}
+      {loading ? (
+        <div className="text-xs text-gray-400 px-2 py-4 text-center">加载中...</div>
+      ) : sorted.length === 0 ? (
+        <div className="text-xs text-gray-400 px-2 py-4 text-center">空目录</div>
+      ) : (
+        sorted.map(entry => (
+          <div
+            key={entry.name}
+            className="flex items-center gap-2 px-2 py-1.5 rounded text-sm cursor-pointer hover:bg-gray-100 text-gray-700 mb-0.5"
+            onClick={() => {
+              if (entry.type === 'dir') {
+                const newPath = currentPath ? `${currentPath}/${entry.name}` : entry.name
+                loadDir(newPath)
+              } else {
+                const filePath = currentPath ? `${currentPath}/${entry.name}` : entry.name
+                navigate(`/repos/${repoId}/view/${filePath}`)
+              }
+            }}
+            onContextMenu={e => {
+              e.preventDefault()
+              e.stopPropagation()
+              setContextMenu({ x: e.clientX, y: e.clientY, entry })
+            }}
+          >
+            <span className="shrink-0">{entry.type === 'dir' ? '📁' : '📄'}</span>
+            <span className="truncate">{entry.name}</span>
+            {entry.type === 'file' && (
+              <span className="text-xs text-gray-400 ml-auto shrink-0">{formatSize(entry.size)}</span>
+            )}
+          </div>
+        ))
       )}
 
       {/* 右键菜单 */}
       {contextMenu && (
         <div
-          className="fixed bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 w-36"
+          className="fixed bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 w-32"
           style={{ left: contextMenu.x, top: contextMenu.y }}
         >
-          {!contextMenu.node && (
+          {!contextMenu.entry ? (
             <>
-              <button onClick={() => handleCreate('FOLDER')} className="w-full px-3 py-1.5 text-xs text-left hover:bg-gray-50">新建文件夹</button>
-              <button onClick={() => handleCreate('ARTICLE')} className="w-full px-3 py-1.5 text-xs text-left hover:bg-gray-50">新建文章</button>
+              <button onClick={handleCreateDir} className="w-full px-3 py-1.5 text-xs text-left hover:bg-gray-50">新建文件夹</button>
+              <button onClick={handleCreateFile} className="w-full px-3 py-1.5 text-xs text-left hover:bg-gray-50">新建文章</button>
             </>
-          )}
-          {contextMenu.node && (
+          ) : (
             <>
-              <button onClick={() => handleRename(contextMenu.node!)} className="w-full px-3 py-1.5 text-xs text-left hover:bg-gray-50">重命名</button>
-              <button onClick={() => handleMove(contextMenu.node!)} className="w-full px-3 py-1.5 text-xs text-left hover:bg-gray-50">移动到</button>
-              <button onClick={() => handleDelete(contextMenu.node!)} className="w-full px-3 py-1.5 text-xs text-left text-red-600 hover:bg-gray-50">删除</button>
+              <button onClick={() => handleRename(contextMenu.entry!)} className="w-full px-3 py-1.5 text-xs text-left hover:bg-gray-50">重命名</button>
+              <button onClick={() => handleDelete(contextMenu.entry!)} className="w-full px-3 py-1.5 text-xs text-left text-red-600 hover:bg-gray-50">删除</button>
             </>
           )}
         </div>
@@ -155,37 +196,8 @@ export default function RepoTree({ repoId, nodes, currentParentId, onNavigate, o
   )
 }
 
-interface NodeItemProps {
-  node: Node
-  repoId: string
-  onContextMenu: (e: React.MouseEvent, node: Node) => void
-  onNavigate: (parentId: string | null) => void
-  onDragStart: (e: React.DragEvent, node: Node) => void
-  onDrop: (e: React.DragEvent, targetNode: Node) => void
-  onDragOver: (e: React.DragEvent) => void
-}
-
-function NodeItem({ node, repoId, onContextMenu, onNavigate, onDragStart, onDrop, onDragOver }: NodeItemProps) {
-  const navigate = useNavigate()
-
-  return (
-    <div
-      draggable
-      onContextMenu={e => onContextMenu(e, node)}
-      onDragStart={e => onDragStart(e, node)}
-      onDragOver={onDragOver}
-      onDrop={e => onDrop(e, node)}
-      onClick={() => {
-        if (node.type === 'FOLDER') {
-          onNavigate(node.id)
-        } else {
-          navigate(`/repos/${repoId}/nodes/${node.id}`)
-        }
-      }}
-      className="flex items-center gap-2 px-2 py-1.5 rounded text-sm cursor-pointer hover:bg-gray-100 text-gray-700 mb-0.5"
-    >
-      <span>{node.type === 'FOLDER' ? '📁' : '📄'}</span>
-      <span className="truncate">{node.name}</span>
-    </div>
-  )
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes}B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
 }

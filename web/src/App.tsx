@@ -33,8 +33,8 @@ export default function App() {
             <Route element={<AppLayout />}>
               <Route path="/repos" element={<RepoList />} />
               <Route path="/repos/:repoId" element={<RepoDetail />} />
-              <Route path="/repos/:repoId/nodes/:nodeId" element={<ArticleView />} />
-              <Route path="/repos/:repoId/nodes/:nodeId/edit" element={<ArticleEditor />} />
+              <Route path="/repos/:repoId/view/*" element={<ArticleView />} />
+              <Route path="/repos/:repoId/edit/*" element={<ArticleEditor />} />
               <Route path="/chat" element={<Chat />} />
               <Route path="/chat/:sessionId" element={<Chat />} />
               <Route path="/search" element={<SearchResult />} />

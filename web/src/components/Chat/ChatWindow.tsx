@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useChat } from '../../store/chat-context'
+import { useAuth } from '../../store/auth-context'
 import MessageBubble from './MessageBubble'
 import AskUserModal from './AskUserModal'
 
@@ -12,6 +13,7 @@ interface ChatWindowProps {
 
 export default function ChatWindow(_props: ChatWindowProps) {
   const { messages, isStreaming, sendMessage, virtualSession, loadMoreMessages, hasMoreMessages, isLoadingMessages } = useChat()
+  const { user } = useAuth()
   const [input, setInput] = useState('')
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -19,7 +21,9 @@ export default function ChatWindow(_props: ChatWindowProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (isNearBottomRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
   }, [messages])
 
   const isNearBottomRef = useRef(true)
@@ -110,6 +114,7 @@ export default function ChatWindow(_props: ChatWindowProps) {
               content={msg.content}
               thinking={msg.thinking}
               isStreaming={msg.isStreaming}
+              userAvatar={user?.avatar}
             />
           ))
         ) : virtualSession ? (

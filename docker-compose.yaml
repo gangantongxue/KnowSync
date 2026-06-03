@@ -68,6 +68,7 @@ services:
         condition: service_started
     volumes:
       - ./gateway/logs:/app/logs
+      - ./data:/app/data
     networks:
       - knowsync-net
 

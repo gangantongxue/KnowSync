@@ -5,15 +5,24 @@ interface MessageBubbleProps {
   content: string
   thinking?: string
   isStreaming?: boolean
+  userAvatar?: string
 }
 
-export default function MessageBubble({ role, content, thinking, isStreaming }: MessageBubbleProps) {
+export default function MessageBubble({ role, content, thinking, isStreaming, userAvatar }: MessageBubbleProps) {
   const isUser = role === 'user'
 
   return (
     <div className={`flex gap-3 mb-4 ${isUser ? 'flex-row-reverse' : ''}`}>
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 ${isUser ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-600'}`}>
-        {isUser ? 'U' : 'AI'}
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 overflow-hidden ${isUser ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-600'}`}>
+        {isUser ? (
+          userAvatar ? (
+            <img src={userAvatar} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+          ) : (
+            'U'
+          )
+        ) : (
+          <img src="/img/KK.jpg" alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+        )}
       </div>
 
       <div className={`max-w-[70%] ${isUser ? 'items-end' : 'items-start'}`}>

@@ -133,4 +133,8 @@ export async function createChatStream(
     buffer = lines.pop() || ''
     parseSSELines(lines)
   }
+
+  // 等待 processing 链中所有内容分片分发完毕，再返回
+  // 防止调用方在流式内容未完全展示前就执行 SET_CACHED_MESSAGES 替换消息列表
+  await processing
 }

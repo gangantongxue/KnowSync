@@ -5,13 +5,12 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log/slog"
-	"strings"
+	"strconv"
+	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/gangantongxue/knowsync/gateway/pkg/errcode"
 	"github.com/gangantongxue/knowsync/gateway/pkg/response"
-	"github.com/gangantongxue/knowsync/gateway/pkg/storage"
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
@@ -60,12 +59,10 @@ func (h *Handler) GetUser() app.HandlerFunc {
 		}
 
 		response.Success(c, ctx, map[string]any{
-			"user": map[string]any{
-				"id":     getUserResp.User.Id,
-				"name":   getUserResp.User.Name,
-				"email":  getUserResp.User.Email,
-				"avatar": getUserResp.User.Avatar,
-			},
+			"id":     getUserResp.User.Id,
+			"name":   getUserResp.User.Name,
+			"email":  getUserResp.User.Email,
+			"avatar": getUserResp.User.Avatar,
 		})
 	}
 }
@@ -106,18 +103,17 @@ func (h *Handler) UpdateUser() app.HandlerFunc {
 		}
 
 		response.Success(c, ctx, map[string]any{
-			"user": map[string]any{
-				"id":     updateResp.User.Id,
-				"name":   updateResp.User.Name,
-				"email":  updateResp.User.Email,
-				"avatar": updateResp.User.Avatar,
-			},
+			"id":     updateResp.User.Id,
+			"name":   updateResp.User.Name,
+			"email":  updateResp.User.Email,
+			"avatar": updateResp.User.Avatar,
 		})
 	}
 }
 
 // SetAvatar 设置用户头像（multipart/form-data 文件上传）
-// 流程: 校验文件魔数 → GetUser gRPC 获取旧头像 → 保存新文件 → 删除旧文件 → SetAvatar gRPC → 返回
+// 流程: 校验文件魔数 → 保存新文件 → SetAvatar gRPC → 返回
+// 使用时间戳命名文件，历史头像自动保留
 func (h *Handler) SetAvatar() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		// 从 JWT 上下文中获取当前登录用户 ID
@@ -172,46 +168,23 @@ func (h *Handler) SetAvatar() app.HandlerFunc {
 		// 将已读取的魔数头部与剩余文件拼回完整流
 		avatarReader := io.MultiReader(bytes.NewReader(head[:n]), f)
 
-		// --- 获取旧头像 URL，用于后续清理 ---
 		conn := h.grpcClient.GetConn("user_server")
 		if conn == nil {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "服务连接失败")
 			return
 		}
 
-		userClient := pb.NewUserServiceClient(conn)
-		getUserResp, err := userClient.GetUser(c, &pb.GetUserRequest{UserId: uid})
-		if err != nil {
-			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取用户信息失败")
-			return
-		}
-		if !getUserResp.Success || getUserResp.User == nil {
-			response.Error(c, ctx, 404, errcode.ErrBadReq, "用户不存在")
-			return
-		}
-
-		oldAvatarURL := getUserResp.User.Avatar
-
-		// --- 保存新头像 ---
-		key := fmt.Sprintf("avatars/%s%s", uid, ext)
-		if _, err := h.store.Put(storage.BucketPublic, key, avatarReader); err != nil {
+		// --- 保存新头像（时间戳文件名，保留历史头像）---
+		ts := strconv.FormatInt(time.Now().UnixMilli(), 10)
+		key := fmt.Sprintf("%s/avatar/%s%s", uid, ts, ext)
+		if _, err := h.store.WriteFile(key, avatarReader); err != nil {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "头像文件保存失败")
 			return
 		}
 
-		// --- 清理旧头像文件（路径不同时）---
-		if oldAvatarURL != "" {
-			// 旧 URL 格式: files/public/avatars/{user_id}.{ext}
-			oldKey := strings.TrimPrefix(oldAvatarURL, "files/public/")
-			if oldKey != key {
-				if err := h.store.Delete(storage.BucketPublic, oldKey); err != nil {
-					slog.Warn("删除旧头像文件失败", "user_id", uid, "old_key", oldKey, "error", err)
-				}
-			}
-		}
-
 		// --- 更新数据库中的头像地址 ---
-		avatarURL := fmt.Sprintf("files/public/%s", key)
+		userClient := pb.NewUserServiceClient(conn)
+		avatarURL := fmt.Sprintf("/files/%s/avatar/%s%s", uid, ts, ext)
 		if _, err := userClient.SetAvatar(c, &pb.SetAvatarRequest{
 			UserId: uid,
 			Avatar: avatarURL,

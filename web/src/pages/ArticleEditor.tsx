@@ -1,45 +1,49 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getArticleSignedUrl, getNode, uploadArticleContent } from '../lib/nodes'
-import MarkdownEditor from '../components/Editor/MarkdownEditor'
+import MDEditor from '@uiw/react-md-editor'
+import { useAuth } from '../store/auth-context'
+import { getRepo } from '../lib/repos'
+import { uploadFile } from '../lib/files'
 
 export default function ArticleEditor() {
-  const { repoId, nodeId } = useParams<{ repoId: string; nodeId: string }>()
+  const { repoId, '*': filePath } = useParams<{ repoId: string; '*': string }>()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [content, setContent] = useState('')
-  const [title, setTitle] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
-    const load = async () => {
-      if (!repoId || !nodeId) return
-      try {
-        const node = await getNode(repoId, nodeId)
-        setTitle(node.name)
+    if (!repoId || !user) return
 
-        if (node.file_path) {
-          const signedUrl = await getArticleSignedUrl(repoId, nodeId)
-          const res = await fetch(signedUrl)
-          const text = await res.text()
-          setContent(text)
+    const load = async () => {
+      try {
+        const repo = await getRepo(repoId)
+
+        if (filePath) {
+          const res = await fetch(`/files/${repo.owner_id}/${repoId}/${filePath}`)
+          if (res.ok) {
+            const text = await res.text()
+            setContent(text)
+          }
         }
-      } catch {
-        // 新文章，内容为空
-      }
+      } catch { /* ignore */ }
       setLoading(false)
     }
     load()
-  }, [repoId, nodeId])
+  }, [repoId, filePath, user])
 
   const handleSave = async () => {
-    if (!repoId || !nodeId || !content.trim()) return
+    if (!repoId || !user) return
+    const path = filePath || prompt('请输入文件名（含 .md 后缀）:')
+    if (!path) return
+
     setSaving(true)
     try {
       const blob = new Blob([content], { type: 'text/markdown' })
-      const file = new File([blob], `${title || 'article'}.md`, { type: 'text/markdown' })
-      await uploadArticleContent(repoId, nodeId, file)
+      const file = new File([blob], path.split('/').pop() || 'article.md', { type: 'text/markdown' })
+      await uploadFile(repoId, path, file)
       setDirty(false)
     } catch (err: any) {
       alert('保存失败: ' + err.message)
@@ -50,13 +54,8 @@ export default function ArticleEditor() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    if (!file.name.endsWith('.md') && !file.name.endsWith('.markdown')) {
-      alert('仅支持 .md / .markdown 文件')
-      return
-    }
     const text = await file.text()
     setContent(text)
-    setTitle(file.name.replace(/\.(md|markdown)$/, ''))
     setDirty(true)
   }
 
@@ -65,13 +64,13 @@ export default function ArticleEditor() {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-white">
+    <div className="h-full flex flex-col" data-color-mode="light">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-white shrink-0">
         <div className="flex items-center gap-2">
-          <button onClick={() => navigate(`/repos/${repoId}/nodes/${nodeId}`)} className="text-gray-400 hover:text-gray-600 text-sm">
+          <button onClick={() => navigate(`/repos/${repoId}`)} className="text-gray-400 hover:text-gray-600 text-sm">
             ← 返回
           </button>
-          <span className="text-sm font-medium text-gray-800">{title || '新文章'}</span>
+          <span className="text-sm font-medium text-gray-800">{filePath?.split('/').pop() || '新文章'}</span>
           {dirty && <span className="text-xs text-orange-500">未保存</span>}
         </div>
         <div className="flex items-center gap-2">
@@ -89,7 +88,12 @@ export default function ArticleEditor() {
         </div>
       </div>
       <div className="flex-1">
-        <MarkdownEditor value={content} onChange={(v) => { setContent(v); setDirty(true) }} />
+        <MDEditor
+          value={content}
+          onChange={(v) => { setContent(v || ''); setDirty(true) }}
+          height="100%"
+          preview="live"
+        />
       </div>
     </div>
   )

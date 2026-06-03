@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"strconv"
+	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/gangantongxue/knowsync/gateway/pkg/errcode"
 	"github.com/gangantongxue/knowsync/gateway/pkg/response"
-	"github.com/gangantongxue/knowsync/gateway/pkg/storage"
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
@@ -126,11 +127,12 @@ func (h *Handler) Register() app.HandlerFunc {
 		avatarURL := ""
 
 		if avatarReader != nil {
-			key := fmt.Sprintf("avatars/%s%s", userID, avatarExt)
-			if _, err := h.store.Put(storage.BucketPublic, key, avatarReader); err != nil {
+			ts := strconv.FormatInt(time.Now().UnixMilli(), 10)
+			key := fmt.Sprintf("%s/avatar/%s%s", userID, ts, avatarExt)
+			if _, err := h.store.WriteFile(key, avatarReader); err != nil {
 				slog.Warn("头像文件保存失败，注册已完成但未设置头像", "user_id", userID, "error", err)
 			} else {
-				avatarURL = fmt.Sprintf("files/public/%s", key)
+				avatarURL = fmt.Sprintf("/files/%s/avatar/%s%s", userID, ts, avatarExt)
 				if _, err := userClient.SetAvatar(c, &pb.SetAvatarRequest{
 					UserId: userID,
 					Avatar: avatarURL,

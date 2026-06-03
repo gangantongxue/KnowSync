@@ -44,7 +44,7 @@ func NewApp() error {
 		return err
 	}
 
-	store, err := storage.NewStore(cfg)
+	store, err := storage.NewStore(cfg.Storage.RootDir)
 	if err != nil {
 		slog.Error("初始化文件存储失败", "error", err)
 		return err

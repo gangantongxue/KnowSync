@@ -69,6 +69,10 @@ func (h *Handler) CreateRepo() app.HandlerFunc {
 			return
 		}
 
+		if err := h.store.MakeDir(uid + "/" + resp.Repo.Id); err != nil {
+			slog.Warn("创建知识库存储目录失败", "repo_id", resp.Repo.Id, "error", err)
+		}
+
 		response.Success(c, ctx, map[string]any{
 			"repo": map[string]any{
 				"id":            resp.Repo.Id,
@@ -104,8 +108,12 @@ func (h *Handler) GetRepo() app.HandlerFunc {
 			return
 		}
 		if !resp.Success {
-			response.Error(c, ctx, 404, errcode.ErrNotFound, resp.Msg)
+			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
+		}
+
+		if err := h.store.MakeDir(uid + "/" + resp.Repo.Id); err != nil {
+			slog.Warn("创建知识库存储目录失败", "repo_id", resp.Repo.Id, "error", err)
 		}
 
 		response.Success(c, ctx, map[string]any{
@@ -190,6 +198,10 @@ func (h *Handler) DeleteRepo() app.HandlerFunc {
 			return
 		}
 
+		if err := h.store.DeleteAll(uid + "/" + repoID); err != nil {
+			slog.Warn("删除知识库存储目录失败", "repo_id", repoID, "error", err)
+		}
+
 		response.Success(c, ctx, nil)
 	}
 }
@@ -240,25 +252,6 @@ func marshalRepoResponse(r *pb.Repo) map[string]any {
 		"article_count": r.ArticleCount,
 		"created_at":    r.CreatedAt,
 		"updated_at":    r.UpdatedAt,
-	}
-}
-
-// marshalNodeResponse 将 protobuf Node 转换为 HTTP JSON 响应格式
-func (h *Handler) marshalNodeResponse(n *pb.Node) map[string]any {
-	typ := "FOLDER"
-	if n.Type == pb.NodeType_ARTICLE {
-		typ = "ARTICLE"
-	}
-	return map[string]any{
-		"id":         n.Id,
-		"repo_id":    n.RepoId,
-		"parent_id":  n.ParentId,
-		"name":       n.Name,
-		"type":       typ,
-		"file_path":  n.FilePath,
-		"size":       n.Size,
-		"created_at": n.CreatedAt,
-		"updated_at": n.UpdatedAt,
 	}
 }
 
