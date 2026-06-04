@@ -8,6 +8,7 @@ import { useAuth } from '../store/auth-context'
 import RepoTree from '../components/Repo/RepoTree'
 import RepoSettings from '../components/Repo/RepoSettings'
 import { resolveImageUrls, markdownComponents } from '../lib/markdown'
+import { userApi } from '../lib/user-api'
 
 /** 仓库详情页向外暴露的上下文 */
 export interface RepoDetailContext {
@@ -49,6 +50,7 @@ export default function RepoDetail() {
   const [readmeLoading, setReadmeLoading] = useState(false)
   const [readmeExists, setReadmeExists] = useState(false)
   const [treeRefreshKey, setTreeRefreshKey] = useState(0)
+  const [ownerInfo, setOwnerInfo] = useState<{ id: string; name: string; avatar: string } | null>(null)
 
   const refreshTree = useCallback(() => setTreeRefreshKey(k => k + 1), [])
   const outletContext = useMemo<RepoDetailContext>(() => ({ refreshTree }), [refreshTree])
@@ -83,6 +85,11 @@ export default function RepoDetail() {
       setMyRole(r.my_role)
       setIsFollowing(r.is_following)
       await loadReadme(r.owner_id)
+      // 获取拥有者信息
+      try {
+        const profileRes = await userApi.getProfile(r.owner_id)
+        setOwnerInfo({ id: profileRes.data.user.id, name: profileRes.data.user.name, avatar: profileRes.data.user.avatar })
+      } catch { /* ignore */ }
     } catch { /* ignore */ }
   }, [repoId, loadReadme])
 
@@ -166,6 +173,22 @@ export default function RepoDetail() {
         <div className="flex-1 overflow-y-auto">
           <RepoTree repoId={repoId} repo={repo} refreshKey={treeRefreshKey} readOnly={readOnly} />
         </div>
+        {/* 拥有者信息 */}
+        {ownerInfo && (
+          <div
+            onClick={() => navigate(`/users/${ownerInfo.id}`)}
+            className="flex items-center gap-2 px-3 py-2 border-t border-gray-200 shrink-0 cursor-pointer hover:bg-gray-100"
+          >
+            <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs flex items-center justify-center overflow-hidden shrink-0">
+              {ownerInfo.avatar ? (
+                <img src={ownerInfo.avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                ownerInfo.name?.charAt(0) || '?'
+              )}
+            </div>
+            <span className="text-xs text-gray-500 truncate">{ownerInfo.name}</span>
+          </div>
+        )}
       </div>
 
       {/* 中间内容区 */}
