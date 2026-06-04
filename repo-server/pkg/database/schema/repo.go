@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// Repo 知识库表
+// Repo 知识库表.
 type Repo struct {
 	ID           string         `gorm:"primaryKey;type:char(20)" json:"id"`
 	OwnerID      string         `gorm:"column:owner_id;type:varchar(20);not null;index" json:"owner_id"`
@@ -20,11 +20,13 @@ type Repo struct {
 	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at;index" json:"deleted_at"`
 }
 
+// TableName 返回知识库表名.
 func (r *Repo) TableName() string {
 	return "repo"
 }
 
-func (r *Repo) BeforeCreate(tx *gorm.DB) error {
+// BeforeCreate GORM 钩子，在创建前自动生成 ID.
+func (r *Repo) BeforeCreate(_ *gorm.DB) error {
 	if r.ID == "" {
 		r.ID = xid.New().String()
 	}

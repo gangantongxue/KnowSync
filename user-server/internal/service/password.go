@@ -3,12 +3,13 @@ package service
 import (
 	"context"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"log/slog"
 	"math/big"
 )
 
-// VerifyCode 发送邮箱验证码
+// VerifyCode 发送邮箱验证码.
 func (s *Service) VerifyCode(ctx context.Context, email string) error {
 	// 检查发送频率限制，防止频繁请求
 	allowed, err := s.Repository.SetVerifyCodeRateLimit(ctx, email)
@@ -17,7 +18,7 @@ func (s *Service) VerifyCode(ctx context.Context, email string) error {
 		return fmt.Errorf("检查发送频率失败: %w", err)
 	}
 	if !allowed {
-		return fmt.Errorf("发送过于频繁，请稍后再试")
+		return errors.New("发送过于频繁，请稍后再试")
 	}
 
 	// 生成 4 位随机验证码
@@ -42,7 +43,7 @@ func (s *Service) VerifyCode(ctx context.Context, email string) error {
 	return nil
 }
 
-// generateVerifyCode 使用密码学安全随机数生成 4 位数字验证码
+// generateVerifyCode 使用密码学安全随机数生成 4 位数字验证码.
 func generateVerifyCode() (string, error) {
 	n, err := rand.Int(rand.Reader, big.NewInt(10000))
 	if err != nil {
@@ -51,21 +52,21 @@ func generateVerifyCode() (string, error) {
 	return fmt.Sprintf("%04d", n.Int64()), nil
 }
 
-// ForgetPassword 忘记密码（通过邮箱验证码重置密码）
+// ForgetPassword 忘记密码（通过邮箱验证码重置密码）.
 func (s *Service) ForgetPassword(ctx context.Context, email, password, verifyCode string) error {
 	// 1. 验证码校验
 	storedCode, err := s.Repository.GetVerifyCode(ctx, email)
 	if err != nil {
-		return fmt.Errorf("验证码已过期或不存在")
+		return errors.New("验证码已过期或不存在")
 	}
 	if storedCode != verifyCode {
-		return fmt.Errorf("验证码错误")
+		return errors.New("验证码错误")
 	}
 
 	// 2. 根据邮箱查找用户
 	user, err := s.Repository.GetUserByEmail(ctx, email)
 	if err != nil {
-		return fmt.Errorf("该邮箱未注册")
+		return errors.New("该邮箱未注册")
 	}
 
 	// 3. 对新密码进行哈希处理
@@ -96,17 +97,17 @@ func (s *Service) ForgetPassword(ctx context.Context, email, password, verifyCod
 	return nil
 }
 
-// ResetPassword 重置密码（通过旧密码验证）
-func (s *Service) ResetPassword(ctx context.Context, userID string, oldPassword, newPassword string) error {
+// ResetPassword 重置密码（通过旧密码验证）.
+func (s *Service) ResetPassword(ctx context.Context, userID, oldPassword, newPassword string) error {
 	// 1. 查找用户
 	user, err := s.Repository.GetUser(ctx, userID)
 	if err != nil {
-		return fmt.Errorf("用户不存在")
+		return errors.New("用户不存在")
 	}
 
 	// 2. 校验旧密码
 	if err := CheckPassword(oldPassword, user.Password); err != nil {
-		return fmt.Errorf("原密码错误")
+		return errors.New("原密码错误")
 	}
 
 	// 3. 对新密码进行哈希处理

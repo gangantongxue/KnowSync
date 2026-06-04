@@ -15,13 +15,13 @@ import (
 	"github.com/gangantongxue/knowsync/ai-server/pkg/config/model"
 )
 
-// Client 外部服务客户端，所有请求均通过 Gateway 的 /internal/* 接口
+// Client 外部服务客户端，所有请求均通过 Gateway 的 /internal/* 接口.
 type Client struct {
 	gatewayAddr string
 	httpClient  *http.Client
 }
 
-// NewClient 创建外部服务客户端
+// NewClient 创建外部服务客户端.
 func NewClient(cfg *model.Config) (*Client, error) {
 	return &Client{
 		gatewayAddr: cfg.Gateway.Addr,
@@ -29,7 +29,7 @@ func NewClient(cfg *model.Config) (*Client, error) {
 	}, nil
 }
 
-// doGet 向 gateway 的内部端点发送 GET 请求，自动附加 service token
+// doGet 向 gateway 的内部端点发送 GET 请求，自动附加 service token.
 func (c *Client) doGet(ctx context.Context, path string, query url.Values) ([]byte, error) {
 	serviceToken, _ := ctx.Value(tool.CtxKeyServiceToken).(string)
 
@@ -51,7 +51,7 @@ func (c *Client) doGet(ctx context.Context, path string, query url.Values) ([]by
 	if err != nil {
 		return nil, fmt.Errorf("请求 gateway 失败: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
@@ -61,22 +61,22 @@ func (c *Client) doGet(ctx context.Context, path string, query url.Values) ([]by
 	return io.ReadAll(resp.Body)
 }
 
-// doPost 向 gateway 的内部端点发送 POST 请求
+// doPost 向 gateway 的内部端点发送 POST 请求.
 func (c *Client) doPost(ctx context.Context, path string, query url.Values, body []byte) ([]byte, error) {
 	return c.doBody(ctx, http.MethodPost, path, query, body)
 }
 
-// doPut 向 gateway 的内部端点发送 PUT 请求
+// doPut 向 gateway 的内部端点发送 PUT 请求.
 func (c *Client) doPut(ctx context.Context, path string, query url.Values, body []byte) ([]byte, error) {
 	return c.doBody(ctx, http.MethodPut, path, query, body)
 }
 
-// doDelete 向 gateway 的内部端点发送 DELETE 请求
+// doDelete 向 gateway 的内部端点发送 DELETE 请求.
 func (c *Client) doDelete(ctx context.Context, path string, query url.Values) ([]byte, error) {
 	return c.doBody(ctx, http.MethodDelete, path, query, nil)
 }
 
-// doBody 向 gateway 的内部端点发送带 body 的请求
+// doBody 向 gateway 的内部端点发送带 body 的请求.
 func (c *Client) doBody(ctx context.Context, method, path string, query url.Values, body []byte) ([]byte, error) {
 	serviceToken, _ := ctx.Value(tool.CtxKeyServiceToken).(string)
 
@@ -105,7 +105,7 @@ func (c *Client) doBody(ctx context.Context, method, path string, query url.Valu
 	if err != nil {
 		return nil, fmt.Errorf("请求 gateway 失败: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		respBody, _ := io.ReadAll(resp.Body)
@@ -117,7 +117,7 @@ func (c *Client) doBody(ctx context.Context, method, path string, query url.Valu
 
 // ==================== 仓库相关 ====================
 
-// ListPublicRepos 获取所有公开仓库 ID 列表
+// ListPublicRepos 获取所有公开仓库 ID 列表.
 func (c *Client) ListPublicRepos(ctx context.Context) ([]string, error) {
 	body, err := c.doGet(ctx, "/internal/repos/public", nil)
 	if err != nil {
@@ -140,7 +140,9 @@ func (c *Client) ListPublicRepos(ctx context.Context) ([]string, error) {
 	return repoIDs, nil
 }
 
-// ListUserRepos 获取用户拥有的仓库 ID 列表
+// ListUserRepos 获取用户拥有的仓库 ID 列表.
+//
+//nolint:revive // userID required by interface
 func (c *Client) ListUserRepos(ctx context.Context, userID string) ([]string, error) {
 	body, err := c.doGet(ctx, "/internal/repos/user", nil)
 	if err != nil {
@@ -163,7 +165,9 @@ func (c *Client) ListUserRepos(ctx context.Context, userID string) ([]string, er
 	return repoIDs, nil
 }
 
-// ListUserReposDetail 获取用户仓库列表（含完整信息）
+// ListUserReposDetail 获取用户仓库列表（含完整信息）.
+//
+//nolint:dupl,revive // similar but different call; userID required by interface
 func (c *Client) ListUserReposDetail(ctx context.Context, userID string) ([]tool.RepoInfo, error) {
 	body, err := c.doGet(ctx, "/internal/repos/user", nil)
 	if err != nil {
@@ -200,7 +204,9 @@ func (c *Client) ListUserReposDetail(ctx context.Context, userID string) ([]tool
 	return infos, nil
 }
 
-// GetRepo 获取仓库详情
+// GetRepo 获取仓库详情.
+//
+//nolint:revive // userID required by interface
 func (c *Client) GetRepo(ctx context.Context, repoID, userID string) (*tool.RepoInfo, error) {
 	q := url.Values{}
 	q.Set("repo_id", repoID)
@@ -235,7 +241,9 @@ func (c *Client) GetRepo(ctx context.Context, repoID, userID string) (*tool.Repo
 	}, nil
 }
 
-// ListPublicReposDetail 获取所有公开仓库列表（含完整信息）
+// ListPublicReposDetail 获取所有公开仓库列表（含完整信息）.
+//
+//nolint:dupl // 与其他列表方法结构相似但调用不同接口
 func (c *Client) ListPublicReposDetail(ctx context.Context) ([]tool.RepoInfo, error) {
 	body, err := c.doGet(ctx, "/internal/repos/public", nil)
 	if err != nil {
@@ -272,7 +280,9 @@ func (c *Client) ListPublicReposDetail(ctx context.Context) ([]tool.RepoInfo, er
 	return infos, nil
 }
 
-// GetRepoDetail 获取仓库详情（含角色和关注状态）
+// GetRepoDetail 获取仓库详情（含角色和关注状态）.
+//
+//nolint:revive // userID required by interface
 func (c *Client) GetRepoDetail(ctx context.Context, repoID, userID string) (*tool.RepoDetail, error) {
 	q := url.Values{}
 	q.Set("repo_id", repoID)
@@ -315,8 +325,8 @@ func (c *Client) GetRepoDetail(ctx context.Context, repoID, userID string) (*too
 
 // ==================== 文件相关 ====================
 
-// GetArticleContent 从 gateway 获取文章内容
-func (c *Client) GetArticleContent(ctx context.Context, userID string, repoID, filePath string) (string, error) {
+// GetArticleContent 从 gateway 获取文章内容.
+func (c *Client) GetArticleContent(ctx context.Context, userID, repoID, filePath string) (string, error) {
 	q := url.Values{}
 	q.Set("path", userID+"/"+repoID+"/"+filePath)
 	body, err := c.doGet(ctx, "/internal/file", q)
@@ -327,12 +337,12 @@ func (c *Client) GetArticleContent(ctx context.Context, userID string, repoID, f
 	return string(body), nil
 }
 
-// GetFileContent 获取仓库文件内容（实现 tool.FileClient 接口）
+// GetFileContent 获取仓库文件内容（实现 tool.FileClient 接口）.
 func (c *Client) GetFileContent(ctx context.Context, ownerID, repoID, filePath string) (string, error) {
 	return c.GetArticleContent(ctx, ownerID, repoID, filePath)
 }
 
-// ListRepoFiles 获取仓库文件列表
+// ListRepoFiles 获取仓库文件列表.
 func (c *Client) ListRepoFiles(ctx context.Context, ownerID, repoID, dirPath string) ([]tool.FileEntry, error) {
 	q := url.Values{}
 	q.Set("owner_id", ownerID)
@@ -373,7 +383,7 @@ func (c *Client) ListRepoFiles(ctx context.Context, ownerID, repoID, dirPath str
 
 // ==================== 文件写入 ====================
 
-// CreateFile 创建文件
+// CreateFile 创建文件.
 func (c *Client) CreateFile(ctx context.Context, ownerID, repoID, filePath, content string) error {
 	q := url.Values{}
 	q.Set("owner_id", ownerID)
@@ -384,7 +394,7 @@ func (c *Client) CreateFile(ctx context.Context, ownerID, repoID, filePath, cont
 	return err
 }
 
-// UpdateFile 更新文件内容
+// UpdateFile 更新文件内容.
 func (c *Client) UpdateFile(ctx context.Context, ownerID, repoID, filePath, content string) error {
 	q := url.Values{}
 	q.Set("owner_id", ownerID)
@@ -395,7 +405,7 @@ func (c *Client) UpdateFile(ctx context.Context, ownerID, repoID, filePath, cont
 	return err
 }
 
-// DeleteFile 删除文件
+// DeleteFile 删除文件.
 func (c *Client) DeleteFile(ctx context.Context, ownerID, repoID, filePath string) error {
 	q := url.Values{}
 	q.Set("owner_id", ownerID)
@@ -405,7 +415,7 @@ func (c *Client) DeleteFile(ctx context.Context, ownerID, repoID, filePath strin
 	return err
 }
 
-// RenameFile 重命名/移动文件
+// RenameFile 重命名/移动文件.
 func (c *Client) RenameFile(ctx context.Context, ownerID, repoID, oldPath, newPath string) error {
 	q := url.Values{}
 	q.Set("owner_id", ownerID)
@@ -418,7 +428,9 @@ func (c *Client) RenameFile(ctx context.Context, ownerID, repoID, oldPath, newPa
 
 // ==================== 知识库写入 ====================
 
-// CreateRepo 创建知识库
+// CreateRepo 创建知识库.
+//
+//nolint:revive // userID required by interface
 func (c *Client) CreateRepo(ctx context.Context, userID, name, description, visibility string) (string, error) {
 	body, _ := json.Marshal(map[string]string{
 		"name":        name,
@@ -438,7 +450,9 @@ func (c *Client) CreateRepo(ctx context.Context, userID, name, description, visi
 	return result.RepoID, nil
 }
 
-// UpdateRepo 更新知识库
+// UpdateRepo 更新知识库.
+//
+//nolint:revive // userID required by interface
 func (c *Client) UpdateRepo(ctx context.Context, repoID, userID, name, description, visibility string) error {
 	body, _ := json.Marshal(map[string]string{
 		"name":        name,
@@ -453,7 +467,7 @@ func (c *Client) UpdateRepo(ctx context.Context, repoID, userID, name, descripti
 
 // ==================== 用户搜索 ====================
 
-// SearchUsers 搜索用户
+// SearchUsers 搜索用户.
 func (c *Client) SearchUsers(ctx context.Context, keyword string) ([]tool.UserInfo, error) {
 	q := url.Values{}
 	q.Set("q", keyword)
@@ -479,7 +493,9 @@ func (c *Client) SearchUsers(ctx context.Context, keyword string) ([]tool.UserIn
 
 // ==================== 关注操作 ====================
 
-// FollowRepo 关注知识库
+// FollowRepo 关注知识库.
+//
+//nolint:revive // userID required by interface
 func (c *Client) FollowRepo(ctx context.Context, userID, repoID string) error {
 	q := url.Values{}
 	q.Set("repo_id", repoID)
@@ -487,7 +503,9 @@ func (c *Client) FollowRepo(ctx context.Context, userID, repoID string) error {
 	return err
 }
 
-// UnfollowRepo 取消关注知识库
+// UnfollowRepo 取消关注知识库.
+//
+//nolint:revive // userID required by interface
 func (c *Client) UnfollowRepo(ctx context.Context, userID, repoID string) error {
 	q := url.Values{}
 	q.Set("repo_id", repoID)
@@ -495,7 +513,9 @@ func (c *Client) UnfollowRepo(ctx context.Context, userID, repoID string) error 
 	return err
 }
 
-// ListFollowedRepos 获取关注的知识库列表（含完整信息）
+// ListFollowedRepos 获取关注的知识库列表（含完整信息）.
+//
+//nolint:dupl,revive // similar but different call; userID required by interface
 func (c *Client) ListFollowedRepos(ctx context.Context, userID string) ([]tool.RepoInfo, error) {
 	body, err := c.doGet(ctx, "/internal/repos/followed", nil)
 	if err != nil {
@@ -534,7 +554,7 @@ func (c *Client) ListFollowedRepos(ctx context.Context, userID string) ([]tool.R
 
 // ==================== 协作者管理 ====================
 
-// AddCollaborator 添加协作者
+// AddCollaborator 添加协作者.
 func (c *Client) AddCollaborator(ctx context.Context, repoID, userID, role string) error {
 	q := url.Values{}
 	q.Set("repo_id", repoID)
@@ -546,7 +566,7 @@ func (c *Client) AddCollaborator(ctx context.Context, repoID, userID, role strin
 	return err
 }
 
-// RemoveCollaborator 移除协作者
+// RemoveCollaborator 移除协作者.
 func (c *Client) RemoveCollaborator(ctx context.Context, repoID, userID string) error {
 	q := url.Values{}
 	q.Set("repo_id", repoID)
@@ -555,7 +575,7 @@ func (c *Client) RemoveCollaborator(ctx context.Context, repoID, userID string) 
 	return err
 }
 
-// UpdateCollaboratorRole 更新协作者角色
+// UpdateCollaboratorRole 更新协作者角色.
 func (c *Client) UpdateCollaboratorRole(ctx context.Context, repoID, userID, role string) error {
 	q := url.Values{}
 	q.Set("repo_id", repoID)
@@ -567,7 +587,7 @@ func (c *Client) UpdateCollaboratorRole(ctx context.Context, repoID, userID, rol
 	return err
 }
 
-// ListCollaborators 列出协作者
+// ListCollaborators 列出协作者.
 func (c *Client) ListCollaborators(ctx context.Context, repoID string) ([]tool.CollaboratorInfo, error) {
 	q := url.Values{}
 	q.Set("repo_id", repoID)
@@ -596,7 +616,7 @@ func (c *Client) ListCollaborators(ctx context.Context, repoID string) ([]tool.C
 	return items, nil
 }
 
-// Close 关闭外部服务连接
+// Close 关闭外部服务连接.
 func (c *Client) Close() error {
 	return nil
 }

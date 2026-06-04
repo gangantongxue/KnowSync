@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/peer"
 )
 
-// getClientIP 获取客户端 IP 地址
+// getClientIP 获取客户端 IP 地址.
 func getClientIP(ctx context.Context) string {
 	// 从元数据中获取 IP 地址
 	if md, ok := metadata.FromIncomingContext(ctx); ok {

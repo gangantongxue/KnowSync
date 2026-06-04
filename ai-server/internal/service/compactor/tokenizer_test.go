@@ -5,12 +5,14 @@ import (
 )
 
 func TestEstimateTokens_Empty(t *testing.T) {
+	t.Parallel()
 	if n := EstimateTokens(""); n != 0 {
 		t.Fatalf("expected 0, got %d", n)
 	}
 }
 
 func TestEstimateTokens_Short(t *testing.T) {
+	t.Parallel()
 	n := EstimateTokens("hello")
 	if n != 2 {
 		t.Fatalf("expected 2 for 'hello' (5 chars / 4), got %d", n)
@@ -18,6 +20,7 @@ func TestEstimateTokens_Short(t *testing.T) {
 }
 
 func TestEstimateTokens_Long(t *testing.T) {
+	t.Parallel()
 	text := string(make([]byte, 4000))
 	n := EstimateTokens(text)
 	if n != 1000 {
@@ -26,6 +29,7 @@ func TestEstimateTokens_Long(t *testing.T) {
 }
 
 func TestEstimateMessageTokens(t *testing.T) {
+	t.Parallel()
 	n := EstimateMessageTokens("hello")
 	if n <= 10 {
 		t.Fatalf("expected > 10 (content + overhead), got %d", n)
@@ -33,6 +37,7 @@ func TestEstimateMessageTokens(t *testing.T) {
 }
 
 func TestEstimateMessagesTokens(t *testing.T) {
+	t.Parallel()
 	total := EstimateMessagesTokens([]string{"a", "bb", "ccc"})
 	// 每条消息 1 token + 10 开销 = 11，3 条共 33
 	if total != 33 {

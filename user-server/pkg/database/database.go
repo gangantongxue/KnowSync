@@ -1,3 +1,4 @@
+// Package database provides database connection and initialization.
 package database
 
 import (
@@ -11,13 +12,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// Database 数据库连接封装.
 type Database struct {
 	DB     *gorm.DB
 	Cfg    *config.Config
 	Logger *logger.Logger
 }
 
-// NewDatabase 创建一个新的数据库连接
+// NewDatabase 创建一个新的数据库连接.
 func NewDatabase(cfg *config.Config, logger *logger.Logger) (*Database, error) {
 	// 初始化日志器
 	gormLogger := slogGorm.New(

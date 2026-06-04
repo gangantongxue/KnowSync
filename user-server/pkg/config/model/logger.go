@@ -2,7 +2,7 @@ package model
 
 import "log/slog"
 
-// LoggerCfg 日志配置项
+// LoggerCfg 日志配置项.
 type LoggerCfg struct {
 	Level      string `yaml:"level" mapstructure:"level"`
 	Dir        string `yaml:"dir" mapstructure:"dir"`                 // Dir 日志目录
@@ -13,6 +13,7 @@ type LoggerCfg struct {
 	LocalTime  bool   `yaml:"local_time" mapstructure:"local_time"`   // LocalTime 是否使用本地时间
 }
 
+// GetLevel 获取日志级别.
 func (l *LoggerCfg) GetLevel() slog.Level {
 	switch l.Level {
 	case "debug":

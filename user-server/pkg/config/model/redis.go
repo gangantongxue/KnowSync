@@ -1,6 +1,6 @@
 package model
 
-// RedisCfg Redis 配置项
+// RedisCfg Redis 配置项.
 type RedisCfg struct {
 	Addrs        []string `yaml:"addrs" mapstructure:"addrs"`
 	Password     string   `yaml:"password" mapstructure:"password"`

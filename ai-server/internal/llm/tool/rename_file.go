@@ -9,13 +9,13 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// RenameFile 重命名/移动文件工具
+// RenameFile 重命名/移动文件工具.
 type RenameFile struct {
 	repoDetailClient RepoDetailClient
 	fileWriteClient  FileWriteClient
 }
 
-// NewRenameFile 创建 RenameFile 工具
+// NewRenameFile 创建 RenameFile 工具.
 func NewRenameFile(rdc RepoDetailClient, fwc FileWriteClient) *RenameFile {
 	return &RenameFile{
 		repoDetailClient: rdc,
@@ -23,29 +23,29 @@ func NewRenameFile(rdc RepoDetailClient, fwc FileWriteClient) *RenameFile {
 	}
 }
 
-// Info 返回工具元信息
-func (r *RenameFile) Info(ctx context.Context) (*schema.ToolInfo, error) {
+// Info 返回工具元信息.
+func (r *RenameFile) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "rename_file",
 		Desc: "重命名或移动知识库中的文件。如果用户明确说了新路径，可以设置 _skip_confirm: true 跳过确认",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
-			"repo_id": {
-				Type:     "string",
-				Desc:     "知识库 ID",
+			ParamRepoID: {
+				Type:     TypeString,
+				Desc:     DescRepoID,
 				Required: true,
 			},
 			"old_path": {
-				Type:     "string",
+				Type:     TypeString,
 				Desc:     "原文件路径，例如：docs/chapter1.md",
 				Required: true,
 			},
 			"new_path": {
-				Type:     "string",
+				Type:     TypeString,
 				Desc:     "新文件路径，例如：docs/chapter2.md",
 				Required: true,
 			},
-			"_skip_confirm": {
-				Type:     "boolean",
+			ParamSkipCfm: {
+				Type:     TypeBoolean,
 				Desc:     "当用户已明确确认所有信息时，设置为 true 跳过二次确认",
 				Required: false,
 			},
@@ -53,8 +53,8 @@ func (r *RenameFile) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	}, nil
 }
 
-// InvokableRun 执行工具调用
-func (r *RenameFile) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+// InvokableRun 执行工具调用.
+func (r *RenameFile) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return r.execute(ctx, arguments)
 }
 
@@ -69,7 +69,7 @@ func (r *RenameFile) execute(ctx context.Context, paramsJSON string) (string, er
 	}
 
 	if params.RepoID == "" {
-		return `{"success": false, "message": "repo_id 不能为空"}`, nil
+		return ErrRespRepoIDEmpty, nil
 	}
 	if params.OldPath == "" {
 		return `{"success": false, "message": "old_path 不能为空"}`, nil
@@ -80,7 +80,7 @@ func (r *RenameFile) execute(ctx context.Context, paramsJSON string) (string, er
 
 	userID, _ := ctx.Value(CtxKeyUserID).(string)
 	if userID == "" {
-		return `{"success": false, "message": "无法获取用户信息"}`, nil
+		return ErrRespUserInfo, nil
 	}
 
 	repo, err := r.repoDetailClient.GetRepo(ctx, params.RepoID, userID)
@@ -93,10 +93,10 @@ func (r *RenameFile) execute(ctx context.Context, paramsJSON string) (string, er
 	}
 
 	data, _ := json.Marshal(map[string]any{
-		"success":  true,
-		"repo_id":  params.RepoID,
-		"old_path": params.OldPath,
-		"new_path": params.NewPath,
+		KeySuccess:  true,
+		ParamRepoID: params.RepoID,
+		"old_path":  params.OldPath,
+		"new_path":  params.NewPath,
 	})
 	return string(data), nil
 }

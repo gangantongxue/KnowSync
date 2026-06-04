@@ -1,3 +1,4 @@
+// Package config provides configuration loading and parsing using viper.
 package config
 
 import (
@@ -7,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Config 配置项
+// Config 配置项.
 type Config struct {
 	Project  model.ProjectCfg  `yaml:"project" mapstructure:"project"`
 	Logger   model.LoggerCfg   `yaml:"logger" mapstructure:"logger"`
@@ -18,7 +19,7 @@ type Config struct {
 	GRPC     model.GRPCCfg     `yaml:"grpc" mapstructure:"grpc"`
 }
 
-// NewConfig 创建一个新的配置项
+// NewConfig 创建一个新的配置项.
 func NewConfig() (*Config, error) {
 	v := viper.New()
 	v.SetConfigName("config")

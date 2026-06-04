@@ -11,14 +11,15 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// CollaboratorReq 协作者操作请求体
+// CollaboratorReq 协作者操作请求体.
 type CollaboratorReq struct {
 	UserID string `json:"user_id"`
 	Role   string `json:"role"`
 }
 
 // AddCollaborator 添加协作者
-// Deprecated: 该接口已弃用，请使用邀请流程（InviteCollaborator）
+//
+// Deprecated: 该接口已弃用，请使用邀请流程（InviteCollaborator）.
 func (h *Handler) AddCollaborator() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		operatorID := ctx.GetString("user_id")
@@ -30,13 +31,13 @@ func (h *Handler) AddCollaborator() app.HandlerFunc {
 			return
 		}
 
-		role := pb.CollaboratorRole_COLLABORATOR_ROLE_UNSPECIFIED
+		var role pb.CollaboratorRole
 		switch req.Role {
-		case "ADMIN":
+		case KeyRoleADMIN:
 			role = pb.CollaboratorRole_ADMIN
-		case "DEVELOPER":
+		case KeyRoleDEVELOPER:
 			role = pb.CollaboratorRole_DEVELOPER
-		case "VIEWER":
+		case KeyRoleVIEWER:
 			role = pb.CollaboratorRole_VIEWER
 		default:
 			response.Error(c, ctx, 400, errcode.ErrBadReq, "角色错误，仅支持 ADMIN/DEVELOPER/VIEWER")
@@ -70,7 +71,7 @@ func (h *Handler) AddCollaborator() app.HandlerFunc {
 	}
 }
 
-// UpdateCollaborator 更新协作者角色
+// UpdateCollaborator 更新协作者角色.
 func (h *Handler) UpdateCollaborator() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		operatorID := ctx.GetString("user_id")
@@ -85,13 +86,13 @@ func (h *Handler) UpdateCollaborator() app.HandlerFunc {
 			return
 		}
 
-		role := pb.CollaboratorRole_COLLABORATOR_ROLE_UNSPECIFIED
+		var role pb.CollaboratorRole
 		switch req.Role {
-		case "ADMIN":
+		case KeyRoleADMIN:
 			role = pb.CollaboratorRole_ADMIN
-		case "DEVELOPER":
+		case KeyRoleDEVELOPER:
 			role = pb.CollaboratorRole_DEVELOPER
-		case "VIEWER":
+		case KeyRoleVIEWER:
 			role = pb.CollaboratorRole_VIEWER
 		default:
 			response.Error(c, ctx, 400, errcode.ErrBadReq, "角色错误，仅支持 ADMIN/DEVELOPER/VIEWER")
@@ -125,7 +126,7 @@ func (h *Handler) UpdateCollaborator() app.HandlerFunc {
 	}
 }
 
-// RemoveCollaborator 移除协作者
+// RemoveCollaborator 移除协作者.
 func (h *Handler) RemoveCollaborator() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		operatorID := ctx.GetString("user_id")
@@ -158,7 +159,7 @@ func (h *Handler) RemoveCollaborator() app.HandlerFunc {
 	}
 }
 
-// ListCollaborators 列出知识库协作者列表
+// ListCollaborators 列出知识库协作者列表.
 func (h *Handler) ListCollaborators() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -189,8 +190,8 @@ func (h *Handler) ListCollaborators() app.HandlerFunc {
 		for _, c := range resp.Collaborators {
 			collaborators = append(collaborators, map[string]any{
 				"repo_id": c.RepoId,
-				"user_id": c.UserId,
-				"role":    c.Role.String(),
+				KeyUserID: c.UserId,
+				KeyRole:   c.Role.String(),
 			})
 		}
 
@@ -200,7 +201,7 @@ func (h *Handler) ListCollaborators() app.HandlerFunc {
 	}
 }
 
-// InviteCollaboratorReq 邀请协作者请求体
+// InviteCollaboratorReq 邀请协作者请求体.
 type InviteCollaboratorReq struct {
 	FriendID string `json:"friend_id"`
 	RepoID   string `json:"repo_id"`
@@ -208,6 +209,8 @@ type InviteCollaboratorReq struct {
 }
 
 // InviteCollaborator 邀请协作者（通过系统消息）
+//
+//nolint:gocyclo // 邀请流程涉及角色验证、仓库校验、好友校验、消息发送等多步操作
 func (h *Handler) InviteCollaborator() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -321,6 +324,8 @@ func (h *Handler) InviteCollaborator() app.HandlerFunc {
 }
 
 // AcceptInvitation 接受协作者邀请
+//
+//nolint:gocyclo // 接受邀请涉及消息查询、内容解析、角色映射、添加协作者等多步操作
 func (h *Handler) AcceptInvitation() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -379,7 +384,7 @@ func (h *Handler) AcceptInvitation() app.HandlerFunc {
 		}
 
 		// 角色映射
-		role := pb.CollaboratorRole_COLLABORATOR_ROLE_UNSPECIFIED
+		var role pb.CollaboratorRole
 		switch content.Role {
 		case "admin":
 			role = pb.CollaboratorRole_ADMIN
@@ -420,7 +425,7 @@ func (h *Handler) AcceptInvitation() app.HandlerFunc {
 	}
 }
 
-// RejectInvitation 拒绝协作者邀请
+// RejectInvitation 拒绝协作者邀请.
 func (h *Handler) RejectInvitation() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		_, ok := getAuthUserID(ctx)

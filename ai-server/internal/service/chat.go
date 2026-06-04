@@ -1,3 +1,4 @@
+// Package service 提供业务逻辑层实现.
 package service
 
 import (
@@ -15,13 +16,13 @@ import (
 	"github.com/gangantongxue/knowsync/ai-server/internal/repository"
 )
 
-// AskUserOption 用户问题选项
+// AskUserOption 用户问题选项.
 type AskUserOption struct {
 	Label string
 	Value string
 }
 
-// AskUserEvent 反问用户事件
+// AskUserEvent 反问用户事件.
 type AskUserEvent struct {
 	Question string
 	Type     string // "single" 单选 / "multiple" 多选
@@ -29,14 +30,14 @@ type AskUserEvent struct {
 	HasOther bool // 是否包含"其他"自由输入选项
 }
 
-// ConfirmWriteEvent 写操作确认事件
+// ConfirmWriteEvent 写操作确认事件.
 type ConfirmWriteEvent struct {
 	Tool     string `json:"tool"`
 	Params   string `json:"params"`
 	Question string `json:"question"`
 }
 
-// ChatEvent 流式聊天事件
+// ChatEvent 流式聊天事件.
 type ChatEvent struct {
 	SessionID        string
 	MessageID        string
@@ -51,11 +52,13 @@ type ChatEvent struct {
 	ConfirmWrite     *ConfirmWriteEvent // 非空时表示需要确认写操作
 }
 
-// ChatCallback 流式事件回调
+// ChatCallback 流式事件回调.
 type ChatCallback func(event *ChatEvent) error
 
-// Chat 流式对话主逻辑
-func (s *Service) Chat(ctx context.Context, reqUserID string, reqSessionID, message string, cb ChatCallback) {
+// Chat 流式对话主逻辑.
+//
+//nolint:gocyclo // 流式对话需要处理多种状态和场景
+func (s *Service) Chat(ctx context.Context, reqUserID, reqSessionID, message string, cb ChatCallback) {
 	// 1. 获取或创建会话
 	session, err := s.getOrCreateSession(ctx, reqUserID, reqSessionID)
 	if err != nil {
@@ -109,7 +112,7 @@ func (s *Service) Chat(ctx context.Context, reqUserID string, reqSessionID, mess
 	// 7. 调用 Agent 流式对话（Agent 内部自动处理全部工具调用闭环）
 	stream, err := s.LLM.Stream(agentCtx, messages)
 	if err != nil {
-		_ = cb(&ChatEvent{Error: fmt.Errorf("Agent 调用失败: %w", err)})
+		_ = cb(&ChatEvent{Error: fmt.Errorf("agent 调用失败: %w", err)})
 		return
 	}
 	defer stream.Close()
@@ -238,8 +241,9 @@ func (s *Service) Chat(ctx context.Context, reqUserID string, reqSessionID, mess
 	})
 }
 
-// getOrCreateSession 获取或创建会话
-func (s *Service) getOrCreateSession(ctx context.Context, userID string, sessionID string) (*repository.ChatSession, error) {
+// getOrCreateSession 获取或创建会话.
+func (s *Service) getOrCreateSession(ctx context.Context, userID, sessionID string) (*repository.ChatSession, error) {
+	_ = ctx
 	if sessionID != "" {
 		session, err := s.Repo.GetSession(sessionID)
 		if err == nil && session.UserID == userID {
@@ -259,8 +263,9 @@ func (s *Service) getOrCreateSession(ctx context.Context, userID string, session
 	return session, nil
 }
 
-// buildMessages 构建对话消息列表（不含 system prompt，由 agent 的 MessageModifier 注入）
+// buildMessages 构建对话消息列表（不含 system prompt，由 agent 的 MessageModifier 注入）.
 func (s *Service) buildMessages(ctx context.Context, sessionID string) ([]*schema.Message, error) {
+	_ = ctx
 	var messages []*schema.Message
 
 	history, err := s.Repo.GetSessionMessages(sessionID)
@@ -269,9 +274,10 @@ func (s *Service) buildMessages(ctx context.Context, sessionID string) ([]*schem
 	}
 
 	for _, msg := range history {
-		if msg.Role == "user" {
+		switch msg.Role {
+		case "user":
 			messages = append(messages, schema.UserMessage(msg.Content))
-		} else if msg.Role == "assistant" {
+		case "assistant":
 			assistantMsg := schema.AssistantMessage(msg.Content, nil)
 			if msg.Thinking != "" {
 				assistantMsg.ReasoningContent = msg.Thinking
@@ -282,7 +288,7 @@ func (s *Service) buildMessages(ctx context.Context, sessionID string) ([]*schem
 	return messages, nil
 }
 
-// parseConfirmWrite 从助手消息内容中解析 confirm_write 事件
+// parseConfirmWrite 从助手消息内容中解析 confirm_write 事件.
 func parseConfirmWrite(content string) *ConfirmWriteEvent {
 	idx := strings.Index(content, `"action":"confirm_write"`)
 	if idx < 0 {
@@ -300,7 +306,6 @@ func parseConfirmWrite(content string) *ConfirmWriteEvent {
 
 	// 找匹配的 }
 	depth := 0
-	end := -1
 	for i := start; i < len(content); i++ {
 		switch content[i] {
 		case '{':
@@ -308,35 +313,32 @@ func parseConfirmWrite(content string) *ConfirmWriteEvent {
 		case '}':
 			depth--
 			if depth == 0 {
-				end = i + 1
-				goto found
+				end := i + 1
+				var raw struct {
+					Action string `json:"action"`
+					Tool   string `json:"tool"`
+					Params string `json:"params"`
+				}
+				if err := json.Unmarshal([]byte(content[start:end]), &raw); err != nil {
+					return nil
+				}
+				if raw.Action != "confirm_write" {
+					return nil
+				}
+				return &ConfirmWriteEvent{
+					Tool:   raw.Tool,
+					Params: raw.Params,
+				}
 			}
 		}
 	}
 	return nil
-
-found:
-	var raw struct {
-		Action string `json:"action"`
-		Tool   string `json:"tool"`
-		Params string `json:"params"`
-	}
-	if err := json.Unmarshal([]byte(content[start:end]), &raw); err != nil {
-		return nil
-	}
-	if raw.Action != "confirm_write" {
-		return nil
-	}
-	return &ConfirmWriteEvent{
-		Tool:   raw.Tool,
-		Params: raw.Params,
-	}
 }
 
-// buildConfirmQuestion 根据工具类型和参数生成确认问题
+// buildConfirmQuestion 根据工具类型和参数生成确认问题.
 func buildConfirmQuestion(toolName, paramsJSON string) string {
 	var params map[string]any
-	json.Unmarshal([]byte(paramsJSON), &params)
+	_ = json.Unmarshal([]byte(paramsJSON), &params)
 
 	switch toolName {
 	case "create_file":
@@ -371,7 +373,7 @@ func buildConfirmQuestion(toolName, paramsJSON string) string {
 	}
 }
 
-// truncateTitle 截取消息前 n 个字作为标题
+// truncateTitle 截取消息前 n 个字作为标题.
 func truncateTitle(msg string) string {
 	runes := []rune(strings.TrimSpace(msg))
 	maxLen := 30

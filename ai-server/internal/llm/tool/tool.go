@@ -1,3 +1,4 @@
+// Package tool 提供 AI Agent 可调用的工具集，包括文件操作、知识库管理、协作管理、搜索等.
 package tool
 
 import (
@@ -8,24 +9,27 @@ import (
 	"github.com/gangantongxue/knowsync/ai-server/internal/vectorstore"
 )
 
-// Context key 类型，用于在 context 中传递请求级参数
+// Context key 类型，用于在 context 中传递请求级参数.
 type ctxKey string
 
-// CtxKeyUserID 上下文键：当前用户 ID
+// CtxKeyUserID 上下文键：当前用户 ID.
 const CtxKeyUserID ctxKey = "user_id"
 
-// CtxKeySessionID 上下文键：当前会话 ID
+// CtxKeySessionID 上下文键：当前会话 ID.
 const CtxKeySessionID ctxKey = "chat_session_id"
 
-// CtxKeyServiceToken 上下文键：service token（gateway 签发，用于内部服务间鉴权）
+// CtxKeyServiceToken 上下文键：service token（gateway 签发，用于内部服务间鉴权）.
 const CtxKeyServiceToken ctxKey = "service_token"
 
-// ToolList 工具列表别名
+// ToolList 工具列表别名.
+//
+//nolint:revive // stuttering is acceptable for clarity
+//nolint:revive // stuttering is acceptable for clarity
 type ToolList []tool.InvokableTool
 
 // ========== 数据结构 ==========
 
-// RepoInfo 仓库基本信息
+// RepoInfo 仓库基本信息.
 type RepoInfo struct {
 	ID            string
 	OwnerID       string
@@ -36,7 +40,7 @@ type RepoInfo struct {
 	FollowerCount int64
 }
 
-// FileEntry 文件/目录项
+// FileEntry 文件/目录项.
 type FileEntry struct {
 	Name string
 	Type string // "file" | "dir"
@@ -46,42 +50,42 @@ type FileEntry struct {
 
 // ========== 依赖接口定义 ==========
 
-// Embedder 向量化接口
+// Embedder 向量化接口.
 type Embedder interface {
 	EmbedStrings(ctx context.Context, texts []string) ([][]float64, error)
 }
 
-// VectorStore 向量搜索接口
+// VectorStore 向量搜索接口.
 type VectorStore interface {
 	SearchCrossRepos(ctx context.Context, repoIDs []string, embedding []float32, limit int) ([]vectorstore.SearchResult, error)
 }
 
-// RepoClient 仓库服务客户端接口
+// RepoClient 仓库服务客户端接口.
 type RepoClient interface {
 	ListUserRepos(ctx context.Context, userID string) ([]string, error)
 	ListPublicRepos(ctx context.Context) ([]string, error)
 }
 
-// RepoDetailClient 仓库详情客户端接口
+// RepoDetailClient 仓库详情客户端接口.
 type RepoDetailClient interface {
 	GetRepo(ctx context.Context, repoID, userID string) (*RepoInfo, error)
 	ListUserReposDetail(ctx context.Context, userID string) ([]RepoInfo, error)
 }
 
-// FileClient 文件操作客户端接口
+// FileClient 文件操作客户端接口.
 type FileClient interface {
 	ListRepoFiles(ctx context.Context, ownerID, repoID, dirPath string) ([]FileEntry, error)
 	GetFileContent(ctx context.Context, ownerID, repoID, filePath string) (string, error)
 }
 
-// SessionTitleUpdater 会话标题更新接口
+// SessionTitleUpdater 会话标题更新接口.
 type SessionTitleUpdater interface {
 	UpdateSessionTitle(sessionID, title string) error
 }
 
 // ========== 写入操作相关接口 ==========
 
-// FileWriteClient 文件写入操作客户端接口
+// FileWriteClient 文件写入操作客户端接口.
 type FileWriteClient interface {
 	CreateFile(ctx context.Context, ownerID, repoID, filePath, content string) error
 	UpdateFile(ctx context.Context, ownerID, repoID, filePath, content string) error
@@ -89,18 +93,18 @@ type FileWriteClient interface {
 	RenameFile(ctx context.Context, ownerID, repoID, oldPath, newPath string) error
 }
 
-// RepoWriteClient 知识库写入操作客户端接口
+// RepoWriteClient 知识库写入操作客户端接口.
 type RepoWriteClient interface {
 	CreateRepo(ctx context.Context, userID, name, description, visibility string) (string, error)
 	UpdateRepo(ctx context.Context, repoID, userID, name, description, visibility string) error
 }
 
-// UserSearchClient 用户搜索客户端接口
+// UserSearchClient 用户搜索客户端接口.
 type UserSearchClient interface {
 	SearchUsers(ctx context.Context, keyword string) ([]UserInfo, error)
 }
 
-// CollaboratorClient 协作者管理客户端接口
+// CollaboratorClient 协作者管理客户端接口.
 type CollaboratorClient interface {
 	AddCollaborator(ctx context.Context, repoID, userID, role string) error
 	RemoveCollaborator(ctx context.Context, repoID, userID string) error
@@ -108,13 +112,13 @@ type CollaboratorClient interface {
 	ListCollaborators(ctx context.Context, repoID string) ([]CollaboratorInfo, error)
 }
 
-// VectorizeClient 向量化触发接口
+// VectorizeClient 向量化触发接口.
 type VectorizeClient interface {
 	VectorizeArticle(ctx context.Context, userID, repoID, filePath string) error
 	DeleteFileVectors(ctx context.Context, repoID, filePath string) error
 }
 
-// RepoDetail 仓库详情（包含角色和关注信息）
+// RepoDetail 仓库详情（包含角色和关注信息）.
 type RepoDetail struct {
 	RepoInfo
 	FollowerCount int64
@@ -122,47 +126,47 @@ type RepoDetail struct {
 	IsFollowing   bool
 }
 
-// PublicRepoClient 公开仓库列表客户端接口
+// PublicRepoClient 公开仓库列表客户端接口.
 type PublicRepoClient interface {
 	ListPublicReposDetail(ctx context.Context) ([]RepoInfo, error)
 }
 
-// RepoDetailGetter 仓库详情获取接口（含角色和关注状态）
+// RepoDetailGetter 仓库详情获取接口（含角色和关注状态）.
 type RepoDetailGetter interface {
 	GetRepoDetail(ctx context.Context, repoID, userID string) (*RepoDetail, error)
 }
 
-// FollowClient 关注操作客户端接口
+// FollowClient 关注操作客户端接口.
 type FollowClient interface {
 	FollowRepo(ctx context.Context, userID, repoID string) error
 	UnfollowRepo(ctx context.Context, userID, repoID string) error
 	ListFollowedRepos(ctx context.Context, userID string) ([]RepoInfo, error)
 }
 
-// WebFetcher 网络资源获取接口
+// WebFetcher 网络资源获取接口.
 type WebFetcher interface {
 	FetchURL(ctx context.Context, url string) ([]byte, error)
 }
 
-// WebSearcher 网络搜索接口
+// WebSearcher 网络搜索接口.
 type WebSearcher interface {
 	Search(ctx context.Context, query string) (string, error)
 }
 
-// SearchResult 搜索结果项
+// SearchResult 搜索结果项.
 type SearchResult struct {
 	Title   string `json:"title"`
 	URL     string `json:"url"`
 	Snippet string `json:"snippet"`
 }
 
-// UserInfo 用户信息
+// UserInfo 用户信息.
 type UserInfo struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
-// CollaboratorInfo 协作者信息
+// CollaboratorInfo 协作者信息.
 type CollaboratorInfo struct {
 	UserID   string `json:"user_id"`
 	UserName string `json:"user_name"`
@@ -171,16 +175,22 @@ type CollaboratorInfo struct {
 
 // ========== 确认机制相关 ==========
 
-// ConfirmLevel 确认级别
+// ConfirmLevel 确认级别.
 type ConfirmLevel int
 
 const (
-	ConfirmNever    ConfirmLevel = iota // 无需确认
-	ConfirmOptional                     // 按需确认（可传 _skip_confirm 跳过）
-	ConfirmAlways                       // 强制确认
+	// ConfirmNever 无需确认.
+	ConfirmNever ConfirmLevel = iota
+	// ConfirmOptional 按需确认（可传 _skip_confirm 跳过）.
+	ConfirmOptional
+	// ConfirmAlways 强制确认.
+	ConfirmAlways
 )
 
-// ToolPolicy 工具确认策略
+// ToolPolicy 工具确认策略.
+//
+//nolint:revive // stuttering is acceptable for clarity
+//nolint:revive // stuttering is acceptable for clarity
 type ToolPolicy struct {
 	ToolName     string
 	ConfirmLevel ConfirmLevel

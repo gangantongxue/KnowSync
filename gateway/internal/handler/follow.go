@@ -9,7 +9,9 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// FollowRepo 关注知识库
+// FollowRepo 关注知识库.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) FollowRepo() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -40,7 +42,9 @@ func (h *Handler) FollowRepo() app.HandlerFunc {
 	}
 }
 
-// UnfollowRepo 取消关注知识库
+// UnfollowRepo 取消关注知识库.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) UnfollowRepo() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -71,7 +75,7 @@ func (h *Handler) UnfollowRepo() app.HandlerFunc {
 	}
 }
 
-// ListFollowedRepos 获取用户关注的知识库列表
+// ListFollowedRepos 获取用户关注的知识库列表.
 func (h *Handler) ListFollowedRepos() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -102,7 +106,7 @@ func (h *Handler) ListFollowedRepos() app.HandlerFunc {
 		}
 
 		response.Success(c, ctx, map[string]any{
-			"repos": repos,
+			KeyRepos: repos,
 		})
 	}
 }

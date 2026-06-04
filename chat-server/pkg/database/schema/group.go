@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// Group 群组表
+// Group 群组表.
 type Group struct {
 	ID        string `gorm:"primaryKey;type:char(20)" json:"id"`
 	Name      string `gorm:"column:name;type:varchar(100);not null" json:"name"`
@@ -15,11 +15,13 @@ type Group struct {
 	UpdatedAt int64  `gorm:"column:updated_at;type:bigint;not null" json:"updated_at"`
 }
 
+// TableName 返回群组表名.
 func (g *Group) TableName() string {
 	return "groups"
 }
 
-func (g *Group) BeforeCreate(tx *gorm.DB) error {
+// BeforeCreate GORM 创建前钩子，自动生成 ID.
+func (g *Group) BeforeCreate(_ *gorm.DB) error {
 	if g.ID == "" {
 		g.ID = xid.New().String()
 	}

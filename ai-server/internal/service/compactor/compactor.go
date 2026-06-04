@@ -1,3 +1,4 @@
+// Package compactor 提供上下文压缩功能，通过摘要压缩历史消息.
 package compactor
 
 import (
@@ -10,33 +11,35 @@ import (
 )
 
 const (
-	// 溢出检测
-	OverflowRatio  = 0.8
+	// OverflowRatio 溢出检测.
+	OverflowRatio = 0.8
+	// ReservedTokens 保留 token 数，用于避免超出上下文窗口.
 	ReservedTokens = 20_000
 
-	// 摘要压缩
+	// KeepRecentTurns 摘要压缩.
 	KeepRecentTurns = 3
-	MaxSummaryLen   = 2_000
+	// MaxSummaryLen 摘要最大长度.
+	MaxSummaryLen = 2_000
 )
 
-// SummaryRepository 摘要存储接口
+// SummaryRepository 摘要存储接口.
 type SummaryRepository interface {
 	UpdateSummary(sessionID, summary string) error
 }
 
-// SummarizerInterface 摘要生成器接口，便于单元测试
+// SummarizerInterface 摘要生成器接口，便于单元测试.
 type SummarizerInterface interface {
 	Summarize(ctx context.Context, messages []string, existingSummary string) (string, error)
 }
 
-// Compactor 上下文管理器
+// Compactor 上下文管理器.
 type Compactor struct {
 	llmContextLimit int
 	summarizer      SummarizerInterface
 	repo            SummaryRepository
 }
 
-// New 创建上下文管理器
+// New 创建上下文管理器.
 func New(llmContextLimit int, summarizer SummarizerInterface, repo SummaryRepository) *Compactor {
 	return &Compactor{
 		llmContextLimit: llmContextLimit,
@@ -45,7 +48,7 @@ func New(llmContextLimit int, summarizer SummarizerInterface, repo SummaryReposi
 	}
 }
 
-// CompactIfNeeded 检测是否需要压缩，需要则执行
+// CompactIfNeeded 检测是否需要压缩，需要则执行.
 func (c *Compactor) CompactIfNeeded(ctx context.Context, messages []*schema.Message, session *repository.ChatSession) ([]*schema.Message, error) {
 	if len(messages) < 3 {
 		return messages, nil
@@ -58,7 +61,8 @@ func (c *Compactor) CompactIfNeeded(ctx context.Context, messages []*schema.Mess
 		return messages, nil
 	}
 
-	slog.Info("上下文即将溢出，开始压缩",
+	slog.Info(
+		"上下文即将溢出，开始压缩",
 		"session_id", session.ID,
 		"total_tokens", totalTokens,
 		"threshold", threshold,
@@ -67,7 +71,7 @@ func (c *Compactor) CompactIfNeeded(ctx context.Context, messages []*schema.Mess
 	return c.compact(ctx, messages, session)
 }
 
-// compact 执行压缩：保留最近 N 轮，将早期消息摘要
+// compact 执行压缩：保留最近 N 轮，将早期消息摘要.
 func (c *Compactor) compact(ctx context.Context, messages []*schema.Message, session *repository.ChatSession) ([]*schema.Message, error) {
 	// 将消息按轮分组（user + assistant 为一轮）
 	turns := groupTurns(messages)
@@ -106,7 +110,8 @@ func (c *Compactor) compact(ctx context.Context, messages []*schema.Message, ses
 		slog.Error("保存摘要失败", "error", err)
 	}
 
-	slog.Info("上下文压缩完成",
+	slog.Info(
+		"上下文压缩完成",
 		"session_id", session.ID,
 		"early_turns", len(earlyTurns),
 		"kept_turns", len(recentTurns),
@@ -122,7 +127,7 @@ func (c *Compactor) compact(ctx context.Context, messages []*schema.Message, ses
 	return result, nil
 }
 
-// estimateMessagesTokenCount 估算消息列表的总 token 数
+// estimateMessagesTokenCount 估算消息列表的总 token 数.
 func estimateMessagesTokenCount(messages []*schema.Message) int {
 	total := 0
 	for _, msg := range messages {
@@ -132,7 +137,7 @@ func estimateMessagesTokenCount(messages []*schema.Message) int {
 }
 
 // groupTurns 将消息按"用户+助手"轮次分组
-// 每条 user 消息开始新的一轮，后续的 assistant 消息归入同一轮
+// 每条 user 消息开始新的一轮，后续的 assistant 消息归入同一轮.
 func groupTurns(messages []*schema.Message) [][]*schema.Message {
 	var turns [][]*schema.Message
 	var current []*schema.Message
@@ -151,7 +156,7 @@ func groupTurns(messages []*schema.Message) [][]*schema.Message {
 	return turns
 }
 
-// flattenTurns 将分组消息展平
+// flattenTurns 将分组消息展平.
 func flattenTurns(turns [][]*schema.Message) []*schema.Message {
 	var result []*schema.Message
 	for _, t := range turns {

@@ -1,6 +1,6 @@
 package model
 
-// EmailCfg 邮件配置项
+// EmailCfg 邮件配置项.
 type EmailCfg struct {
 	SMTPHost    string `yaml:"smtp_host" mapstructure:"smtp_host"`
 	SMTPPort    int    `yaml:"smtp_port" mapstructure:"smtp_port"`

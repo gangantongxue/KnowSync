@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"crypto/md5"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -19,13 +19,13 @@ const (
 	maxSearchResults = 200 // 搜索结果总数上限（20条/页 × 10页）
 )
 
-// cachedSearchResult 缓存的搜索结果
+// cachedSearchResult 缓存的搜索结果.
 type cachedSearchResult struct {
 	RepoIDs []string `json:"repo_ids"`
 	Total   int      `json:"total"`
 }
 
-// pbSearchResponse 避免循环导入 pb 包
+// pbSearchResponse 避免循环导入 pb 包.
 type pbSearchResponse struct {
 	Success    bool
 	Msg        string
@@ -35,7 +35,9 @@ type pbSearchResponse struct {
 }
 
 // Search 语义搜索公开知识库
-// 按 query 文本哈希缓存，不同用户搜索相同关键词共享同一缓存
+// 按 query 文本哈希缓存，不同用户搜索相同关键词共享同一缓存.
+//
+//nolint:revive // unexported return type is internal
 func (s *Service) Search(ctx context.Context, query string, page, pageSize int) (*pbSearchResponse, error) {
 	if page <= 0 {
 		page = 1
@@ -65,14 +67,15 @@ func (s *Service) Search(ctx context.Context, query string, page, pageSize int) 
 	return s.searchAndCache(ctx, query, page, pageSize, cacheKey)
 }
 
-// searchCacheKeyForQuery 根据 query 文本生成缓存键
+// searchCacheKeyForQuery 根据 query 文本生成缓存键.
 func searchCacheKeyForQuery(query string) string {
-	h := md5.Sum([]byte(query))
+	h := sha256.Sum256([]byte(query))
 	return fmt.Sprintf(searchCacheKey, hex.EncodeToString(h[:]))
 }
 
-// paginateResult 从缓存结果中取指定页
+// paginateResult 从缓存结果中取指定页.
 func paginateResult(cached *cachedSearchResult, cacheKey string, page, pageSize int) *pbSearchResponse {
+	_ = cacheKey
 	totalPages := int(math.Ceil(float64(cached.Total) / float64(pageSize)))
 	start := (page - 1) * pageSize
 	end := start + pageSize
@@ -81,7 +84,7 @@ func paginateResult(cached *cachedSearchResult, cacheKey string, page, pageSize 
 		return &pbSearchResponse{
 			Success:    true,
 			RepoIDs:    []string{},
-			TotalPages: int32(totalPages),
+			TotalPages: int32(totalPages), //nolint:gosec // pages never exceed int32
 			HasMore:    false,
 		}
 	}
@@ -93,12 +96,12 @@ func paginateResult(cached *cachedSearchResult, cacheKey string, page, pageSize 
 	return &pbSearchResponse{
 		Success:    true,
 		RepoIDs:    cached.RepoIDs[start:end],
-		TotalPages: int32(totalPages),
+		TotalPages: int32(totalPages), //nolint:gosec // pages never exceed int32
 		HasMore:    end < cached.Total,
 	}
 }
 
-// searchAndCache 执行搜索并缓存结果
+// searchAndCache 执行搜索并缓存结果.
 func (s *Service) searchAndCache(ctx context.Context, query string, page, pageSize int, cacheKey string) (*pbSearchResponse, error) {
 	// 1. 获取所有公开仓库
 	repoIDs, err := s.Client.ListPublicRepos(ctx)
@@ -188,7 +191,7 @@ func (s *Service) searchAndCache(ctx context.Context, query string, page, pageSi
 	return &pbSearchResponse{
 		Success:    true,
 		RepoIDs:    pageItems,
-		TotalPages: int32(totalPages),
+		TotalPages: int32(totalPages), //nolint:gosec // pages never exceed int32
 		HasMore:    end < totalCount,
 	}, nil
 }

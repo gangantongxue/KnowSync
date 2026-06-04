@@ -1,3 +1,4 @@
+// Package app initializes and runs the gateway service.
 package app
 
 import (
@@ -23,7 +24,7 @@ import (
 
 // NewApp 初始化并启动网关服务
 // 流程：加载配置 → 初始化日志 → 创建 Hertz 引擎 → 注册路由 → 启动服务
-// 监听 SIGINT/SIGTERM 信号实现优雅退出
+// 监听 SIGINT/SIGTERM 信号实现优雅退出.
 func NewApp() error {
 	slog.Info("=====开始初始化应用=====")
 
@@ -99,7 +100,7 @@ func NewApp() error {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		h.Shutdown(ctx)
+		_ = h.Shutdown(ctx)
 		slog.Info("服务已关闭")
 	}()
 

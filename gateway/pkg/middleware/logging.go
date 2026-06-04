@@ -8,7 +8,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 )
 
-// Logging 请求日志中间件，记录 method、path、status、耗时
+// Logging 请求日志中间件，记录 method、path、status、耗时.
 func Logging() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		start := time.Now()

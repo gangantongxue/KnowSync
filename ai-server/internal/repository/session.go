@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// ChatSession 会话表
+// ChatSession 会话表.
 type ChatSession struct {
 	ID               string     `gorm:"primaryKey;type:char(20)" json:"id"`
 	UserID           string     `gorm:"column:user_id;type:varchar(20);not null;index:idx_user_id" json:"user_id"`
@@ -18,24 +18,26 @@ type ChatSession struct {
 	UpdatedAt        time.Time  `gorm:"column:updated_at;autoUpdateTime" json:"updated_at"`
 }
 
+//nolint:revive // self-documenting
+//nolint:revive // self-documenting
 func (s *ChatSession) TableName() string {
 	return "chat_session"
 }
 
-// BeforeCreate 在创建前调用
-func (s *ChatSession) BeforeCreate(tx *gorm.DB) error {
+// BeforeCreate 在创建前调用.
+func (s *ChatSession) BeforeCreate(_ *gorm.DB) error {
 	if s.ID == "" {
 		s.ID = xid.New().String()
 	}
 	return nil
 }
 
-// CreateSession 创建会话
+// CreateSession 创建会话.
 func (r *Repository) CreateSession(session *ChatSession) error {
 	return r.DB.Create(session).Error
 }
 
-// GetSession 获取会话
+// GetSession 获取会话.
 func (r *Repository) GetSession(sessionID string) (*ChatSession, error) {
 	var session ChatSession
 	err := r.DB.Where("id = ?", sessionID).First(&session).Error
@@ -47,7 +49,9 @@ func (r *Repository) GetSession(sessionID string) (*ChatSession, error) {
 
 // ListSessions 列出用户的会话（按更新时间倒序游标分页）
 // cursor 为 updated_at 时间戳（秒），首次传 0 表示从头开始
-// 返回会话列表及是否有更多数据
+// 返回会话列表及是否有更多数据.
+//
+//nolint:dupl // ListSessions 与 ListMessages 结构相似但操作不同表
 func (r *Repository) ListSessions(userID string, cursor int64, limit int) ([]ChatSession, bool, error) {
 	var sessions []ChatSession
 
@@ -69,13 +73,13 @@ func (r *Repository) ListSessions(userID string, cursor int64, limit int) ([]Cha
 	return sessions, hasMore, nil
 }
 
-// UpdateSessionTitle 更新会话标题
+// UpdateSessionTitle 更新会话标题.
 func (r *Repository) UpdateSessionTitle(sessionID, title string) error {
 	return r.DB.Model(&ChatSession{}).Where("id = ?", sessionID).
 		Update("title", title).Error
 }
 
-// UpdateSummary 更新会话摘要
+// UpdateSummary 更新会话摘要.
 func (r *Repository) UpdateSummary(sessionID, summary string) error {
 	now := time.Now()
 	return r.DB.Model(&ChatSession{}).Where("id = ?", sessionID).
@@ -85,8 +89,8 @@ func (r *Repository) UpdateSummary(sessionID, summary string) error {
 		}).Error
 }
 
-// DeleteSession 删除会话及其所有消息
-func (r *Repository) DeleteSession(sessionID string, userID string) error {
+// DeleteSession 删除会话及其所有消息.
+func (r *Repository) DeleteSession(sessionID, userID string) error {
 	return r.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("session_id = ?", sessionID).Delete(&ChatMessage{}).Error; err != nil {
 			return err

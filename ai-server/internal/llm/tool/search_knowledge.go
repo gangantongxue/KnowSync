@@ -12,7 +12,7 @@ import (
 	"github.com/gangantongxue/knowsync/ai-server/internal/vectorstore"
 )
 
-// SearchKnowledge 搜索知识库工具，实现 Eino InvokableTool 接口
+// SearchKnowledge 搜索知识库工具，实现 Eino InvokableTool 接口.
 type SearchKnowledge struct {
 	embedder    Embedder
 	vectorStore VectorStore
@@ -35,14 +35,14 @@ func NewSearchKnowledge(embedd Embedder, vs VectorStore, rc RepoClient, threshol
 	}
 }
 
-// Info 返回工具元信息
-func (s *SearchKnowledge) Info(ctx context.Context) (*schema.ToolInfo, error) {
+// Info 返回工具元信息.
+func (s *SearchKnowledge) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "search_knowledge",
 		Desc: "在用户自己的知识库和公开知识库中搜索与问题相关的文章内容。通过语义理解匹配文章，返回最相关的内容片段。用户自己知识库的匹配结果会优先展示。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
 			"query": {
-				Type:     "string",
+				Type:     TypeString,
 				Desc:     "用户的搜索关键词，从用户问题中提取核心搜索词",
 				Required: true,
 			},
@@ -50,13 +50,14 @@ func (s *SearchKnowledge) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	}, nil
 }
 
-// InvokableRun 执行工具调用
-func (s *SearchKnowledge) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+// InvokableRun 执行工具调用.
+func (s *SearchKnowledge) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return s.execute(ctx, arguments)
 }
 
 const ownRepoBoost = float32(1.5)
 
+//nolint:gocyclo // 知识库搜索需要处理多种搜索策略和结果排序
 func (s *SearchKnowledge) execute(ctx context.Context, paramsJSON string) (string, error) {
 	var params struct {
 		Query string `json:"query"`
@@ -174,7 +175,7 @@ func (s *SearchKnowledge) execute(ctx context.Context, paramsJSON string) (strin
 	}
 
 	data, _ := json.Marshal(map[string]any{
-		"found":   true,
+		KeyFound:  true,
 		"results": items,
 	})
 	return string(data), nil
@@ -182,7 +183,7 @@ func (s *SearchKnowledge) execute(ctx context.Context, paramsJSON string) (strin
 
 func noResultsJSON(msg string) string {
 	data, _ := json.Marshal(map[string]any{
-		"found":   false,
+		KeyFound:  false,
 		"message": msg,
 		"results": []any{},
 	})

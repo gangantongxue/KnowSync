@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-// Hub 连接管理器，管理所有 WebSocket 连接
+// Hub 连接管理器，管理所有 WebSocket 连接.
 type Hub struct {
 	clients    map[string]map[*Client]bool // userID → 连接集合
 	register   chan *Client                // 注册连接的通道
@@ -13,7 +13,7 @@ type Hub struct {
 	mu         sync.RWMutex
 }
 
-// NewHub 创建连接管理器并启动事件循环
+// NewHub 创建连接管理器并启动事件循环.
 func NewHub() *Hub {
 	h := &Hub{
 		clients:    make(map[string]map[*Client]bool),
@@ -24,7 +24,7 @@ func NewHub() *Hub {
 	return h
 }
 
-// run 事件循环，处理注册和注销请求
+// run 事件循环，处理注册和注销请求.
 func (h *Hub) run() {
 	for {
 		select {
@@ -54,7 +54,7 @@ func (h *Hub) run() {
 	}
 }
 
-// SendToUser 向指定用户的所有连接发送消息
+// SendToUser 向指定用户的所有连接发送消息.
 func (h *Hub) SendToUser(userID string, msg []byte) {
 	h.mu.RLock()
 	clients := h.clients[userID]
@@ -70,7 +70,7 @@ func (h *Hub) SendToUser(userID string, msg []byte) {
 	}
 }
 
-// GetOnlineUsers 获取用户在线状态，返回在线的 userID 子集
+// GetOnlineUsers 获取用户在线状态，返回在线的 userID 子集.
 func (h *Hub) GetOnlineUsers(userIDs []string) []string {
 	h.mu.RLock()
 	defer h.mu.RUnlock()

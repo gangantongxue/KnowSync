@@ -14,20 +14,20 @@ import (
 	"gorm.io/gorm"
 )
 
-// SendPrivateMessage 发送私聊消息
+// SendPrivateMessage 发送私聊消息.
 func (s *Service) SendPrivateMessage(ctx context.Context, senderID, receiverID, contentType, content, extra, replyToID string) (*schema.Message, error) {
 	// 生成会话ID（排序后拼接）
 	conversationID := GetPrivateConversationID(senderID, receiverID)
 
 	// 验证回复消息是否存在且在同一个会话中
 	if replyToID != "" {
-		if err := s.validateReplyMessage(ctx, "private", conversationID, replyToID); err != nil {
+		if err := s.validateReplyMessage(ctx, ConvTypePrivate, conversationID, replyToID); err != nil {
 			return nil, err
 		}
 	}
 
 	// 获取当前最大seq_id并自增
-	maxSeqID, err := s.Repo.Message.GetMaxSeqID(ctx, "private", conversationID)
+	maxSeqID, err := s.Repo.Message.GetMaxSeqID(ctx, ConvTypePrivate, conversationID)
 	if err != nil {
 		slog.Error("获取最大seq_id失败", "error", err)
 		return nil, err
@@ -36,7 +36,7 @@ func (s *Service) SendPrivateMessage(ctx context.Context, senderID, receiverID, 
 	// 创建消息
 	now := time.Now().Unix()
 	msg := &schema.Message{
-		ConversationType: "private",
+		ConversationType: ConvTypePrivate,
 		ConversationID:   conversationID,
 		SeqID:            maxSeqID + 1,
 		SenderID:         senderID,
@@ -71,7 +71,9 @@ func (s *Service) SendPrivateMessage(ctx context.Context, senderID, receiverID, 
 	return msg, nil
 }
 
-// SendGroupMessage 发送群聊消息
+// SendGroupMessage 发送群聊消息.
+//
+//nolint:gocyclo // 群聊消息发送涉及多项校验，保持内聚
 func (s *Service) SendGroupMessage(ctx context.Context, senderID, groupID, contentType, content, extra string, mentions []string, replyToID string) (*schema.Message, error) {
 	// 检查发送者是否是群成员
 	var count int64
@@ -88,7 +90,7 @@ func (s *Service) SendGroupMessage(ctx context.Context, senderID, groupID, conte
 
 	// 验证回复消息是否存在且在同一个群聊中
 	if replyToID != "" {
-		if err := s.validateReplyMessage(ctx, "group", groupID, replyToID); err != nil {
+		if err := s.validateReplyMessage(ctx, ConvTypeGroup, groupID, replyToID); err != nil {
 			return nil, err
 		}
 	}
@@ -98,7 +100,7 @@ func (s *Service) SendGroupMessage(ctx context.Context, senderID, groupID, conte
 	hasExtra := extra != ""
 	hasMentions := len(mentions) > 0
 	if hasExtra || hasMentions {
-		extraData := make(map[string]interface{})
+		extraData := make(map[string]any)
 		if hasExtra {
 			if err := json.Unmarshal([]byte(extra), &extraData); err != nil {
 				slog.Warn("解析extra失败", "error", err)
@@ -112,7 +114,7 @@ func (s *Service) SendGroupMessage(ctx context.Context, senderID, groupID, conte
 		extraStr = s
 	}
 
-	maxSeqID, err := s.Repo.Message.GetMaxSeqID(ctx, "group", groupID)
+	maxSeqID, err := s.Repo.Message.GetMaxSeqID(ctx, ConvTypeGroup, groupID)
 	if err != nil {
 		slog.Error("获取最大seq_id失败", "error", err)
 		return nil, err
@@ -120,7 +122,7 @@ func (s *Service) SendGroupMessage(ctx context.Context, senderID, groupID, conte
 
 	now := time.Now().Unix()
 	msg := &schema.Message{
-		ConversationType: "group",
+		ConversationType: ConvTypeGroup,
 		ConversationID:   groupID,
 		SeqID:            maxSeqID + 1,
 		SenderID:         senderID,
@@ -147,12 +149,12 @@ func (s *Service) SendGroupMessage(ctx context.Context, senderID, groupID, conte
 	return msg, nil
 }
 
-// GetMessages 获取消息列表（游标分页）
+// GetMessages 获取消息列表（游标分页）.
 func (s *Service) GetMessages(ctx context.Context, conversationType, conversationID string, beforeSeqID uint64, limit int) ([]schema.Message, error) {
 	return s.Repo.Message.GetMessagesByConversation(ctx, conversationType, conversationID, beforeSeqID, limit)
 }
 
-// RecallMessage 撤回消息
+// RecallMessage 撤回消息.
 func (s *Service) RecallMessage(ctx context.Context, messageID, senderID string) error {
 	msg, err := s.Repo.Message.GetMessageByID(ctx, messageID)
 	if err != nil {
@@ -182,14 +184,14 @@ func (s *Service) RecallMessage(ctx context.Context, messageID, senderID string)
 	return nil
 }
 
-// GetUnreadCounts 批量获取会话未读数
+// GetUnreadCounts 批量获取会话未读数.
 func (s *Service) GetUnreadCounts(ctx context.Context, userID string, conversations []ConversationInfo) (map[string]int32, error) {
 	result := make(map[string]int32)
 	for _, c := range conversations {
 		var lastReadSeqID uint64
 
 		switch c.ConversationType {
-		case "private":
+		case ConvTypePrivate:
 			// 从好友关系中查找对方
 			parts := strings.Split(c.ConversationID, "_")
 			if len(parts) != 2 {
@@ -211,7 +213,7 @@ func (s *Service) GetUnreadCounts(ctx context.Context, userID string, conversati
 			}
 			lastReadSeqID = friend.LastReadSeqID
 
-		case "group":
+		case ConvTypeGroup:
 			var member schema.GroupMember
 			if err := s.Repo.DB.WithContext(ctx).
 				Where("group_id = ? AND user_id = ?", c.ConversationID, userID).
@@ -235,12 +237,12 @@ func (s *Service) GetUnreadCounts(ctx context.Context, userID string, conversati
 			slog.Error("统计未读消息失败", "error", err)
 			return nil, err
 		}
-		result[c.ConversationID] = int32(count)
+		result[c.ConversationID] = int32(count) //nolint:gosec // 未读数不会超过 int32 范围
 	}
 	return result, nil
 }
 
-// GetPrivateConversationID 生成私聊会话ID（排序后拼接）
+// GetPrivateConversationID 生成私聊会话ID（排序后拼接）.
 func GetPrivateConversationID(id1, id2 string) string {
 	id1Int, err1 := strconv.ParseUint(id1, 10, 64)
 	id2Int, err2 := strconv.ParseUint(id2, 10, 64)
@@ -256,7 +258,7 @@ func GetPrivateConversationID(id1, id2 string) string {
 	return id2 + "_" + id1
 }
 
-// validateReplyMessage 验证回复消息是否存在且在同一个会话中
+// validateReplyMessage 验证回复消息是否存在且在同一个会话中.
 func (s *Service) validateReplyMessage(ctx context.Context, conversationType, conversationID, replyToID string) error {
 	replyMsg, err := s.Repo.Message.GetMessageByID(ctx, replyToID)
 	if err != nil {
@@ -272,21 +274,24 @@ func (s *Service) validateReplyMessage(ctx context.Context, conversationType, co
 	return nil
 }
 
-// ForwardMessage 转发消息
+// ForwardMessage 转发消息.
+//
+//nolint:gocyclo // 转发逻辑涉及多步骤处理，保持内聚
 func (s *Service) ForwardMessage(ctx context.Context, senderID, targetConversationType, targetConversationID string, messageIDs []string) (*schema.Message, error) {
 	// 验证发送者是否在目标会话中
 	switch targetConversationType {
-	case "private":
+	case ConvTypePrivate:
 		parts := strings.Split(targetConversationID, "_")
 		if len(parts) != 2 {
 			return nil, errors.New("无效的私聊会话ID")
 		}
 		var otherUserID string
-		if parts[0] == senderID {
+		switch {
+		case parts[0] == senderID:
 			otherUserID = parts[1]
-		} else if parts[1] == senderID {
+		case parts[1] == senderID:
 			otherUserID = parts[0]
-		} else {
+		default:
 			return nil, errors.New("用户不在该私聊会话中")
 		}
 		exists, err := s.Repo.Friend.CheckFriendExists(ctx, senderID, otherUserID)
@@ -297,7 +302,7 @@ func (s *Service) ForwardMessage(ctx context.Context, senderID, targetConversati
 		if !exists {
 			return nil, errors.New("用户不在该私聊会话中")
 		}
-	case "group":
+	case ConvTypeGroup:
 		var count int64
 		if err := s.Repo.DB.WithContext(ctx).
 			Model(&schema.GroupMember{}).
@@ -348,11 +353,11 @@ func (s *Service) ForwardMessage(ctx context.Context, senderID, targetConversati
 		if name == "" {
 			name = msg.SenderID
 		}
-		contentBuilder.WriteString(fmt.Sprintf("「%s」\n\n——来自 %s", msg.Content, name))
+		fmt.Fprintf(&contentBuilder, "「%s」\n\n——来自 %s", msg.Content, name)
 	}
 
 	// 构建Extra，记录转发信息和原始内容类型
-	extraData := map[string]interface{}{
+	extraData := map[string]any{
 		"forward":              true,
 		"original_message_ids": messageIDs,
 	}
@@ -388,28 +393,14 @@ func (s *Service) ForwardMessage(ctx context.Context, senderID, targetConversati
 	}
 
 	// 更新私聊会话的 last_message_at
-	if targetConversationType == "private" {
-		parts := strings.Split(targetConversationID, "_")
-		if len(parts) == 2 {
-			var receiverID string
-			if parts[0] == senderID {
-				receiverID = parts[1]
-			} else {
-				receiverID = parts[0]
-			}
-			if err := s.Repo.Friend.UpdateFriendLastMessageAt(ctx, senderID, receiverID, now); err != nil {
-				slog.Error("更新发送方 last_message_at 失败", "error", err)
-			}
-			if err := s.Repo.Friend.UpdateFriendLastMessageAt(ctx, receiverID, senderID, now); err != nil {
-				slog.Error("更新接收方 last_message_at 失败", "error", err)
-			}
-		}
+	if targetConversationType == ConvTypePrivate {
+		s.updatePrivateConversationLastMessageAt(ctx, senderID, targetConversationID, now)
 	}
 
 	return msg, nil
 }
 
-// getUserNames 批量获取用户名称
+// getUserNames 批量获取用户名称.
 func (s *Service) getUserNames(ctx context.Context, userIDs []string) (map[string]string, error) {
 	var users []schema.User
 	if err := s.Repo.DB.WithContext(ctx).
@@ -424,9 +415,9 @@ func (s *Service) getUserNames(ctx context.Context, userIDs []string) (map[strin
 	return result, nil
 }
 
-// pushNewMessageEvent 向指定用户推送新消息事件
+// pushNewMessageEvent 向指定用户推送新消息事件.
 func (s *Service) pushNewMessageEvent(userID string, msg *schema.Message) {
-	data := map[string]interface{}{
+	data := map[string]any{
 		"id":                msg.ID,
 		"conversation_type": msg.ConversationType,
 		"conversation_id":   msg.ConversationID,
@@ -439,9 +430,9 @@ func (s *Service) pushNewMessageEvent(userID string, msg *schema.Message) {
 		"status":            msg.Status,
 		"created_at":        msg.CreatedAt,
 	}
-	payload, err := json.Marshal(map[string]interface{}{
-		"type": "new_message",
-		"data": data,
+	payload, err := json.Marshal(map[string]any{
+		PushKeyType: PushTypeNewMessage,
+		PushKeyData: data,
 	})
 	if err != nil {
 		slog.Error("序列化新消息事件失败", "error", err)
@@ -450,7 +441,7 @@ func (s *Service) pushNewMessageEvent(userID string, msg *schema.Message) {
 	s.Hub.SendToUser(userID, payload)
 }
 
-// pushGroupNewMessageEvent 向群成员推送新消息事件（排除发送者）
+// pushGroupNewMessageEvent 向群成员推送新消息事件（排除发送者）.
 func (s *Service) pushGroupNewMessageEvent(ctx context.Context, groupID, senderID string, msg *schema.Message) {
 	var memberIDs []string
 	if err := s.Repo.DB.WithContext(ctx).
@@ -468,10 +459,10 @@ func (s *Service) pushGroupNewMessageEvent(ctx context.Context, groupID, senderI
 	}
 }
 
-// pushRecallEvent 推送消息撤回事件
+// pushRecallEvent 推送消息撤回事件.
 func (s *Service) pushRecallEvent(ctx context.Context, msg *schema.Message, senderID string) {
 	switch msg.ConversationType {
-	case "private":
+	case ConvTypePrivate:
 		// 私聊：推送给对方
 		parts := strings.Split(msg.ConversationID, "_")
 		if len(parts) != 2 {
@@ -484,7 +475,7 @@ func (s *Service) pushRecallEvent(ctx context.Context, msg *schema.Message, send
 			targetID = parts[0]
 		}
 		s.pushRecallToUser(targetID, msg.ID, msg.ConversationType, msg.ConversationID)
-	case "group":
+	case ConvTypeGroup:
 		// 群聊：推送给所有成员（排除发送者）
 		var memberIDs []string
 		if err := s.Repo.DB.WithContext(ctx).
@@ -503,11 +494,11 @@ func (s *Service) pushRecallEvent(ctx context.Context, msg *schema.Message, send
 	}
 }
 
-// pushRecallToUser 向指定用户发送撤回事件
+// pushRecallToUser 向指定用户发送撤回事件.
 func (s *Service) pushRecallToUser(userID, messageID, conversationType, conversationID string) {
-	payload, err := json.Marshal(map[string]interface{}{
+	payload, err := json.Marshal(map[string]any{
 		"type": "message_recalled",
-		"data": map[string]interface{}{
+		"data": map[string]any{
 			"message_id":        messageID,
 			"conversation_type": conversationType,
 			"conversation_id":   conversationID,
@@ -520,7 +511,27 @@ func (s *Service) pushRecallToUser(userID, messageID, conversationType, conversa
 	s.Hub.SendToUser(userID, payload)
 }
 
-// ConversationInfo 会话信息
+// updatePrivateConversationLastMessageAt 更新私聊会话双方的 last_message_at.
+func (s *Service) updatePrivateConversationLastMessageAt(ctx context.Context, senderID, targetConversationID string, now int64) {
+	parts := strings.Split(targetConversationID, "_")
+	if len(parts) != 2 {
+		return
+	}
+	var receiverID string
+	if parts[0] == senderID {
+		receiverID = parts[1]
+	} else {
+		receiverID = parts[0]
+	}
+	if err := s.Repo.Friend.UpdateFriendLastMessageAt(ctx, senderID, receiverID, now); err != nil {
+		slog.Error("更新发送方 last_message_at 失败", "error", err)
+	}
+	if err := s.Repo.Friend.UpdateFriendLastMessageAt(ctx, receiverID, senderID, now); err != nil {
+		slog.Error("更新接收方 last_message_at 失败", "error", err)
+	}
+}
+
+// ConversationInfo 会话信息.
 type ConversationInfo struct {
 	ConversationType string
 	ConversationID   string

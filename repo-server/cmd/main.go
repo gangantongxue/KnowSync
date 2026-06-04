@@ -1,3 +1,4 @@
+// Package main 是 repo-server 的入口点.
 package main
 
 import (

@@ -1,3 +1,4 @@
+// Package redis 提供 Redis 连接管理.
 package redis
 
 import (
@@ -10,8 +11,8 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// RedisClient 定义通用接口
-type RedisClient interface {
+// Client 定义通用接口.
+type Client interface {
 	Set(ctx context.Context, key string, value any, expiration time.Duration) *redis.StatusCmd
 	SetNX(ctx context.Context, key string, value any, expiration time.Duration) *redis.BoolCmd
 	Get(ctx context.Context, key string) *redis.StringCmd
@@ -22,14 +23,14 @@ type RedisClient interface {
 	Close() error
 }
 
-// Redis Redis 连接
+// Redis 连接.
 type Redis struct {
-	RDB    RedisClient
+	RDB    Client
 	Cfg    *config.Config
 	Logger *logger.Logger
 }
 
-// NewRedis 创建一个新的 Redis 连接
+// NewRedis 创建一个新的 Redis 连接.
 func NewRedis(cfg *config.Config, logger *logger.Logger) (*Redis, error) {
 	if len(cfg.Redis.Addrs) == 0 {
 		return nil, errors.New("redis addrs is empty")

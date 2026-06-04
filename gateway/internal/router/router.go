@@ -1,3 +1,4 @@
+// Package router registers HTTP routes for the gateway service.
 package router
 
 import (
@@ -12,7 +13,8 @@ import (
 	"github.com/gangantongxue/knowsync/gateway/pkg/storage"
 )
 
-func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client, store *storage.Store, publicKey *rsa.PublicKey, authManager *serviceauth.Manager) {
+// Register registers all HTTP routes on the given Hertz server.
+func Register(h *server.Hertz, _ *config.Config, grpcClient *grpcclient.Client, store *storage.Store, publicKey *rsa.PublicKey, authManager *serviceauth.Manager) {
 	h.Use(middleware.Logging())
 	h.Use(middleware.CORS())
 
@@ -62,7 +64,7 @@ func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client
 			dirs.POST("", hdl.MakeDir())
 
 			collabs := repos.Group("/:repo_id/collaborators")
-			collabs.POST("", hdl.AddCollaborator())
+			collabs.POST("", hdl.AddCollaborator()) //nolint:staticcheck // 保留旧接口以保证向后兼容
 			collabs.GET("", hdl.ListCollaborators())
 			collabs.PUT("/:user_id", hdl.UpdateCollaborator())
 			collabs.DELETE("/:user_id", hdl.RemoveCollaborator())

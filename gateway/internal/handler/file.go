@@ -15,13 +15,13 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// RenameFileReq 文件重命名/移动请求体
+// RenameFileReq 文件重命名/移动请求体.
 type RenameFileReq struct {
 	NewPath string `json:"new_path"`
 }
 
 // GetRepoTree 获取知识库文件树
-// GET /api/v1/repos/:repo_id/tree?path=docs/
+// GET /api/v1/repos/:repo_id/tree?path=docs/.
 func (h *Handler) GetRepoTree() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -51,13 +51,13 @@ func (h *Handler) GetRepoTree() app.HandlerFunc {
 
 		response.Success(c, ctx, map[string]any{
 			"entries": result,
-			"path":    dirPath,
+			KeyPath:   dirPath,
 		})
 	}
 }
 
 // UploadFile 上传文件到知识库
-// POST /api/v1/repos/:repo_id/files?path=docs/chapter1.md
+// POST /api/v1/repos/:repo_id/files?path=docs/chapter1.md.
 func (h *Handler) UploadFile() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -79,7 +79,7 @@ func (h *Handler) UploadFile() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "文件读取失败")
 			return
 		}
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 
 		subpath := filepath.Join(uid, repoID, filePath)
 		size, err := h.store.WriteFile(subpath, f)
@@ -91,7 +91,7 @@ func (h *Handler) UploadFile() app.HandlerFunc {
 		// 异步触发向量化（仅对文本文件）
 		ext := strings.ToLower(filepath.Ext(filePath))
 		if isTextFile(ext) {
-			go h.triggerVectorize(uid, repoID, filePath)
+			go h.triggerVectorize(c, uid, repoID, filePath)
 		}
 
 		response.Success(c, ctx, map[string]any{
@@ -102,8 +102,8 @@ func (h *Handler) UploadFile() app.HandlerFunc {
 	}
 }
 
-// triggerVectorize 异步触发向量化
-func (h *Handler) triggerVectorize(uid, repoID, filePath string) {
+// triggerVectorize 异步触发向量化.
+func (h *Handler) triggerVectorize(c context.Context, uid, repoID, filePath string) {
 	conn := h.grpcClient.GetConn("ai_server")
 	if conn == nil {
 		slog.Warn("AI 服务连接不可用，跳过向量化", "file_path", filePath)
@@ -111,7 +111,7 @@ func (h *Handler) triggerVectorize(uid, repoID, filePath string) {
 	}
 
 	client := pb.NewAIServiceClient(conn)
-	resp, err := client.VectorizeArticle(context.Background(), &pb.VectorizeArticleRequest{
+	resp, err := client.VectorizeArticle(c, &pb.VectorizeArticleRequest{
 		UserId:   uid,
 		RepoId:   repoID,
 		FilePath: filePath,
@@ -127,7 +127,7 @@ func (h *Handler) triggerVectorize(uid, repoID, filePath string) {
 	slog.Info("向量化任务已提交", "file_path", filePath)
 }
 
-// isTextFile 判断是否为需要向量化的文本文件
+// isTextFile 判断是否为需要向量化的文本文件.
 func isTextFile(ext string) bool {
 	switch ext {
 	case ".md", ".txt", ".markdown", ".rst", ".adoc", ".asciidoc":
@@ -137,7 +137,7 @@ func isTextFile(ext string) bool {
 }
 
 // DeleteFile 删除知识库中的文件或目录
-// DELETE /api/v1/repos/:repo_id/files?path=docs/old.md
+// DELETE /api/v1/repos/:repo_id/files?path=docs/old.md.
 func (h *Handler) DeleteFile() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -173,7 +173,7 @@ func (h *Handler) DeleteFile() app.HandlerFunc {
 }
 
 // RenameFile 重命名或移动文件/目录
-// PUT /api/v1/repos/:repo_id/files?path=docs/old.md  body: { "new_path": "docs/new.md" }
+// PUT /api/v1/repos/:repo_id/files?path=docs/old.md  body: { "new_path": "docs/new.md" }.
 func (h *Handler) RenameFile() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -210,7 +210,7 @@ func (h *Handler) RenameFile() app.HandlerFunc {
 }
 
 // MakeDir 在知识库中创建目录
-// POST /api/v1/repos/:repo_id/dirs?path=docs/new-folder
+// POST /api/v1/repos/:repo_id/dirs?path=docs/new-folder.
 func (h *Handler) MakeDir() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -234,17 +234,17 @@ func (h *Handler) MakeDir() app.HandlerFunc {
 }
 
 // InternalRepoTree 内部服务间获取仓库文件树（无鉴权，用于 ai-server 的 LLM 工具）
-// GET /internal/repos/tree?owner_id=&repo_id=&path=
+// GET /internal/repos/tree?owner_id=&repo_id=&path=.
 func InternalRepoTree(store *storage.Store) app.HandlerFunc {
-	return func(c context.Context, ctx *app.RequestContext) {
+	return func(_ context.Context, ctx *app.RequestContext) {
 		ownerID := ctx.Query("owner_id")
 		repoID := ctx.Query("repo_id")
 		dirPath := ctx.Query("path")
 
 		if ownerID == "" || repoID == "" {
 			ctx.JSON(consts.StatusBadRequest, map[string]string{
-				"code":    "MISSING_PARAM",
-				"message": "owner_id and repo_id are required",
+				KeyCode:    "MISSING_PARAM",
+				KeyMessage: "owner_id and repo_id are required",
 			})
 			return
 		}
@@ -253,8 +253,8 @@ func InternalRepoTree(store *storage.Store) app.HandlerFunc {
 		entries, err := store.ListDir(subpath)
 		if err != nil {
 			ctx.JSON(consts.StatusNotFound, map[string]string{
-				"code":    "DIR_NOT_FOUND",
-				"message": "directory not found",
+				"code":     "DIR_NOT_FOUND",
+				KeyMessage: "directory not found",
 			})
 			return
 		}
@@ -275,7 +275,7 @@ func InternalRepoTree(store *storage.Store) app.HandlerFunc {
 
 		ctx.JSON(consts.StatusOK, map[string]any{
 			"entries": result,
-			"path":    dirPath,
+			KeyPath:   dirPath,
 		})
 	}
 }

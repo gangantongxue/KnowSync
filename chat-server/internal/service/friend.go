@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// SendFriendRequest 发送好友申请
+// SendFriendRequest 发送好友申请.
 func (s *Service) SendFriendRequest(ctx context.Context, senderID, receiverID, remark string) (*schema.FriendRequest, error) {
 	// 检查是否是自己
 	if senderID == receiverID {
@@ -55,13 +55,13 @@ func (s *Service) SendFriendRequest(ctx context.Context, senderID, receiverID, r
 	}
 
 	// 推送好友申请事件到接收方
-	data := map[string]interface{}{
+	data := map[string]any{
 		"request_id": request.ID,
 		"sender_id":  request.SenderID,
 	}
-	payload, err := json.Marshal(map[string]interface{}{
-		"type": "friend_request",
-		"data": data,
+	payload, err := json.Marshal(map[string]any{
+		PushKeyType: PushTypeFriendRequest,
+		PushKeyData: data,
 	})
 	if err != nil {
 		slog.Error("序列化好友申请事件失败", "error", err)
@@ -72,17 +72,17 @@ func (s *Service) SendFriendRequest(ctx context.Context, senderID, receiverID, r
 	return request, nil
 }
 
-// GetFriendRequestsByReceiver 获取收到的好友申请列表
+// GetFriendRequestsByReceiver 获取收到的好友申请列表.
 func (s *Service) GetFriendRequestsByReceiver(ctx context.Context, receiverID string) ([]schema.FriendRequest, error) {
 	return s.Repo.Friend.GetFriendRequestsByReceiver(ctx, receiverID)
 }
 
-// GetFriendRequestsBySender 获取发送的好友申请列表
+// GetFriendRequestsBySender 获取发送的好友申请列表.
 func (s *Service) GetFriendRequestsBySender(ctx context.Context, senderID string) ([]schema.FriendRequest, error) {
 	return s.Repo.Friend.GetFriendRequestsBySender(ctx, senderID)
 }
 
-// AcceptFriendRequest 接受好友申请
+// AcceptFriendRequest 接受好友申请.
 func (s *Service) AcceptFriendRequest(ctx context.Context, requestID, receiverID string) error {
 	// 获取好友申请
 	request, err := s.Repo.Friend.GetFriendRequestByID(ctx, requestID)
@@ -140,12 +140,12 @@ func (s *Service) AcceptFriendRequest(ctx context.Context, requestID, receiverID
 		slog.Error("查询用户信息失败", "error", err)
 	} else {
 		// 推送好友接受事件到申请人
-		data := map[string]interface{}{
+		data := map[string]any{
 			"friend_id": friendUser.ID,
 			"name":      friendUser.Name,
 			"avatar":    friendUser.Avatar,
 		}
-		payload, err := json.Marshal(map[string]interface{}{
+		payload, err := json.Marshal(map[string]any{
 			"type": "friend_accepted",
 			"data": data,
 		})
@@ -159,7 +159,7 @@ func (s *Service) AcceptFriendRequest(ctx context.Context, requestID, receiverID
 	return nil
 }
 
-// RejectFriendRequest 拒绝好友申请
+// RejectFriendRequest 拒绝好友申请.
 func (s *Service) RejectFriendRequest(ctx context.Context, requestID, receiverID string) error {
 	// 获取好友申请
 	request, err := s.Repo.Friend.GetFriendRequestByID(ctx, requestID)
@@ -190,12 +190,12 @@ func (s *Service) RejectFriendRequest(ctx context.Context, requestID, receiverID
 	return nil
 }
 
-// GetFriendList 获取好友列表
-func (s *Service) GetFriendList(ctx context.Context, userID string, query string) ([]schema.Friend, error) {
+// GetFriendList 获取好友列表.
+func (s *Service) GetFriendList(ctx context.Context, userID, query string) ([]schema.Friend, error) {
 	return s.Repo.Friend.GetFriendList(ctx, userID, query)
 }
 
-// DeleteFriend 删除好友
+// DeleteFriend 删除好友.
 func (s *Service) DeleteFriend(ctx context.Context, userID, friendID string) error {
 	// 检查好友关系是否存在
 	exists, err := s.Repo.Friend.CheckFriendExists(ctx, userID, friendID)
@@ -216,7 +216,7 @@ func (s *Service) DeleteFriend(ctx context.Context, userID, friendID string) err
 	return nil
 }
 
-// UpdateFriendRemark 更新好友备注
+// UpdateFriendRemark 更新好友备注.
 func (s *Service) UpdateFriendRemark(ctx context.Context, userID, friendID, remark string) error {
 	// 检查好友关系是否存在
 	exists, err := s.Repo.Friend.CheckFriendExists(ctx, userID, friendID)
@@ -237,7 +237,7 @@ func (s *Service) UpdateFriendRemark(ctx context.Context, userID, friendID, rema
 	return nil
 }
 
-// SearchUsers 搜索用户
+// SearchUsers 搜索用户.
 func (s *Service) SearchUsers(ctx context.Context, query string) ([]repository.SearchUserInfo, error) {
 	return s.Repo.Friend.SearchUsers(ctx, query)
 }

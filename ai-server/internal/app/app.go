@@ -1,3 +1,4 @@
+// Package app 提供应用初始化、依赖注入和生命周期管理.
 package app
 
 import (
@@ -25,7 +26,7 @@ import (
 	"github.com/gangantongxue/knowsync/ai-server/pkg/redis"
 )
 
-// NewApp 初始化并启动 ai-server gRPC 服务
+// NewApp 初始化并启动 ai-server gRPC 服务.
 func NewApp() error {
 	slog.Info("=====开始初始化应用=====")
 

@@ -12,18 +12,20 @@ import (
 )
 
 // InternalListUserRepos 获取用户仓库列表（内部服务间调用）
-// GET /internal/repos/user
+// GET /internal/repos/user.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) InternalListUserRepos() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
 		if uid == "" {
-			ctx.JSON(consts.StatusUnauthorized, map[string]string{"message": "missing user_id"})
+			ctx.JSON(consts.StatusUnauthorized, map[string]string{KeyMessage: ErrMsgMissingUserID})
 			return
 		}
 
 		conn := h.grpcClient.GetConn("repo_server")
 		if conn == nil {
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "repo server unavailable"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: ErrMsgRepoServerUnavail})
 			return
 		}
 
@@ -31,7 +33,7 @@ func (h *Handler) InternalListUserRepos() app.HandlerFunc {
 		resp, err := client.ListUserRepos(c, &pb.ListUserReposRequest{UserId: uid})
 		if err != nil || !resp.Success {
 			slog.Error("获取用户仓库列表失败", "error", err)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "获取仓库列表失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "获取仓库列表失败"})
 			return
 		}
 
@@ -41,19 +43,19 @@ func (h *Handler) InternalListUserRepos() app.HandlerFunc {
 		}
 
 		ctx.JSON(consts.StatusOK, map[string]any{
-			"repos": repos,
-			"total": len(repos),
+			KeyRepos: repos,
+			"total":  len(repos),
 		})
 	}
 }
 
 // InternalListPublicRepos 获取公开仓库列表（内部服务间调用）
-// GET /internal/repos/public
+// GET /internal/repos/public.
 func (h *Handler) InternalListPublicRepos() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		conn := h.grpcClient.GetConn("repo_server")
 		if conn == nil {
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "repo server unavailable"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: ErrMsgRepoServerUnavail})
 			return
 		}
 
@@ -61,7 +63,7 @@ func (h *Handler) InternalListPublicRepos() app.HandlerFunc {
 		resp, err := client.ListPublicRepos(c, &pb.ListPublicReposRequest{})
 		if err != nil || !resp.Success {
 			slog.Error("获取公开仓库列表失败", "error", err)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "获取公开仓库列表失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "获取公开仓库列表失败"})
 			return
 		}
 
@@ -71,26 +73,26 @@ func (h *Handler) InternalListPublicRepos() app.HandlerFunc {
 		}
 
 		ctx.JSON(consts.StatusOK, map[string]any{
-			"repos": repos,
-			"total": len(repos),
+			KeyRepos: repos,
+			"total":  len(repos),
 		})
 	}
 }
 
 // InternalGetRepo 获取仓库详情（内部服务间调用）
-// GET /internal/repos/detail?repo_id=xxx
+// GET /internal/repos/detail?repo_id=xxx.
 func (h *Handler) InternalGetRepo() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
 		repoID := ctx.Query("repo_id")
 		if repoID == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "repo_id is required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: ErrMsgRepoIDRequired})
 			return
 		}
 
 		conn := h.grpcClient.GetConn("repo_server")
 		if conn == nil {
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "repo server unavailable"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: ErrMsgRepoServerUnavail})
 			return
 		}
 
@@ -98,7 +100,7 @@ func (h *Handler) InternalGetRepo() app.HandlerFunc {
 		resp, err := client.GetRepo(c, &pb.GetRepoRequest{RepoId: repoID, UserId: uid})
 		if err != nil || !resp.Success {
 			slog.Error("获取仓库详情失败", "error", err, "repo_id", repoID)
-			ctx.JSON(consts.StatusNotFound, map[string]string{"message": "仓库不存在"})
+			ctx.JSON(consts.StatusNotFound, map[string]string{KeyMessage: "仓库不存在"})
 			return
 		}
 
@@ -106,20 +108,20 @@ func (h *Handler) InternalGetRepo() app.HandlerFunc {
 	}
 }
 
-// marshalInternalRepo 将 pb.Repo 转为内部 HTTP 响应格式
+// marshalInternalRepo 将 pb.Repo 转为内部 HTTP 响应格式.
 func marshalInternalRepo(r *pb.Repo) map[string]any {
 	return map[string]any{
 		"id":             r.Id,
-		"owner_id":       r.OwnerId,
-		"name":           r.Name,
-		"visibility":     r.Visibility.String(),
-		"description":    r.Description,
-		"article_count":  r.ArticleCount,
+		KeyOwnerID:       r.OwnerId,
+		KeyName:          r.Name,
+		KeyVisibility:    r.Visibility.String(),
+		KeyDescription:   r.Description,
+		KeyArticleCount:  r.ArticleCount,
 		"follower_count": r.FollowerCount,
 	}
 }
 
-// marshalInternalRepoDetail 将 pb.GetRepoResponse 转为内部 HTTP 响应格式（含角色和关注状态）
+// marshalInternalRepoDetail 将 pb.GetRepoResponse 转为内部 HTTP 响应格式（含角色和关注状态）.
 func marshalInternalRepoDetail(resp *pb.GetRepoResponse) map[string]any {
 	repo := map[string]any{
 		"id":             resp.Repo.Id,
@@ -135,117 +137,117 @@ func marshalInternalRepoDetail(resp *pb.GetRepoResponse) map[string]any {
 		myRole = ""
 	}
 	return map[string]any{
-		"repo":         repo,
+		KeyRepo:        repo,
 		"my_role":      myRole,
 		"is_following": resp.IsFollowing,
 	}
 }
 
 // InternalCreateFile 创建文件（内部服务间调用）
-// POST /internal/repos/files?owner_id=&repo_id=&path=
+// POST /internal/repos/files?owner_id=&repo_id=&path=.
 func (h *Handler) InternalCreateFile() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		ownerID := ctx.Query("owner_id")
 		repoID := ctx.Query("repo_id")
 		filePath := ctx.Query("path")
 		if ownerID == "" || repoID == "" || filePath == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "owner_id, repo_id, path are required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: ErrMsgOwnerRepoPathReq})
 			return
 		}
 		var req struct {
 			Content string `json:"content"`
 		}
 		if err := ctx.BindAndValidate(&req); err != nil {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "invalid body"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: ErrMsgInvalidBody})
 			return
 		}
 
 		subpath := filepath.Join(ownerID, repoID, filePath)
 		if err := h.store.WriteFileFromBytes(subpath, []byte(req.Content)); err != nil {
 			slog.Error("创建文件失败", "error", err, "path", subpath)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "创建文件失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "创建文件失败"})
 			return
 		}
 
 		// 异步触发向量化
 		if isTextFile(strings.ToLower(filepath.Ext(filePath))) {
-			go h.triggerVectorize(ownerID, repoID, filePath)
+			go h.triggerVectorize(c, ownerID, repoID, filePath)
 		}
 
-		ctx.JSON(consts.StatusOK, map[string]any{"path": filePath})
+		ctx.JSON(consts.StatusOK, map[string]any{KeyPath: filePath})
 	}
 }
 
 // InternalUpdateFile 更新文件内容（内部服务间调用）
-// PUT /internal/repos/files?owner_id=&repo_id=&path=
+// PUT /internal/repos/files?owner_id=&repo_id=&path=.
 func (h *Handler) InternalUpdateFile() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		ownerID := ctx.Query("owner_id")
 		repoID := ctx.Query("repo_id")
 		filePath := ctx.Query("path")
 		if ownerID == "" || repoID == "" || filePath == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "owner_id, repo_id, path are required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: ErrMsgOwnerRepoPathReq})
 			return
 		}
 		var req struct {
 			Content string `json:"content"`
 		}
 		if err := ctx.BindAndValidate(&req); err != nil {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "invalid body"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: ErrMsgInvalidBody})
 			return
 		}
 
 		subpath := filepath.Join(ownerID, repoID, filePath)
 		if err := h.store.WriteFileFromBytes(subpath, []byte(req.Content)); err != nil {
 			slog.Error("更新文件失败", "error", err, "path", subpath)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "更新文件失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "更新文件失败"})
 			return
 		}
 
 		// 异步触发向量化（StoreChunks 会自动删除旧向量再添加新向量）
 		if isTextFile(strings.ToLower(filepath.Ext(filePath))) {
-			go h.triggerVectorize(ownerID, repoID, filePath)
+			go h.triggerVectorize(c, ownerID, repoID, filePath)
 		}
 
-		ctx.JSON(consts.StatusOK, map[string]any{"message": "updated"})
+		ctx.JSON(consts.StatusOK, map[string]any{KeyMessage: "updated"})
 	}
 }
 
 // InternalDeleteFile 删除文件（内部服务间调用）
-// DELETE /internal/repos/files?owner_id=&repo_id=&path=
+// DELETE /internal/repos/files?owner_id=&repo_id=&path=.
 func (h *Handler) InternalDeleteFile() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		ownerID := ctx.Query("owner_id")
 		repoID := ctx.Query("repo_id")
 		filePath := ctx.Query("path")
 		if ownerID == "" || repoID == "" || filePath == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "owner_id, repo_id, path are required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: ErrMsgOwnerRepoPathReq})
 			return
 		}
 
 		subpath := filepath.Join(ownerID, repoID, filePath)
 		if err := h.store.Delete(subpath); err != nil {
 			slog.Error("删除文件失败", "error", err, "path", subpath)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "删除文件失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "删除文件失败"})
 			return
 		}
 
 		// 异步删除向量
-		go h.triggerDeleteFileVectors(repoID, filePath)
+		go h.triggerDeleteFileVectors(c, repoID, filePath)
 
-		ctx.JSON(consts.StatusOK, map[string]any{"message": "deleted"})
+		ctx.JSON(consts.StatusOK, map[string]any{KeyMessage: "deleted"})
 	}
 }
 
-// triggerDeleteFileVectors 异步删除文件向量
-func (h *Handler) triggerDeleteFileVectors(repoID, filePath string) {
+// triggerDeleteFileVectors 异步删除文件向量.
+func (h *Handler) triggerDeleteFileVectors(c context.Context, repoID, filePath string) {
 	conn := h.grpcClient.GetConn("ai_server")
 	if conn == nil {
 		slog.Warn("AI 服务连接不可用，跳过删除向量", "file_path", filePath)
 		return
 	}
 	client := pb.NewAIServiceClient(conn)
-	resp, err := client.DeleteFileVectors(context.Background(), &pb.DeleteFileVectorsRequest{
+	resp, err := client.DeleteFileVectors(c, &pb.DeleteFileVectorsRequest{
 		RepoId:   repoID,
 		FilePath: filePath,
 	})
@@ -261,21 +263,21 @@ func (h *Handler) triggerDeleteFileVectors(repoID, filePath string) {
 }
 
 // InternalRenameFile 重命名文件（内部服务间调用）
-// PUT /internal/repos/files/rename?owner_id=&repo_id=&path=
+// PUT /internal/repos/files/rename?owner_id=&repo_id=&path=.
 func (h *Handler) InternalRenameFile() app.HandlerFunc {
-	return func(c context.Context, ctx *app.RequestContext) {
+	return func(_ context.Context, ctx *app.RequestContext) {
 		ownerID := ctx.Query("owner_id")
 		repoID := ctx.Query("repo_id")
 		oldPath := ctx.Query("path")
 		if ownerID == "" || repoID == "" || oldPath == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "owner_id, repo_id, path are required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: ErrMsgOwnerRepoPathReq})
 			return
 		}
 		var req struct {
 			NewPath string `json:"new_path"`
 		}
 		if err := ctx.BindAndValidate(&req); err != nil || req.NewPath == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "new_path is required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: "new_path is required"})
 			return
 		}
 
@@ -284,7 +286,7 @@ func (h *Handler) InternalRenameFile() app.HandlerFunc {
 
 		if err := h.store.Rename(oldSubpath, newSubpath); err != nil {
 			slog.Error("重命名失败", "error", err)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "重命名失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "重命名失败"})
 			return
 		}
 
@@ -296,7 +298,7 @@ func (h *Handler) InternalRenameFile() app.HandlerFunc {
 }
 
 // InternalCreateRepo 创建知识库（内部服务间调用）
-// POST /internal/repos
+// POST /internal/repos.
 func (h *Handler) InternalCreateRepo() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -306,16 +308,16 @@ func (h *Handler) InternalCreateRepo() app.HandlerFunc {
 			Visibility  string `json:"visibility"`
 		}
 		if err := ctx.BindAndValidate(&req); err != nil || req.Name == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "name is required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: "name is required"})
 			return
 		}
 		vis := pb.RepoVisibility_PRIVATE
-		if req.Visibility == "PUBLIC" {
+		if req.Visibility == KeyVisibilityPUBLIC {
 			vis = pb.RepoVisibility_PUBLIC
 		}
 		conn := h.grpcClient.GetConn("repo_server")
 		if conn == nil {
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "repo server unavailable"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: ErrMsgRepoServerUnavail})
 			return
 		}
 		client := pb.NewRepoServiceClient(conn)
@@ -327,7 +329,7 @@ func (h *Handler) InternalCreateRepo() app.HandlerFunc {
 		})
 		if err != nil || !resp.Success {
 			slog.Error("创建知识库失败", "error", err)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "创建知识库失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "创建知识库失败"})
 			return
 		}
 		ctx.JSON(consts.StatusOK, map[string]any{"repo_id": resp.Repo.GetId()})
@@ -335,13 +337,13 @@ func (h *Handler) InternalCreateRepo() app.HandlerFunc {
 }
 
 // InternalUpdateRepo 更新知识库（内部服务间调用）
-// PUT /internal/repos?repo_id=
+// PUT /internal/repos?repo_id=.
 func (h *Handler) InternalUpdateRepo() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
 		repoID := ctx.Query("repo_id")
 		if repoID == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "repo_id is required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: ErrMsgRepoIDRequired})
 			return
 		}
 		var req struct {
@@ -350,12 +352,12 @@ func (h *Handler) InternalUpdateRepo() app.HandlerFunc {
 			Visibility  string `json:"visibility"`
 		}
 		if err := ctx.BindAndValidate(&req); err != nil {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "invalid body"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: ErrMsgInvalidBody})
 			return
 		}
 		conn := h.grpcClient.GetConn("repo_server")
 		if conn == nil {
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "repo server unavailable"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: ErrMsgRepoServerUnavail})
 			return
 		}
 		client := pb.NewRepoServiceClient(conn)
@@ -365,7 +367,7 @@ func (h *Handler) InternalUpdateRepo() app.HandlerFunc {
 			Name:        req.Name,
 			Description: req.Description,
 		}
-		if req.Visibility == "PUBLIC" {
+		if req.Visibility == KeyVisibilityPUBLIC {
 			updateReq.Visibility = pb.RepoVisibility_PUBLIC
 		} else {
 			updateReq.Visibility = pb.RepoVisibility_PRIVATE
@@ -373,32 +375,32 @@ func (h *Handler) InternalUpdateRepo() app.HandlerFunc {
 		resp, err := client.UpdateRepo(c, updateReq)
 		if err != nil || !resp.Success {
 			slog.Error("更新知识库失败", "error", err)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "更新知识库失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "更新知识库失败"})
 			return
 		}
-		ctx.JSON(consts.StatusOK, map[string]any{"message": "updated"})
+		ctx.JSON(consts.StatusOK, map[string]any{KeyMessage: "updated"})
 	}
 }
 
 // InternalSearchUsers 搜索用户（内部服务间调用）
-// GET /internal/users/search?q=
+// GET /internal/users/search?q=.
 func (h *Handler) InternalSearchUsers() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		keyword := ctx.Query("q")
 		if keyword == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "q is required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: "q is required"})
 			return
 		}
 		conn := h.grpcClient.GetConn("chat_server")
 		if conn == nil {
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "chat server unavailable"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "chat server unavailable"})
 			return
 		}
 		client := pb.NewChatServiceClient(conn)
 		resp, err := client.SearchUsers(c, &pb.SearchUsersReq{Query: keyword})
 		if err != nil {
 			slog.Error("搜索用户失败", "error", err)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "搜索用户失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "搜索用户失败"})
 			return
 		}
 		users := make([]map[string]any, 0, len(resp.Users))
@@ -413,13 +415,15 @@ func (h *Handler) InternalSearchUsers() app.HandlerFunc {
 }
 
 // InternalAddCollaborator 添加协作者（内部服务间调用）
-// POST /internal/repos/collaborators?repo_id=
+// POST /internal/repos/collaborators?repo_id=.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) InternalAddCollaborator() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
 		repoID := ctx.Query("repo_id")
 		if repoID == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "repo_id is required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: ErrMsgRepoIDRequired})
 			return
 		}
 		var req struct {
@@ -427,19 +431,19 @@ func (h *Handler) InternalAddCollaborator() app.HandlerFunc {
 			Role   string `json:"role"`
 		}
 		if err := ctx.BindAndValidate(&req); err != nil || req.UserID == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "user_id is required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: "user_id is required"})
 			return
 		}
 		role := pb.CollaboratorRole_VIEWER
 		switch req.Role {
-		case "ADMIN":
+		case KeyRoleADMIN:
 			role = pb.CollaboratorRole_ADMIN
-		case "DEVELOPER":
+		case KeyRoleDEVELOPER:
 			role = pb.CollaboratorRole_DEVELOPER
 		}
 		conn := h.grpcClient.GetConn("repo_server")
 		if conn == nil {
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "repo server unavailable"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: ErrMsgRepoServerUnavail})
 			return
 		}
 		client := pb.NewRepoServiceClient(conn)
@@ -451,27 +455,27 @@ func (h *Handler) InternalAddCollaborator() app.HandlerFunc {
 		})
 		if err != nil || !resp.Success {
 			slog.Error("添加协作者失败", "error", err)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "添加协作者失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "添加协作者失败"})
 			return
 		}
-		ctx.JSON(consts.StatusOK, map[string]any{"message": "added"})
+		ctx.JSON(consts.StatusOK, map[string]any{KeyMessage: "added"})
 	}
 }
 
 // InternalRemoveCollaborator 移除协作者（内部服务间调用）
-// DELETE /internal/repos/collaborators?repo_id=&user_id=
+// DELETE /internal/repos/collaborators?repo_id=&user_id=.
 func (h *Handler) InternalRemoveCollaborator() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
 		repoID := ctx.Query("repo_id")
 		targetUserID := ctx.Query("user_id")
 		if repoID == "" || targetUserID == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "repo_id and user_id are required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: "repo_id and user_id are required"})
 			return
 		}
 		conn := h.grpcClient.GetConn("repo_server")
 		if conn == nil {
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "repo server unavailable"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: ErrMsgRepoServerUnavail})
 			return
 		}
 		client := pb.NewRepoServiceClient(conn)
@@ -482,21 +486,23 @@ func (h *Handler) InternalRemoveCollaborator() app.HandlerFunc {
 		})
 		if err != nil || !resp.Success {
 			slog.Error("移除协作者失败", "error", err)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "移除协作者失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "移除协作者失败"})
 			return
 		}
-		ctx.JSON(consts.StatusOK, map[string]any{"message": "removed"})
+		ctx.JSON(consts.StatusOK, map[string]any{KeyMessage: "removed"})
 	}
 }
 
 // InternalUpdateCollaboratorRole 更新协作者角色（内部服务间调用）
-// PUT /internal/repos/collaborators/role?repo_id=
+// PUT /internal/repos/collaborators/role?repo_id=.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) InternalUpdateCollaboratorRole() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
 		repoID := ctx.Query("repo_id")
 		if repoID == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "repo_id is required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: ErrMsgRepoIDRequired})
 			return
 		}
 		var req struct {
@@ -504,19 +510,19 @@ func (h *Handler) InternalUpdateCollaboratorRole() app.HandlerFunc {
 			Role   string `json:"role"`
 		}
 		if err := ctx.BindAndValidate(&req); err != nil || req.UserID == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "user_id is required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: "user_id is required"})
 			return
 		}
 		role := pb.CollaboratorRole_VIEWER
 		switch req.Role {
-		case "ADMIN":
+		case KeyRoleADMIN:
 			role = pb.CollaboratorRole_ADMIN
-		case "DEVELOPER":
+		case KeyRoleDEVELOPER:
 			role = pb.CollaboratorRole_DEVELOPER
 		}
 		conn := h.grpcClient.GetConn("repo_server")
 		if conn == nil {
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "repo server unavailable"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: ErrMsgRepoServerUnavail})
 			return
 		}
 		client := pb.NewRepoServiceClient(conn)
@@ -528,26 +534,28 @@ func (h *Handler) InternalUpdateCollaboratorRole() app.HandlerFunc {
 		})
 		if err != nil || !resp.Success {
 			slog.Error("更新协作者角色失败", "error", err)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "更新协作者角色失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "更新协作者角色失败"})
 			return
 		}
-		ctx.JSON(consts.StatusOK, map[string]any{"message": "updated"})
+		ctx.JSON(consts.StatusOK, map[string]any{KeyMessage: "updated"})
 	}
 }
 
 // InternalListFollowedRepos 获取用户关注的知识库列表（内部服务间调用）
-// GET /internal/repos/followed
+// GET /internal/repos/followed.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) InternalListFollowedRepos() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
 		if uid == "" {
-			ctx.JSON(consts.StatusUnauthorized, map[string]string{"message": "missing user_id"})
+			ctx.JSON(consts.StatusUnauthorized, map[string]string{KeyMessage: ErrMsgMissingUserID})
 			return
 		}
 
 		conn := h.grpcClient.GetConn("repo_server")
 		if conn == nil {
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "repo server unavailable"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: ErrMsgRepoServerUnavail})
 			return
 		}
 
@@ -555,7 +563,7 @@ func (h *Handler) InternalListFollowedRepos() app.HandlerFunc {
 		resp, err := client.ListFollowedRepos(c, &pb.ListFollowedReposRequest{UserId: uid})
 		if err != nil || !resp.Success {
 			slog.Error("获取关注列表失败", "error", err)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "获取关注列表失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "获取关注列表失败"})
 			return
 		}
 
@@ -565,26 +573,28 @@ func (h *Handler) InternalListFollowedRepos() app.HandlerFunc {
 		}
 
 		ctx.JSON(consts.StatusOK, map[string]any{
-			"repos": repos,
-			"total": len(repos),
+			KeyRepos: repos,
+			"total":  len(repos),
 		})
 	}
 }
 
 // InternalFollowRepo 关注知识库（内部服务间调用）
-// POST /internal/repos/follow?repo_id=xxx
+// POST /internal/repos/follow?repo_id=xxx.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) InternalFollowRepo() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
 		repoID := ctx.Query("repo_id")
 		if repoID == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "repo_id is required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: ErrMsgRepoIDRequired})
 			return
 		}
 
 		conn := h.grpcClient.GetConn("repo_server")
 		if conn == nil {
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "repo server unavailable"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: ErrMsgRepoServerUnavail})
 			return
 		}
 
@@ -592,28 +602,30 @@ func (h *Handler) InternalFollowRepo() app.HandlerFunc {
 		resp, err := client.FollowRepo(c, &pb.FollowRepoRequest{RepoId: repoID, UserId: uid})
 		if err != nil || !resp.Success {
 			slog.Error("关注知识库失败", "error", err, "repo_id", repoID)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "关注知识库失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "关注知识库失败"})
 			return
 		}
 
-		ctx.JSON(consts.StatusOK, map[string]any{"message": "followed"})
+		ctx.JSON(consts.StatusOK, map[string]any{KeyMessage: "followed"})
 	}
 }
 
 // InternalUnfollowRepo 取消关注知识库（内部服务间调用）
-// DELETE /internal/repos/follow?repo_id=xxx
+// DELETE /internal/repos/follow?repo_id=xxx.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) InternalUnfollowRepo() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
 		repoID := ctx.Query("repo_id")
 		if repoID == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "repo_id is required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: ErrMsgRepoIDRequired})
 			return
 		}
 
 		conn := h.grpcClient.GetConn("repo_server")
 		if conn == nil {
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "repo server unavailable"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: ErrMsgRepoServerUnavail})
 			return
 		}
 
@@ -621,27 +633,27 @@ func (h *Handler) InternalUnfollowRepo() app.HandlerFunc {
 		resp, err := client.UnfollowRepo(c, &pb.UnfollowRepoRequest{RepoId: repoID, UserId: uid})
 		if err != nil || !resp.Success {
 			slog.Error("取消关注知识库失败", "error", err, "repo_id", repoID)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "取消关注知识库失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "取消关注知识库失败"})
 			return
 		}
 
-		ctx.JSON(consts.StatusOK, map[string]any{"message": "unfollowed"})
+		ctx.JSON(consts.StatusOK, map[string]any{KeyMessage: "unfollowed"})
 	}
 }
 
 // InternalListCollaborators 列出协作者（内部服务间调用）
-// GET /internal/repos/collaborators?repo_id=
+// GET /internal/repos/collaborators?repo_id=.
 func (h *Handler) InternalListCollaborators() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
 		repoID := ctx.Query("repo_id")
 		if repoID == "" {
-			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "repo_id is required"})
+			ctx.JSON(consts.StatusBadRequest, map[string]string{KeyMessage: ErrMsgRepoIDRequired})
 			return
 		}
 		conn := h.grpcClient.GetConn("repo_server")
 		if conn == nil {
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "repo server unavailable"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: ErrMsgRepoServerUnavail})
 			return
 		}
 		client := pb.NewRepoServiceClient(conn)
@@ -651,14 +663,14 @@ func (h *Handler) InternalListCollaborators() app.HandlerFunc {
 		})
 		if err != nil {
 			slog.Error("列出协作者失败", "error", err)
-			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "列出协作者失败"})
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "列出协作者失败"})
 			return
 		}
 		items := make([]map[string]any, 0, len(resp.Collaborators))
 		for _, c := range resp.Collaborators {
 			items = append(items, map[string]any{
-				"user_id": c.UserId,
-				"role":    c.Role.String(),
+				KeyUserID: c.UserId,
+				KeyRole:   c.Role.String(),
 			})
 		}
 		ctx.JSON(consts.StatusOK, map[string]any{

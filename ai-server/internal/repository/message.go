@@ -1,3 +1,4 @@
+// Package repository 提供数据持久化能力.
 package repository
 
 import (
@@ -7,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// ChatMessage 消息表
+// ChatMessage 消息表.
 type ChatMessage struct {
 	ID        string    `gorm:"primaryKey;type:char(20)" json:"id"`
 	SessionID string    `gorm:"column:session_id;type:char(20);not null;index:idx_session_id" json:"session_id"`
@@ -17,26 +18,30 @@ type ChatMessage struct {
 	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime;index:idx_session_id" json:"created_at"`
 }
 
+//nolint:revive // self-documenting
+//nolint:revive // self-documenting
 func (m *ChatMessage) TableName() string {
 	return "chat_message"
 }
 
-// BeforeCreate 在创建前调用
-func (m *ChatMessage) BeforeCreate(tx *gorm.DB) error {
+// BeforeCreate 在创建前调用.
+func (m *ChatMessage) BeforeCreate(_ *gorm.DB) error {
 	if m.ID == "" {
 		m.ID = xid.New().String()
 	}
 	return nil
 }
 
-// CreateMessage 创建消息
+// CreateMessage 创建消息.
 func (r *Repository) CreateMessage(msg *ChatMessage) error {
 	return r.DB.Create(msg).Error
 }
 
 // ListMessages 获取会话的消息列表（按创建时间倒序游标分页）
 // cursor 为 created_at 时间戳（秒），首次传 0 表示从最新开始
-// 返回消息列表及是否有更多数据（按 created_at DESC，最新在前）
+// 返回消息列表及是否有更多数据（按 created_at DESC，最新在前）.
+//
+//nolint:dupl // ListMessages 与 ListSessions 结构相似但操作不同表
 func (r *Repository) ListMessages(sessionID string, cursor int64, limit int) ([]ChatMessage, bool, error) {
 	var messages []ChatMessage
 
@@ -58,7 +63,7 @@ func (r *Repository) ListMessages(sessionID string, cursor int64, limit int) ([]
 	return messages, hasMore, nil
 }
 
-// GetSessionMessages 获取会话所有消息（按创建时间正序，用于构建 LLM 上下文）
+// GetSessionMessages 获取会话所有消息（按创建时间正序，用于构建 LLM 上下文）.
 func (r *Repository) GetSessionMessages(sessionID string) ([]ChatMessage, error) {
 	var messages []ChatMessage
 	err := r.DB.Where("session_id = ?", sessionID).Order("created_at ASC").Find(&messages).Error

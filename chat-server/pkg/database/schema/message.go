@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// Message 消息表（私聊 + 群聊共用）
+// Message 消息表（私聊 + 群聊共用）.
 type Message struct {
 	ID               string  `gorm:"primaryKey;type:char(20)" json:"id"`
 	ConversationType string  `gorm:"column:conversation_type;type:enum('private','group');not null" json:"conversation_type"`
@@ -20,11 +20,13 @@ type Message struct {
 	CreatedAt        int64   `gorm:"column:created_at;type:bigint;not null" json:"created_at"`
 }
 
+// TableName 返回消息表名.
 func (m *Message) TableName() string {
 	return "messages"
 }
 
-func (m *Message) BeforeCreate(tx *gorm.DB) error {
+// BeforeCreate GORM 创建前钩子，自动生成 ID.
+func (m *Message) BeforeCreate(_ *gorm.DB) error {
 	if m.ID == "" {
 		m.ID = xid.New().String()
 	}

@@ -9,12 +9,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// Repository 数据访问层
+// Repository 数据访问层.
 type Repository struct {
 	DB *gorm.DB
 }
 
-// NewRepository 创建数据库连接和 Repository
+// NewRepository 创建数据库连接和 Repository.
 func NewRepository(cfg *model.DatabaseCfg) (*Repository, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DBName)

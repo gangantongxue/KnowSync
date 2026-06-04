@@ -9,29 +9,33 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+//nolint:revive // self-documenting
 type GetRepoDetail struct {
 	detailGetter RepoDetailGetter
 }
 
+//nolint:revive // self-documenting
 func NewGetRepoDetail(dg RepoDetailGetter) *GetRepoDetail {
 	return &GetRepoDetail{detailGetter: dg}
 }
 
-func (g *GetRepoDetail) Info(ctx context.Context) (*schema.ToolInfo, error) {
+//nolint:revive // self-documenting
+func (g *GetRepoDetail) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "get_repo_detail",
 		Desc: "获取指定知识库的详细信息，包括名称、描述、可见性、文章数量、关注数、当前用户的角色以及是否已关注。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
-			"repo_id": {
-				Type:     "string",
-				Desc:     "知识库 ID",
+			ParamRepoID: {
+				Type:     TypeString,
+				Desc:     DescRepoID,
 				Required: true,
 			},
 		}),
 	}, nil
 }
 
-func (g *GetRepoDetail) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+//nolint:revive // self-documenting
+func (g *GetRepoDetail) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return g.execute(ctx, arguments)
 }
 
@@ -58,11 +62,11 @@ func (g *GetRepoDetail) execute(ctx context.Context, paramsJSON string) (string,
 	}
 
 	data, _ := json.Marshal(map[string]any{
-		"found":          true,
+		KeyFound:         true,
 		"id":             detail.ID,
-		"name":           detail.Name,
-		"description":    detail.Description,
-		"visibility":     detail.Visibility,
+		ParamName:        detail.Name,
+		ParamDesc:        detail.Description,
+		ParamVisibl:      detail.Visibility,
 		"owner_id":       detail.OwnerID,
 		"article_count":  detail.ArticleCount,
 		"follower_count": detail.FollowerCount,

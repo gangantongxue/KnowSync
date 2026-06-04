@@ -3,6 +3,7 @@ package tool
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -11,10 +12,12 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+//nolint:revive // self-documenting
 type GenerateDiagram struct {
 	fileWriteClient FileWriteClient
 }
 
+//nolint:revive // self-documenting
 func NewGenerateDiagram(fwc FileWriteClient) *GenerateDiagram {
 	return &GenerateDiagram{fileWriteClient: fwc}
 }
@@ -31,41 +34,43 @@ var validDiagramTypes = map[string]string{
 	"timeline":  "时间线（timeline）",
 }
 
-func (g *GenerateDiagram) Info(ctx context.Context) (*schema.ToolInfo, error) {
+//nolint:revive // self-documenting
+func (g *GenerateDiagram) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "generate_diagram",
 		Desc: "生成 Mermaid 图表并保存为知识库文件。支持的图表类型：flowchart（流程图）、sequence（时序图）、class（类图）、state（状态图）、er（ER 图）、gantt（甘特图）、pie（饼图）、mindmap（思维导图）、timeline（时间线）。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
-			"type": {
-				Type:     "string",
+			ParamType: {
+				Type:     TypeString,
 				Desc:     "图表类型：" + joinDiagramTypes(),
 				Required: true,
 			},
 			"code": {
-				Type:     "string",
+				Type:     TypeString,
 				Desc:     "Mermaid 图表代码（合法的 Mermaid 语法）",
 				Required: true,
 			},
-			"repo_id": {
-				Type:     "string",
+			ParamRepoID: {
+				Type:     TypeString,
 				Desc:     "保存到的知识库 ID",
 				Required: true,
 			},
-			"file_path": {
-				Type:     "string",
+			ParamFilePath: {
+				Type:     TypeString,
 				Desc:     "保存的文件路径（可选，默认自动生成）",
 				Required: false,
 			},
-			"_skip_confirm": {
-				Type:     "boolean",
-				Desc:     "用户已明确确认时设置为 true",
+			ParamSkipCfm: {
+				Type:     TypeBoolean,
+				Desc:     DescSkipConfirm,
 				Required: false,
 			},
 		}),
 	}, nil
 }
 
-func (g *GenerateDiagram) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+//nolint:revive // self-documenting
+func (g *GenerateDiagram) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return g.execute(ctx, arguments)
 }
 
@@ -87,12 +92,12 @@ func (g *GenerateDiagram) execute(ctx context.Context, paramsJSON string) (strin
 		return `{"success": false, "message": "code 不能为空"}`, nil
 	}
 	if params.RepoID == "" {
-		return `{"success": false, "message": "repo_id 不能为空"}`, nil
+		return ErrRespRepoIDEmpty, nil
 	}
 
 	userID, _ := ctx.Value(CtxKeyUserID).(string)
 	if userID == "" {
-		return `{"success": false, "message": "无法获取用户信息"}`, nil
+		return ErrRespUserInfo, nil
 	}
 
 	// 校验图表类型
@@ -128,11 +133,11 @@ func (g *GenerateDiagram) execute(ctx context.Context, paramsJSON string) (strin
 	}
 
 	data, _ := json.Marshal(map[string]any{
-		"success":     true,
-		"type":        params.Type,
+		KeySuccess:    true,
+		ParamType:     params.Type,
 		"type_name":   diagramType,
-		"repo_id":     params.RepoID,
-		"file_path":   filePath,
+		ParamRepoID:   params.RepoID,
+		ParamFilePath: filePath,
 		"code_length": len(params.Code),
 	})
 	return string(data), nil
@@ -164,6 +169,7 @@ func mermaidHeaderForType(t string) string {
 }
 
 func validateMermaid(diagramType, code string) error {
+	_ = diagramType
 	lines := strings.Split(code, "\n")
 	nonEmpty := 0
 	for _, line := range lines {
@@ -173,7 +179,7 @@ func validateMermaid(diagramType, code string) error {
 		}
 	}
 	if nonEmpty == 0 {
-		return fmt.Errorf("图表内容为空")
+		return errors.New("图表内容为空")
 	}
 
 	// 检查括号匹配
@@ -185,20 +191,21 @@ func validateMermaid(diagramType, code string) error {
 		case ')', '}', ']':
 			depth--
 			if depth < 0 {
-				return fmt.Errorf("括号不匹配：存在多余的右括号")
+				return errors.New("括号不匹配：存在多余的右括号")
 			}
 		}
 	}
 	if depth > 0 {
-		return fmt.Errorf("括号不匹配：存在未闭合的左括号")
+		return errors.New("括号不匹配：存在未闭合的左括号")
 	}
 
 	return nil
 }
 
+//nolint:gocyclo // 需要处理多种图表类型和格式
 func generateShortName(code string) string {
 	// 取第一行非空内容的前 20 个字符作为文件名
-	for _, line := range strings.Split(code, "\n") {
+	for line := range strings.SplitSeq(code, "\n") {
 		trimmed := strings.TrimSpace(line)
 		if trimmed != "" && !strings.HasPrefix(trimmed, "%%") && !strings.HasPrefix(trimmed, "---") {
 			name := strings.TrimSpace(trimmed)

@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// Conversation 会话统一视图
+// Conversation 会话统一视图.
 type Conversation struct {
 	ConversationType string
 	ConversationID   string
@@ -25,8 +25,8 @@ type Conversation struct {
 	Mentioned        bool
 }
 
-// GetConversationList 获取会话列表
-func (s *Service) GetConversationList(ctx context.Context, userID string) ([]Conversation, error) {
+// GetConversationList 获取会话列表.
+func (s *Service) GetConversationList(ctx context.Context, userID string) ([]Conversation, error) { //nolint:gocyclo // 会话列表聚合逻辑复杂
 	friends, err := s.Repo.Conversation.GetFriendConversations(ctx, userID)
 	if err != nil {
 		slog.Error("获取好友会话失败", "error", err)
@@ -50,7 +50,7 @@ func (s *Service) GetConversationList(ctx context.Context, userID string) ([]Con
 		}
 
 		var lastMsg *schema.Message
-		msg, err := s.Repo.Message.GetLastMessageByConversation(ctx, "private", conversationID)
+		msg, err := s.Repo.Message.GetLastMessageByConversation(ctx, ConvTypePrivate, conversationID)
 		if err == nil {
 			lastMsg = msg
 		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -59,21 +59,21 @@ func (s *Service) GetConversationList(ctx context.Context, userID string) ([]Con
 
 		unreadCount := int32(0)
 		if f.LastReadSeqID > 0 {
-			count, err := s.Repo.Message.CountMessagesAfter(ctx, "private", conversationID, f.LastReadSeqID)
+			count, err := s.Repo.Message.CountMessagesAfter(ctx, ConvTypePrivate, conversationID, f.LastReadSeqID)
 			if err == nil {
-				unreadCount = int32(count)
+				unreadCount = int32(count) //nolint:gosec // 未读数不会超过 int32 范围
 			} else {
 				slog.Error("统计私聊未读消息失败", "error", err, "conversation_id", conversationID)
 			}
 		} else {
-			count, err := s.Repo.Message.CountMessagesAfter(ctx, "private", conversationID, 0)
+			count, err := s.Repo.Message.CountMessagesAfter(ctx, ConvTypePrivate, conversationID, 0)
 			if err == nil {
-				unreadCount = int32(count)
+				unreadCount = int32(count) //nolint:gosec // 未读数不会超过 int32 范围
 			}
 		}
 
 		conversations = append(conversations, Conversation{
-			ConversationType: "private",
+			ConversationType: ConvTypePrivate,
 			ConversationID:   conversationID,
 			Name:             name,
 			Avatar:           "",
@@ -86,7 +86,7 @@ func (s *Service) GetConversationList(ctx context.Context, userID string) ([]Con
 	}
 
 	for _, g := range groups {
-		lastMsg, err := s.Repo.Message.GetLastMessageByConversation(ctx, "group", g.ID)
+		lastMsg, err := s.Repo.Message.GetLastMessageByConversation(ctx, ConvTypeGroup, g.ID)
 		var lastMsgPtr *schema.Message
 		if err == nil {
 			lastMsgPtr = lastMsg
@@ -98,16 +98,16 @@ func (s *Service) GetConversationList(ctx context.Context, userID string) ([]Con
 
 		unreadCount := int32(0)
 		if g.LastReadSeqID > 0 {
-			count, err := s.Repo.Message.CountMessagesAfter(ctx, "group", g.ID, g.LastReadSeqID)
+			count, err := s.Repo.Message.CountMessagesAfter(ctx, ConvTypeGroup, g.ID, g.LastReadSeqID)
 			if err == nil {
-				unreadCount = int32(count)
+				unreadCount = int32(count) //nolint:gosec // 未读数不会超过 int32 范围
 			} else {
 				slog.Error("统计群聊未读消息失败", "error", err, "group_id", g.ID)
 			}
 		} else {
-			count, err := s.Repo.Message.CountMessagesAfter(ctx, "group", g.ID, 0)
+			count, err := s.Repo.Message.CountMessagesAfter(ctx, ConvTypeGroup, g.ID, 0)
 			if err == nil {
-				unreadCount = int32(count)
+				unreadCount = int32(count) //nolint:gosec // 未读数不会超过 int32 范围
 			}
 		}
 
@@ -117,7 +117,7 @@ func (s *Service) GetConversationList(ctx context.Context, userID string) ([]Con
 		}
 
 		conversations = append(conversations, Conversation{
-			ConversationType: "group",
+			ConversationType: ConvTypeGroup,
 			ConversationID:   g.ID,
 			Name:             g.Name,
 			Avatar:           g.Avatar,
@@ -134,7 +134,7 @@ func (s *Service) GetConversationList(ctx context.Context, userID string) ([]Con
 	return conversations, nil
 }
 
-// MarkConversationRead 标记会话已读
+// MarkConversationRead 标记会话已读.
 func (s *Service) MarkConversationRead(ctx context.Context, userID, conversationType, conversationID string) error {
 	maxSeqID, err := s.Repo.Message.GetMaxSeqID(ctx, conversationType, conversationID)
 	if err != nil {
@@ -143,7 +143,7 @@ func (s *Service) MarkConversationRead(ctx context.Context, userID, conversation
 	}
 
 	switch conversationType {
-	case "private":
+	case ConvTypePrivate:
 		parts := strings.Split(conversationID, "_")
 		if len(parts) != 2 {
 			return errors.New("无效的会话ID")
@@ -156,7 +156,7 @@ func (s *Service) MarkConversationRead(ctx context.Context, userID, conversation
 			slog.Error("更新好友已读 seq_id 失败", "error", err)
 			return err
 		}
-	case "group":
+	case ConvTypeGroup:
 		if err := s.Repo.Conversation.UpdateGroupMemberLastReadSeqID(ctx, conversationID, userID, maxSeqID); err != nil {
 			slog.Error("更新群成员已读 seq_id 失败", "error", err)
 			return err
@@ -168,10 +168,10 @@ func (s *Service) MarkConversationRead(ctx context.Context, userID, conversation
 	return nil
 }
 
-// TogglePin 切换置顶
+// TogglePin 切换置顶.
 func (s *Service) TogglePin(ctx context.Context, userID, conversationType, conversationID string) (bool, error) {
 	switch conversationType {
-	case "private":
+	case ConvTypePrivate:
 		parts := strings.Split(conversationID, "_")
 		if len(parts) != 2 {
 			return false, errors.New("无效的会话ID")
@@ -181,17 +181,17 @@ func (s *Service) TogglePin(ctx context.Context, userID, conversationType, conve
 			friendID = parts[1]
 		}
 		return s.Repo.Conversation.ToggleFriendPin(ctx, userID, friendID)
-	case "group":
+	case ConvTypeGroup:
 		return s.Repo.Conversation.ToggleGroupPin(ctx, conversationID, userID)
 	default:
 		return false, errors.New("无效的会话类型")
 	}
 }
 
-// DeleteConversation 删除会话
+// DeleteConversation 删除会话.
 func (s *Service) DeleteConversation(ctx context.Context, userID, conversationType, conversationID string) error {
 	switch conversationType {
-	case "private":
+	case ConvTypePrivate:
 		parts := strings.Split(conversationID, "_")
 		if len(parts) != 2 {
 			return errors.New("无效的会话ID")
@@ -204,7 +204,7 @@ func (s *Service) DeleteConversation(ctx context.Context, userID, conversationTy
 			slog.Error("删除好友关系失败", "error", err)
 			return err
 		}
-	case "group":
+	case ConvTypeGroup:
 		member, err := s.Repo.GroupMember.GetMember(ctx, conversationID, userID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -213,7 +213,7 @@ func (s *Service) DeleteConversation(ctx context.Context, userID, conversationTy
 			slog.Error("获取群成员信息失败", "error", err)
 			return err
 		}
-		if member.Role == "owner" {
+		if member.Role == RoleOwner {
 			return errors.New("群主不能退出群组，请先转让群主或删除群组")
 		}
 		if err := s.Repo.GroupMember.RemoveMember(ctx, conversationID, userID); err != nil {
@@ -227,12 +227,12 @@ func (s *Service) DeleteConversation(ctx context.Context, userID, conversationTy
 	return nil
 }
 
-// checkMentioned 检查消息是否 @ 了指定用户
+// checkMentioned 检查消息是否 @ 了指定用户.
 func checkMentioned(msg *schema.Message, userID string) bool {
 	if msg == nil || msg.Extra == nil {
 		return false
 	}
-	var extraData map[string]interface{}
+	var extraData map[string]any
 	if err := json.Unmarshal([]byte(*msg.Extra), &extraData); err != nil {
 		return false
 	}
@@ -240,7 +240,7 @@ func checkMentioned(msg *schema.Message, userID string) bool {
 	if !ok {
 		return false
 	}
-	mentionList, ok := mentions.([]interface{})
+	mentionList, ok := mentions.([]any)
 	if !ok {
 		return false
 	}
@@ -252,7 +252,7 @@ func checkMentioned(msg *schema.Message, userID string) bool {
 	return false
 }
 
-// sortConversations 排序会话：置顶优先，然后按 last_message_at DESC
+// sortConversations 排序会话：置顶优先，然后按 last_message_at DESC.
 func sortConversations(conversations []Conversation) {
 	sort.Slice(conversations, func(i, j int) bool {
 		if conversations[i].Pinned != conversations[j].Pinned {

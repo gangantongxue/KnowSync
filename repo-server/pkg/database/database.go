@@ -1,3 +1,4 @@
+// Package database 提供 MySQL 数据库连接管理和连接池配置.
 package database
 
 import (
@@ -11,14 +12,14 @@ import (
 	"gorm.io/gorm"
 )
 
-// Database 数据库连接，封装 GORM 实例及连接池配置
+// Database 数据库连接，封装 GORM 实例及连接池配置.
 type Database struct {
 	DB     *gorm.DB
 	Cfg    *config.Config
 	Logger *logger.Logger
 }
 
-// NewDatabase 创建 MySQL 数据库连接并配置连接池
+// NewDatabase 创建 MySQL 数据库连接并配置连接池.
 func NewDatabase(cfg *config.Config, logger *logger.Logger) (*Database, error) {
 	gormLogger := slogGorm.New(
 		slogGorm.WithHandler(logger.MultiHandler),

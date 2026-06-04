@@ -2,7 +2,7 @@ package model
 
 import "log/slog"
 
-// LoggerCfg 日志配置
+// LoggerCfg 日志配置.
 type LoggerCfg struct {
 	Level      string `yaml:"level" mapstructure:"level"`
 	Dir        string `yaml:"dir" mapstructure:"dir"`
@@ -13,7 +13,7 @@ type LoggerCfg struct {
 	LocalTime  bool   `yaml:"local_time" mapstructure:"local_time"`
 }
 
-// GetLevel 将配置的字符串级别转换为 slog.Level
+// GetLevel 将配置的字符串级别转换为 slog.Level.
 func (l *LoggerCfg) GetLevel() slog.Level {
 	switch l.Level {
 	case "debug":

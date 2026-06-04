@@ -10,21 +10,21 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// CreateRepoReq 创建知识库请求体
+// CreateRepoReq 创建知识库请求体.
 type CreateRepoReq struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Visibility  string `json:"visibility"`
 }
 
-// UpdateRepoReq 更新知识库请求体
+// UpdateRepoReq 更新知识库请求体.
 type UpdateRepoReq struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Visibility  string `json:"visibility"`
 }
 
-// CreateRepo 创建知识库
+// CreateRepo 创建知识库.
 func (h *Handler) CreateRepo() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -41,7 +41,7 @@ func (h *Handler) CreateRepo() app.HandlerFunc {
 
 		v := pb.RepoVisibility_REPO_VISIBILITY_UNSPECIFIED
 		switch req.Visibility {
-		case "PUBLIC":
+		case KeyVisibilityPUBLIC:
 			v = pb.RepoVisibility_PUBLIC
 		case "PRIVATE":
 			v = pb.RepoVisibility_PRIVATE
@@ -74,19 +74,19 @@ func (h *Handler) CreateRepo() app.HandlerFunc {
 		}
 
 		response.Success(c, ctx, map[string]any{
-			"repo": map[string]any{
+			KeyRepo: map[string]any{
 				"id":            resp.Repo.Id,
-				"name":          resp.Repo.Name,
-				"visibility":    resp.Repo.Visibility.String(),
-				"description":   resp.Repo.Description,
-				"article_count": resp.Repo.ArticleCount,
-				"created_at":    resp.Repo.CreatedAt,
+				KeyName:         resp.Repo.Name,
+				KeyVisibility:   resp.Repo.Visibility.String(),
+				KeyDescription:  resp.Repo.Description,
+				KeyArticleCount: resp.Repo.ArticleCount,
+				KeyCreatedAt:    resp.Repo.CreatedAt,
 			},
 		})
 	}
 }
 
-// GetRepo 获取知识库详情
+// GetRepo 获取知识库详情.
 func (h *Handler) GetRepo() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -124,7 +124,7 @@ func (h *Handler) GetRepo() app.HandlerFunc {
 	}
 }
 
-// UpdateRepo 更新知识库信息
+// UpdateRepo 更新知识库信息.
 func (h *Handler) UpdateRepo() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -138,7 +138,7 @@ func (h *Handler) UpdateRepo() app.HandlerFunc {
 
 		v := pb.RepoVisibility_REPO_VISIBILITY_UNSPECIFIED
 		switch req.Visibility {
-		case "PUBLIC":
+		case KeyVisibilityPUBLIC:
 			v = pb.RepoVisibility_PUBLIC
 		case "PRIVATE":
 			v = pb.RepoVisibility_PRIVATE
@@ -173,7 +173,7 @@ func (h *Handler) UpdateRepo() app.HandlerFunc {
 	}
 }
 
-// DeleteRepo 删除知识库
+// DeleteRepo 删除知识库.
 func (h *Handler) DeleteRepo() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -204,14 +204,14 @@ func (h *Handler) DeleteRepo() app.HandlerFunc {
 		}
 
 		// 异步清理向量存储，避免影响删除响应速度
-		go h.deleteRepoVectors(repoID)
+		go h.deleteRepoVectors(c, repoID)
 
 		response.Success(c, ctx, nil)
 	}
 }
 
-// deleteRepoVectors 异步删除知识库向量数据
-func (h *Handler) deleteRepoVectors(repoID string) {
+// deleteRepoVectors 异步删除知识库向量数据.
+func (h *Handler) deleteRepoVectors(c context.Context, repoID string) {
 	conn := h.grpcClient.GetConn("ai_server")
 	if conn == nil {
 		slog.Warn("获取 ai_server 连接失败，跳过向量清理", "repo_id", repoID)
@@ -219,7 +219,7 @@ func (h *Handler) deleteRepoVectors(repoID string) {
 	}
 
 	client := pb.NewAIServiceClient(conn)
-	_, err := client.DeleteRepoVectors(context.Background(), &pb.DeleteRepoVectorsRequest{
+	_, err := client.DeleteRepoVectors(c, &pb.DeleteRepoVectorsRequest{
 		RepoId: repoID,
 	})
 	if err != nil {
@@ -227,7 +227,7 @@ func (h *Handler) deleteRepoVectors(repoID string) {
 	}
 }
 
-// ListUserRepos 获取用户参与的所有知识库
+// ListUserRepos 获取用户参与的所有知识库.
 func (h *Handler) ListUserRepos() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -257,27 +257,27 @@ func (h *Handler) ListUserRepos() app.HandlerFunc {
 		}
 
 		response.Success(c, ctx, map[string]any{
-			"repos": repos,
+			KeyRepos: repos,
 		})
 	}
 }
 
-// marshalRepoResponse 将 protobuf Repo 转换为 HTTP JSON 响应格式
+// marshalRepoResponse 将 protobuf Repo 转换为 HTTP JSON 响应格式.
 func marshalRepoResponse(r *pb.Repo) map[string]any {
 	return map[string]any{
 		"id":             r.Id,
-		"owner_id":       r.OwnerId,
-		"name":           r.Name,
-		"visibility":     r.Visibility.String(),
-		"description":    r.Description,
-		"article_count":  r.ArticleCount,
+		KeyOwnerID:       r.OwnerId,
+		KeyName:          r.Name,
+		KeyVisibility:    r.Visibility.String(),
+		KeyDescription:   r.Description,
+		KeyArticleCount:  r.ArticleCount,
 		"follower_count": r.FollowerCount,
-		"created_at":     r.CreatedAt,
-		"updated_at":     r.UpdatedAt,
+		KeyCreatedAt:     r.CreatedAt,
+		KeyUpdatedAt:     r.UpdatedAt,
 	}
 }
 
-// logGrpcError 记录 gRPC 调用失败日志
+// logGrpcError 记录 gRPC 调用失败日志.
 func logGrpcError(service, action string, err error) {
 	slog.Error("gRPC 调用失败", "service", service, "action", action, "error", err)
 }

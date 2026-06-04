@@ -1,6 +1,8 @@
+// Package config 提供配置加载和解析功能.
 package config
 
 import (
+	"errors"
 	"log/slog"
 	"strings"
 
@@ -10,7 +12,7 @@ import (
 )
 
 // NewConfig 加载并解析配置文件
-// 优先级：配置文件 < 环境变量（前缀 KNOWSYNC_AI_SERVER_）
+// 优先级：配置文件 < 环境变量（前缀 KNOWSYNC_AI_SERVER_）.
 func NewConfig() (*model.Config, error) {
 	v := viper.New()
 	v.SetConfigName("config")
@@ -23,7 +25,8 @@ func NewConfig() (*model.Config, error) {
 	v.SetEnvPrefix("KNOWSYNC_AI_SERVER")
 
 	if err := v.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+		var configFileNotFoundError viper.ConfigFileNotFoundError
+		if errors.As(err, &configFileNotFoundError) {
 			slog.Error("读取配置文件失败", "error", err)
 			return nil, err
 		}

@@ -15,24 +15,27 @@ type edit struct {
 	line string
 }
 
+//nolint:revive // self-documenting
 type DiffText struct{}
 
+//nolint:revive // self-documenting
 func NewDiffText() *DiffText {
 	return &DiffText{}
 }
 
-func (d *DiffText) Info(ctx context.Context) (*schema.ToolInfo, error) {
+//nolint:revive // self-documenting
+func (d *DiffText) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "diff_text",
 		Desc: "比较两段文本的差异，返回统一格式（unified diff）的差异对比结果。适用于比较文章的不同版本、代码变更等场景。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
 			"text_a": {
-				Type:     "string",
+				Type:     TypeString,
 				Desc:     "原始文本（旧版本）",
 				Required: true,
 			},
 			"text_b": {
-				Type:     "string",
+				Type:     TypeString,
 				Desc:     "新文本（新版本）",
 				Required: true,
 			},
@@ -45,11 +48,15 @@ func (d *DiffText) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	}, nil
 }
 
-func (d *DiffText) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+//nolint:revive // self-documenting
+func (d *DiffText) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return d.execute(ctx, arguments)
 }
 
+//nolint:gocyclo,nestif // diff 生成需要处理多种边界情况
 func (d *DiffText) execute(ctx context.Context, paramsJSON string) (string, error) {
+	_ = ctx
+
 	var params struct {
 		TextA        string `json:"text_a"`
 		TextB        string `json:"text_b"`
@@ -76,7 +83,7 @@ func (d *DiffText) execute(ctx context.Context, paramsJSON string) (string, erro
 	}{}
 
 	var result strings.Builder
-	result.WriteString(fmt.Sprintf("--- original\n+++ modified\n"))
+	fmt.Fprintf(&result, "--- original\n+++ modified\n")
 
 	var hunk []edit
 	hunkStartA, hunkStartB := -1, -1
@@ -104,16 +111,16 @@ func (d *DiffText) execute(ctx context.Context, paramsJSON string) (string, erro
 			}
 		}
 
-		result.WriteString(fmt.Sprintf("@@ -%d,%d +%d,%d @@\n", startA, countA, startB, countB))
+		fmt.Fprintf(&result, "@@ -%d,%d +%d,%d @@\n", startA, countA, startB, countB)
 		for _, e := range hunk {
 			switch e.kind {
 			case "eq":
-				result.WriteString(" " + e.line + "\n")
+				fmt.Fprintf(&result, " %s\n", e.line)
 			case "del":
-				result.WriteString("-" + e.line + "\n")
+				fmt.Fprintf(&result, "-%s\n", e.line)
 				stats.Deletions++
 			case "ins":
-				result.WriteString("+" + e.line + "\n")
+				fmt.Fprintf(&result, "+%s\n", e.line)
 				stats.Additions++
 			}
 		}
@@ -180,7 +187,7 @@ func (d *DiffText) execute(ctx context.Context, paramsJSON string) (string, erro
 	return string(data), nil
 }
 
-// computeDiff 使用 Myers diff 算法的简化版本
+// computeDiff 使用 Myers diff 算法的简化版本.
 func computeDiff(a, b []string) []edit {
 	m, n := len(a), len(b)
 
@@ -197,11 +204,12 @@ func lcsTable(a, b []string) [][]int {
 	}
 	for i := 1; i <= m; i++ {
 		for j := 1; j <= n; j++ {
-			if a[i-1] == b[j-1] {
+			switch {
+			case a[i-1] == b[j-1]:
 				dp[i][j] = dp[i-1][j-1] + 1
-			} else if dp[i-1][j] >= dp[i][j-1] {
+			case dp[i-1][j] >= dp[i][j-1]:
 				dp[i][j] = dp[i-1][j]
-			} else {
+			default:
 				dp[i][j] = dp[i][j-1]
 			}
 		}
@@ -212,14 +220,15 @@ func lcsTable(a, b []string) [][]int {
 func backtrack(dp [][]int, a, b []string, i, j int) []edit {
 	var edits []edit
 	for i > 0 || j > 0 {
-		if i > 0 && j > 0 && a[i-1] == b[j-1] {
+		switch {
+		case i > 0 && j > 0 && a[i-1] == b[j-1]:
 			edits = append(edits, edit{kind: "eq", line: a[i-1]})
 			i--
 			j--
-		} else if j > 0 && (i == 0 || dp[i][j-1] >= dp[i-1][j]) {
+		case j > 0 && (i == 0 || dp[i][j-1] >= dp[i-1][j]):
 			edits = append(edits, edit{kind: "ins", line: b[j-1]})
 			j--
-		} else if i > 0 {
+		case i > 0:
 			edits = append(edits, edit{kind: "del", line: a[i-1]})
 			i--
 		}

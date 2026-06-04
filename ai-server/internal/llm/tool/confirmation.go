@@ -7,10 +7,10 @@ import (
 	"github.com/cloudwego/eino/compose"
 )
 
-// ctxKeyConfirmed 用于在 context 中传递确认标记
+// CtxKeyConfirmed 用于在 context 中传递确认标记.
 const CtxKeyConfirmed = "confirmed_write"
 
-// writeToolNames 所有需要确认的写操作工具名
+// writeToolNames 所有需要确认的写操作工具名.
 var writeToolNames = map[string]bool{
 	"create_file":              true,
 	"update_file":              true,
@@ -27,7 +27,7 @@ var writeToolNames = map[string]bool{
 //
 // policies: 各个工具的确认策略
 // 对于 ConfirmAlways — 始终拦截，强制要求确认
-// 对于 ConfirmOptional — 检查参数中是否有 _skip_confirm: true，有则跳过
+// 对于 ConfirmOptional — 检查参数中是否有 _skip_confirm: true，有则跳过.
 func NewConfirmationMiddleware(policies map[string]ConfirmLevel) compose.InvokableToolMiddleware {
 	return func(next compose.InvokableToolEndpoint) compose.InvokableToolEndpoint {
 		return func(ctx context.Context, input *compose.ToolInput) (*compose.ToolOutput, error) {

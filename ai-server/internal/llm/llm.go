@@ -1,3 +1,4 @@
+// Package llm 提供 AI 对话模型封装和 Agent 管理.
 package llm
 
 import (
@@ -69,25 +70,25 @@ const systemPrompt = `你是一个知识库助手 KK，帮助用户回答基于�
 - generate_diagram — 生成 Mermaid 图表保存到知识库，流程图、时序图、思维导图等
 - diff_text — 比较两段文本的差异，用于版本对比`
 
-// AskedUser 标识 ask_user 工具是否被调用，并记录工具返回结果
+// AskedUser 标识 ask_user 工具是否被调用，并记录工具返回结果.
 type AskedUser struct {
 	Triggered  atomic.Bool
 	LastResult atomic.Value // 存储 string 类型的 ask_user 工具返回 JSON
 }
 
-// ChatModel LLM 聊天模型封装
+// ChatModel LLM 聊天模型封装.
 type ChatModel struct {
 	config *configModel.LLMCfg
 	agent  *react.Agent
 }
 
-// NewChatModel 创建 LLM 聊天模型
+// NewChatModel 创建 LLM 聊天模型.
 func NewChatModel(cfg *configModel.LLMCfg) (*ChatModel, error) {
 	slog.Info("LLM 模型初始化完成", "model", cfg.Model, "base_url", cfg.BaseURL)
 	return &ChatModel{config: cfg}, nil
 }
 
-// InitAgent 用指定的工具列表初始化 ReAct Agent
+// InitAgent 用指定的工具列表初始化 ReAct Agent.
 func (c *ChatModel) InitAgent(ctx context.Context, tools []tool.InvokableTool, writePolicies map[string]llmtool.ConfirmLevel) error {
 	baseModel, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
 		BaseURL: c.config.BaseURL,
@@ -118,7 +119,7 @@ func (c *ChatModel) InitAgent(ctx context.Context, tools []tool.InvokableTool, w
 			Tools:               toBaseTools(tools),
 			ToolCallMiddlewares: middlewares,
 		},
-		MessageModifier: func(ctx context.Context, input []*schema.Message) []*schema.Message {
+		MessageModifier: func(_ context.Context, input []*schema.Message) []*schema.Message {
 			out := make([]*schema.Message, 0, len(input)+1)
 			out = append(out, schema.SystemMessage(systemPrompt))
 			out = append(out, input...)
@@ -128,7 +129,7 @@ func (c *ChatModel) InitAgent(ctx context.Context, tools []tool.InvokableTool, w
 		ToolReturnDirectly: map[string]struct{}{
 			"ask_user": {},
 		},
-		StreamToolCallChecker: func(ctx context.Context, sr *schema.StreamReader[*schema.Message]) (bool, error) {
+		StreamToolCallChecker: func(_ context.Context, sr *schema.StreamReader[*schema.Message]) (bool, error) {
 			defer sr.Close()
 			for {
 				msg, err := sr.Recv()
@@ -153,20 +154,20 @@ func (c *ChatModel) InitAgent(ctx context.Context, tools []tool.InvokableTool, w
 	return nil
 }
 
-// GetSystemMessage 返回系统提示消息
+// GetSystemMessage 返回系统提示消息.
 func (c *ChatModel) GetSystemMessage() *schema.Message {
 	return schema.SystemMessage(systemPrompt)
 }
 
-// Stream 调用 Agent 流式对话，返回消息流读取器
+// Stream 调用 Agent 流式对话，返回消息流读取器.
 func (c *ChatModel) Stream(ctx context.Context, messages []*schema.Message) (*schema.StreamReader[*schema.Message], error) {
 	if c.agent == nil {
-		return nil, fmt.Errorf("agent 未初始化，请先调用 InitAgent")
+		return nil, errors.New("agent 未初始化，请先调用 InitAgent")
 	}
 	return c.agent.Stream(ctx, messages)
 }
 
-// toBaseTools 将 InvokableTool 列表转为 compose.ToolsNodeConfig 所需的 BaseTool 列表
+// toBaseTools 将 InvokableTool 列表转为 compose.ToolsNodeConfig 所需的 BaseTool 列表.
 func toBaseTools(tools []tool.InvokableTool) []tool.BaseTool {
 	result := make([]tool.BaseTool, len(tools))
 	for i, t := range tools {

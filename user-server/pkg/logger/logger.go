@@ -1,3 +1,4 @@
+// Package logger provides structured logging with multi-handler support.
 package logger
 
 import (
@@ -12,13 +13,14 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+// Logger 日志记录器封装.
 type Logger struct {
 	Logger       *slog.Logger
 	MultiHandler *MultiHandler
 	Cfg          *config.Config
 }
 
-// NewLogger 创建一个新的日志记录器
+// NewLogger 创建一个新的日志记录器.
 func NewLogger(cfg *config.Config) (*Logger, error) {
 	fileWriter := &lumberjack.Logger{
 		Filename:   filepath.Join(cfg.Logger.Dir, "user-server.log"),
@@ -55,7 +57,7 @@ func NewLogger(cfg *config.Config) (*Logger, error) {
 	return &Logger{Logger: logger, MultiHandler: multiHandler, Cfg: cfg}, nil
 }
 
-// Printf 格式化输出日志，Redis 日志适配方法
+// Printf 格式化输出日志，Redis 日志适配方法.
 func (l *Logger) Printf(ctx context.Context, format string, v ...any) {
 	msg := fmt.Sprintf(format, v...)
 	// 过滤 Redis 日志中的 ping 消息
@@ -65,16 +67,17 @@ func (l *Logger) Printf(ctx context.Context, format string, v ...any) {
 	l.Logger.InfoContext(ctx, msg)
 }
 
-// MultiHandler 实现同时向多个 Handler 输出
+// MultiHandler 实现同时向多个 Handler 输出.
 type MultiHandler struct {
 	handlers []slog.Handler
 }
 
-// newMultiHandler 创建一个新的 MultiHandler
+// newMultiHandler 创建一个新的 MultiHandler.
 func newMultiHandler(handlers ...slog.Handler) *MultiHandler {
 	return &MultiHandler{handlers: handlers}
 }
 
+// Enabled 判断是否有任一 Handler 启用了指定级别.
 func (h *MultiHandler) Enabled(ctx context.Context, level slog.Level) bool {
 	for _, handler := range h.handlers {
 		if handler.Enabled(ctx, level) {
@@ -84,6 +87,7 @@ func (h *MultiHandler) Enabled(ctx context.Context, level slog.Level) bool {
 	return false
 }
 
+// Handle 向所有启用的 Handler 输出日志记录.
 func (h *MultiHandler) Handle(ctx context.Context, r slog.Record) error {
 	for _, handler := range h.handlers {
 		if handler.Enabled(ctx, r.Level) {
@@ -95,6 +99,7 @@ func (h *MultiHandler) Handle(ctx context.Context, r slog.Record) error {
 	return nil
 }
 
+// WithAttrs 返回一个包含指定属性的新 Handler.
 func (h *MultiHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	newHandlers := make([]slog.Handler, len(h.handlers))
 	for i, handler := range h.handlers {
@@ -103,6 +108,7 @@ func (h *MultiHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &MultiHandler{handlers: newHandlers}
 }
 
+// WithGroup 返回一个包含指定分组的新 Handler.
 func (h *MultiHandler) WithGroup(name string) slog.Handler {
 	newHandlers := make([]slog.Handler, len(h.handlers))
 	for i, handler := range h.handlers {

@@ -11,24 +11,24 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// UpdateTitle 更新会话标题工具，实现 Eino InvokableTool 接口
+// UpdateTitle 更新会话标题工具，实现 Eino InvokableTool 接口.
 type UpdateTitle struct {
 	titleUpdater SessionTitleUpdater
 }
 
-// NewUpdateTitle 创建更新会话标题工具
+// NewUpdateTitle 创建更新会话标题工具.
 func NewUpdateTitle(tu SessionTitleUpdater) *UpdateTitle {
 	return &UpdateTitle{titleUpdater: tu}
 }
 
-// Info 返回工具元信息
-func (u *UpdateTitle) Info(ctx context.Context) (*schema.ToolInfo, error) {
+// Info 返回工具元信息.
+func (u *UpdateTitle) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "update_session_title",
 		Desc: "根据对话内容更新会话标题，使其贴近当前对话的主题。请根据用户的第一条消息总结出最贴合的简短标题。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
 			"title": {
-				Type:     "string",
+				Type:     TypeString,
 				Desc:     "与当前会话内容最贴合的简短标题（不超过50个字）",
 				Required: true,
 			},
@@ -36,8 +36,8 @@ func (u *UpdateTitle) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	}, nil
 }
 
-// InvokableRun 执行工具调用
-func (u *UpdateTitle) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+// InvokableRun 执行工具调用.
+func (u *UpdateTitle) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return u.execute(ctx, arguments)
 }
 

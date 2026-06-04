@@ -9,7 +9,7 @@ import (
 )
 
 // ServiceAuth 内部服务间鉴权中间件，用于 /internal/* 路由
-// 验证 ai-server 等内部服务发起的请求携带的 service token
+// 验证 ai-server 等内部服务发起的请求携带的 service token.
 func ServiceAuth(authManager *serviceauth.Manager) app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		authHeader := string(ctx.GetHeader("Authorization"))

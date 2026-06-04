@@ -1,3 +1,4 @@
+// Package app 提供应用的初始化、依赖注入和生命周期管理.
 package app
 
 import (
@@ -21,6 +22,7 @@ import (
 	"github.com/gangantongxue/knowsync/repo-server/pkg/logger"
 )
 
+// NewApp 创建并启动 gRPC 服务，完成所有依赖的初始化和生命周期管理.
 func NewApp() error {
 	slog.Info("=====开始初始化应用=====")
 
@@ -90,7 +92,9 @@ func NewApp() error {
 
 		sqlDB, err := db.DB.DB()
 		if err == nil {
-			sqlDB.Close()
+			if err := sqlDB.Close(); err != nil {
+				slog.Error("关闭数据库连接失败", "error", err)
+			}
 		}
 
 		slog.Info("服务已关闭")

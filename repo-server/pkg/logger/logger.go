@@ -1,3 +1,4 @@
+// Package logger 提供日志记录器实现，支持控制台和文件双输出.
 package logger
 
 import (
@@ -11,14 +12,14 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-// Logger 日志记录器，支持控制台和文件双输出
+// Logger 日志记录器，支持控制台和文件双输出.
 type Logger struct {
 	Logger       *slog.Logger
 	MultiHandler *MultiHandler
 	Cfg          *config.Config
 }
 
-// NewLogger 创建日志记录器，同时输出到控制台（文本格式）和文件（JSON 格式）
+// NewLogger 创建日志记录器，同时输出到控制台（文本格式）和文件（JSON 格式）.
 func NewLogger(cfg *config.Config) (*Logger, error) {
 	fileWriter := &lumberjack.Logger{
 		Filename:   filepath.Join(cfg.Logger.Dir, "repo-server.log"),
@@ -51,12 +52,13 @@ func NewLogger(cfg *config.Config) (*Logger, error) {
 	return &Logger{Logger: logger, MultiHandler: multiHandler, Cfg: cfg}, nil
 }
 
+// Printf 实现 io.Writer 接口，用于 GORM 日志适配.
 func (l *Logger) Printf(ctx context.Context, format string, v ...any) {
 	msg := fmt.Sprintf(format, v...)
 	l.Logger.InfoContext(ctx, msg)
 }
 
-// MultiHandler 日志多路复用处理器，同时向多个 slog.Handler 输出
+// MultiHandler 日志多路复用处理器，同时向多个 slog.Handler 输出.
 type MultiHandler struct {
 	handlers []slog.Handler
 }
@@ -65,6 +67,7 @@ func newMultiHandler(handlers ...slog.Handler) *MultiHandler {
 	return &MultiHandler{handlers: handlers}
 }
 
+// Enabled 判断是否有任一处理器启用了该日志级别.
 func (h *MultiHandler) Enabled(ctx context.Context, level slog.Level) bool {
 	for _, handler := range h.handlers {
 		if handler.Enabled(ctx, level) {
@@ -74,6 +77,7 @@ func (h *MultiHandler) Enabled(ctx context.Context, level slog.Level) bool {
 	return false
 }
 
+// Handle 将日志记录分发给所有启用了该级别的处理器.
 func (h *MultiHandler) Handle(ctx context.Context, r slog.Record) error {
 	for _, handler := range h.handlers {
 		if handler.Enabled(ctx, r.Level) {
@@ -85,6 +89,7 @@ func (h *MultiHandler) Handle(ctx context.Context, r slog.Record) error {
 	return nil
 }
 
+// WithAttrs 返回一个包含附加属性的新 MultiHandler.
 func (h *MultiHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	newHandlers := make([]slog.Handler, len(h.handlers))
 	for i, handler := range h.handlers {
@@ -93,6 +98,7 @@ func (h *MultiHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &MultiHandler{handlers: newHandlers}
 }
 
+// WithGroup 返回一个包含分组名称的新 MultiHandler.
 func (h *MultiHandler) WithGroup(name string) slog.Handler {
 	newHandlers := make([]slog.Handler, len(h.handlers))
 	for i, handler := range h.handlers {

@@ -6,7 +6,7 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// VerifyCode 发送邮箱验证码
+// VerifyCode 发送邮箱验证码.
 func (h *Handler) VerifyCode(ctx context.Context, req *pb.VerifyCodeRequest) (*pb.VerifyCodeResponse, error) {
 	err := h.Service.VerifyCode(ctx, req.GetEmail())
 	if err != nil {
@@ -21,7 +21,7 @@ func (h *Handler) VerifyCode(ctx context.Context, req *pb.VerifyCodeRequest) (*p
 	}, nil
 }
 
-// ForgetPassword 忘记密码
+// ForgetPassword 忘记密码.
 func (h *Handler) ForgetPassword(ctx context.Context, req *pb.ForgetPasswordRequest) (*pb.ForgetPasswordResponse, error) {
 	err := h.Service.ForgetPassword(ctx, req.GetEmail(), req.GetPassword(), req.GetVerifyCode())
 	if err != nil {
@@ -36,7 +36,7 @@ func (h *Handler) ForgetPassword(ctx context.Context, req *pb.ForgetPasswordRequ
 	}, nil
 }
 
-// ResetPassword 重置密码
+// ResetPassword 重置密码.
 func (h *Handler) ResetPassword(ctx context.Context, req *pb.ResetPasswordRequest) (*pb.ResetPasswordResponse, error) {
 	err := h.Service.ResetPassword(ctx, req.GetUserId(), req.GetOldPassword(), req.GetNewPassword())
 	if err != nil {

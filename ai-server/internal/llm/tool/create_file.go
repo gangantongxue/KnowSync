@@ -1,4 +1,4 @@
-package tool
+package tool //nolint:dupl // 与 update_file.go 结构相似但逻辑不同
 
 import (
 	"context"
@@ -9,13 +9,13 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// CreateFile 创建文件工具
+// CreateFile 创建文件工具.
 type CreateFile struct {
 	repoDetailClient RepoDetailClient
 	fileWriteClient  FileWriteClient
 }
 
-// NewCreateFile 创建 CreateFile 工具
+// NewCreateFile 创建 CreateFile 工具.
 func NewCreateFile(rdc RepoDetailClient, fwc FileWriteClient) *CreateFile {
 	return &CreateFile{
 		repoDetailClient: rdc,
@@ -23,29 +23,29 @@ func NewCreateFile(rdc RepoDetailClient, fwc FileWriteClient) *CreateFile {
 	}
 }
 
-// Info 返回工具元信息
-func (c *CreateFile) Info(ctx context.Context) (*schema.ToolInfo, error) {
+// Info 返回工具元信息.
+func (c *CreateFile) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "create_file",
 		Desc: "在知识库中创建新文件。如果用户明确表达了文件路径和内容概要，可以设置 _skip_confirm: true 跳过确认直接执行；如果用户表述不完整，不要设置该参数。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
-			"repo_id": {
-				Type:     "string",
-				Desc:     "知识库 ID",
+			ParamRepoID: {
+				Type:     TypeString,
+				Desc:     DescRepoID,
 				Required: true,
 			},
-			"file_path": {
-				Type:     "string",
-				Desc:     "文件路径，例如：docs/chapter1.md",
+			ParamFilePath: {
+				Type:     TypeString,
+				Desc:     DescFilePath,
 				Required: true,
 			},
-			"content": {
-				Type:     "string",
+			ParamContent: {
+				Type:     TypeString,
 				Desc:     "文件内容（Markdown 格式）",
 				Required: true,
 			},
-			"_skip_confirm": {
-				Type:     "boolean",
+			ParamSkipCfm: {
+				Type:     TypeBoolean,
 				Desc:     "当用户已明确确认所有信息时，设置为 true 跳过二次确认",
 				Required: false,
 			},
@@ -53,8 +53,8 @@ func (c *CreateFile) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	}, nil
 }
 
-// InvokableRun 执行工具调用
-func (c *CreateFile) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+// InvokableRun 执行工具调用.
+func (c *CreateFile) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return c.execute(ctx, arguments)
 }
 
@@ -69,7 +69,7 @@ func (c *CreateFile) execute(ctx context.Context, paramsJSON string) (string, er
 	}
 
 	if params.RepoID == "" {
-		return `{"success": false, "message": "repo_id 不能为空"}`, nil
+		return ErrRespRepoIDEmpty, nil
 	}
 	if params.FilePath == "" {
 		return `{"success": false, "message": "file_path 不能为空"}`, nil
@@ -77,7 +77,7 @@ func (c *CreateFile) execute(ctx context.Context, paramsJSON string) (string, er
 
 	userID, _ := ctx.Value(CtxKeyUserID).(string)
 	if userID == "" {
-		return `{"success": false, "message": "无法获取用户信息"}`, nil
+		return ErrRespUserInfo, nil
 	}
 
 	repo, err := c.repoDetailClient.GetRepo(ctx, params.RepoID, userID)
@@ -90,10 +90,10 @@ func (c *CreateFile) execute(ctx context.Context, paramsJSON string) (string, er
 	}
 
 	data, _ := json.Marshal(map[string]any{
-		"success":   true,
-		"repo_id":   params.RepoID,
-		"file_path": params.FilePath,
-		"size":      len(params.Content),
+		KeySuccess:    true,
+		ParamRepoID:   params.RepoID,
+		ParamFilePath: params.FilePath,
+		ParamSize:     len(params.Content),
 	})
 	return string(data), nil
 }

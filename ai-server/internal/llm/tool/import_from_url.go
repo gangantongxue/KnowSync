@@ -13,11 +13,13 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+//nolint:revive // self-documenting
 type ImportFromURL struct {
 	webFetcher      WebFetcher
 	fileWriteClient FileWriteClient
 }
 
+//nolint:revive // self-documenting
 func NewImportFromURL(wf WebFetcher, fwc FileWriteClient) *ImportFromURL {
 	return &ImportFromURL{
 		webFetcher:      wf,
@@ -25,36 +27,38 @@ func NewImportFromURL(wf WebFetcher, fwc FileWriteClient) *ImportFromURL {
 	}
 }
 
-func (i *ImportFromURL) Info(ctx context.Context) (*schema.ToolInfo, error) {
+//nolint:revive // self-documenting
+func (i *ImportFromURL) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "import_from_url",
 		Desc: "从指定 URL 抓取网页内容并保存为知识库中的文件。适用于将网页文章、文档等保存到知识库。注意：部分网站可能限制抓取。如果用户已明确要求，可以设置 _skip_confirm: true 跳过确认。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
 			"url": {
-				Type:     "string",
+				Type:     TypeString,
 				Desc:     "要抓取的网页 URL",
 				Required: true,
 			},
-			"repo_id": {
-				Type:     "string",
+			ParamRepoID: {
+				Type:     TypeString,
 				Desc:     "目标知识库 ID",
 				Required: true,
 			},
-			"file_path": {
-				Type:     "string",
+			ParamFilePath: {
+				Type:     TypeString,
 				Desc:     "保存的文件路径（可选，默认从 URL 自动生成）",
 				Required: false,
 			},
-			"_skip_confirm": {
-				Type:     "boolean",
-				Desc:     "用户已明确确认时设置为 true",
+			ParamSkipCfm: {
+				Type:     TypeBoolean,
+				Desc:     DescSkipConfirm,
 				Required: false,
 			},
 		}),
 	}, nil
 }
 
-func (i *ImportFromURL) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+//nolint:revive // self-documenting
+func (i *ImportFromURL) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return i.execute(ctx, arguments)
 }
 
@@ -72,12 +76,12 @@ func (i *ImportFromURL) execute(ctx context.Context, paramsJSON string) (string,
 		return `{"success": false, "message": "url 不能为空"}`, nil
 	}
 	if params.RepoID == "" {
-		return `{"success": false, "message": "repo_id 不能为空"}`, nil
+		return ErrRespRepoIDEmpty, nil
 	}
 
 	userID, _ := ctx.Value(CtxKeyUserID).(string)
 	if userID == "" {
-		return `{"success": false, "message": "无法获取用户信息"}`, nil
+		return ErrRespUserInfo, nil
 	}
 
 	slog.Info("从 URL 导入内容", "url", params.URL, "repo_id", params.RepoID)
@@ -117,11 +121,11 @@ func (i *ImportFromURL) execute(ctx context.Context, paramsJSON string) (string,
 	}
 
 	data, _ := json.Marshal(map[string]any{
-		"success":   true,
-		"url":       params.URL,
-		"repo_id":   params.RepoID,
-		"file_path": filePath,
-		"size":      len(content),
+		KeySuccess:    true,
+		"url":         params.URL,
+		ParamRepoID:   params.RepoID,
+		ParamFilePath: filePath,
+		ParamSize:     len(content),
 	})
 	return string(data), nil
 }
@@ -172,6 +176,7 @@ func detectContentType(body []byte) string {
 	return "text"
 }
 
+//nolint:gocyclo // HTML 提取需要处理多种标签和嵌套结构
 func extractTextFromHTML(body []byte, pageURL string) string {
 	s := string(body)
 

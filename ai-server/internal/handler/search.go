@@ -6,11 +6,11 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// Search 语义搜索公开知识库
+// Search 语义搜索公开知识库.
 func (h *Handler) Search(ctx context.Context, req *pb.SearchRequest) (*pb.SearchResponse, error) {
 	resp, err := h.Service.Search(ctx, req.GetQuery(), int(req.GetPage()), int(req.GetPageSize()))
 	if err != nil {
-		return &pb.SearchResponse{
+		return &pb.SearchResponse{ //nolint:nilerr // 项目约定：handler 将业务错误编码到响应体中
 			Success: false,
 			Msg:     err.Error(),
 		}, nil

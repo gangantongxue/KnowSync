@@ -1,4 +1,4 @@
-package tool
+package tool //nolint:dupl // 与 create_file.go 结构相似但逻辑不同
 
 import (
 	"context"
@@ -9,13 +9,13 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// UpdateFile 更新文件内容工具
+// UpdateFile 更新文件内容工具.
 type UpdateFile struct {
 	repoDetailClient RepoDetailClient
 	fileWriteClient  FileWriteClient
 }
 
-// NewUpdateFile 创建 UpdateFile 工具
+// NewUpdateFile 创建 UpdateFile 工具.
 func NewUpdateFile(rdc RepoDetailClient, fwc FileWriteClient) *UpdateFile {
 	return &UpdateFile{
 		repoDetailClient: rdc,
@@ -23,29 +23,29 @@ func NewUpdateFile(rdc RepoDetailClient, fwc FileWriteClient) *UpdateFile {
 	}
 }
 
-// Info 返回工具元信息
-func (u *UpdateFile) Info(ctx context.Context) (*schema.ToolInfo, error) {
+// Info 返回工具元信息.
+func (u *UpdateFile) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "update_file",
 		Desc: "更新知识库中已有文件的内容。如果用户明确说了修改内容，可以设置 _skip_confirm: true 跳过确认直接执行",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
-			"repo_id": {
-				Type:     "string",
-				Desc:     "知识库 ID",
+			ParamRepoID: {
+				Type:     TypeString,
+				Desc:     DescRepoID,
 				Required: true,
 			},
-			"file_path": {
-				Type:     "string",
-				Desc:     "文件路径，例如：docs/chapter1.md",
+			ParamFilePath: {
+				Type:     TypeString,
+				Desc:     DescFilePath,
 				Required: true,
 			},
-			"content": {
-				Type:     "string",
+			ParamContent: {
+				Type:     TypeString,
 				Desc:     "新的文件内容（Markdown 格式）",
 				Required: true,
 			},
-			"_skip_confirm": {
-				Type:     "boolean",
+			ParamSkipCfm: {
+				Type:     TypeBoolean,
 				Desc:     "当用户已明确确认所有信息时，设置为 true 跳过二次确认",
 				Required: false,
 			},
@@ -53,8 +53,8 @@ func (u *UpdateFile) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	}, nil
 }
 
-// InvokableRun 执行工具调用
-func (u *UpdateFile) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+// InvokableRun 执行工具调用.
+func (u *UpdateFile) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return u.execute(ctx, arguments)
 }
 
@@ -69,7 +69,7 @@ func (u *UpdateFile) execute(ctx context.Context, paramsJSON string) (string, er
 	}
 
 	if params.RepoID == "" {
-		return `{"success": false, "message": "repo_id 不能为空"}`, nil
+		return ErrRespRepoIDEmpty, nil
 	}
 	if params.FilePath == "" {
 		return `{"success": false, "message": "file_path 不能为空"}`, nil
@@ -77,7 +77,7 @@ func (u *UpdateFile) execute(ctx context.Context, paramsJSON string) (string, er
 
 	userID, _ := ctx.Value(CtxKeyUserID).(string)
 	if userID == "" {
-		return `{"success": false, "message": "无法获取用户信息"}`, nil
+		return ErrRespUserInfo, nil
 	}
 
 	repo, err := u.repoDetailClient.GetRepo(ctx, params.RepoID, userID)
@@ -90,10 +90,10 @@ func (u *UpdateFile) execute(ctx context.Context, paramsJSON string) (string, er
 	}
 
 	data, _ := json.Marshal(map[string]any{
-		"success":   true,
-		"repo_id":   params.RepoID,
-		"file_path": params.FilePath,
-		"size":      len(params.Content),
+		KeySuccess:    true,
+		ParamRepoID:   params.RepoID,
+		ParamFilePath: params.FilePath,
+		ParamSize:     len(params.Content),
 	})
 	return string(data), nil
 }

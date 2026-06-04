@@ -9,13 +9,13 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// ListCollaborators 查看协作者列表工具
+// ListCollaborators 查看协作者列表工具.
 type ListCollaborators struct {
 	repoDetailClient   RepoDetailClient
 	collaboratorClient CollaboratorClient
 }
 
-// NewListCollaborators 创建 ListCollaborators 工具
+// NewListCollaborators 创建 ListCollaborators 工具.
 func NewListCollaborators(rdc RepoDetailClient, cc CollaboratorClient) *ListCollaborators {
 	return &ListCollaborators{
 		repoDetailClient:   rdc,
@@ -23,23 +23,23 @@ func NewListCollaborators(rdc RepoDetailClient, cc CollaboratorClient) *ListColl
 	}
 }
 
-// Info 返回工具元信息
-func (l *ListCollaborators) Info(ctx context.Context) (*schema.ToolInfo, error) {
+// Info 返回工具元信息.
+func (l *ListCollaborators) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "list_collaborators",
 		Desc: "查看知识库的协作者列表。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
-			"repo_id": {
-				Type:     "string",
-				Desc:     "知识库 ID",
+			ParamRepoID: {
+				Type:     TypeString,
+				Desc:     DescRepoID,
 				Required: true,
 			},
 		}),
 	}, nil
 }
 
-// InvokableRun 执行工具调用
-func (l *ListCollaborators) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+// InvokableRun 执行工具调用.
+func (l *ListCollaborators) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return l.execute(ctx, arguments)
 }
 
@@ -78,14 +78,14 @@ func (l *ListCollaborators) execute(ctx context.Context, paramsJSON string) (str
 	}
 	items := make([]collabItem, 0, len(collaborators))
 	for _, c := range collaborators {
-		items = append(items, collabItem{UserID: c.UserID, UserName: c.UserName, Role: c.Role})
+		items = append(items, collabItem(c))
 	}
 
 	data, _ := json.Marshal(map[string]any{
-		"repo_id":       params.RepoID,
+		ParamRepoID:     params.RepoID,
 		"repo_name":     repo.Name,
 		"collaborators": items,
-		"total":         len(items),
+		KeyTotal:        len(items),
 	})
 	return string(data), nil
 }

@@ -1,8 +1,9 @@
+// Package repository 提供数据访问层.
 package repository
 
 import "gorm.io/gorm"
 
-// Repository 数据仓库，聚合所有数据访问操作
+// Repository 数据仓库，聚合所有数据访问操作.
 type Repository struct {
 	DB           *gorm.DB
 	Friend       *FriendRepository
@@ -12,7 +13,7 @@ type Repository struct {
 	Conversation *ConversationRepository
 }
 
-// NewRepository 创建数据仓库
+// NewRepository 创建数据仓库.
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{
 		DB:           db,

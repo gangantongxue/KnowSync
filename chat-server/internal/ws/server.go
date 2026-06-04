@@ -15,7 +15,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// AccessTokenClaims JWT 访问令牌声明
+// AccessTokenClaims JWT 访问令牌声明.
 type AccessTokenClaims struct {
 	UserID string `json:"user_id"`
 	jwt.RegisteredClaims
@@ -24,12 +24,12 @@ type AccessTokenClaims struct {
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
+	CheckOrigin: func(_ *http.Request) bool {
 		return true
 	},
 }
 
-// Server WebSocket 服务器
+// Server WebSocket 服务器.
 type Server struct {
 	hub       *Hub
 	cfg       *config.Config
@@ -38,7 +38,7 @@ type Server struct {
 	httpSrv   *http.Server
 }
 
-// NewServer 创建 WebSocket 服务器
+// NewServer 创建 WebSocket 服务器.
 func NewServer(hub *Hub, cfg *config.Config, r *redis.Redis) (*Server, error) {
 	publicKey, err := loadPublicKey(cfg.JWT.PublicKeyPath)
 	if err != nil {
@@ -56,25 +56,26 @@ func NewServer(hub *Hub, cfg *config.Config, r *redis.Redis) (*Server, error) {
 	mux.HandleFunc("/ws", s.handleWS)
 
 	s.httpSrv = &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.WS.Port),
-		Handler: mux,
+		Addr:              fmt.Sprintf(":%d", cfg.WS.Port),
+		Handler:           mux,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	return s, nil
 }
 
-// Start 启动 WebSocket HTTP 服务
+// Start 启动 WebSocket HTTP 服务.
 func (s *Server) Start() error {
 	slog.Info("WebSocket 服务启动成功", "port", s.cfg.WS.Port)
 	return s.httpSrv.ListenAndServe()
 }
 
-// Shutdown 优雅关闭 WebSocket 服务
+// Shutdown 优雅关闭 WebSocket 服务.
 func (s *Server) Shutdown(ctx context.Context) error {
 	return s.httpSrv.Shutdown(ctx)
 }
 
-// handleWS 处理 WebSocket 升级请求
+// handleWS 处理 WebSocket 升级请求.
 func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token")
 	if token == "" {
@@ -97,7 +98,7 @@ func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
 
 	client := NewClient(s.hub, conn, userID)
 
-	userOnlineKey := fmt.Sprintf("user_online:%s", userID)
+	userOnlineKey := "user_online:" + userID
 
 	// 设置心跳回调，刷新 Redis 在线状态 TTL
 	client.onPing = func() {
@@ -128,7 +129,7 @@ func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
 	go client.readPump()
 }
 
-// validateToken 验证 JWT token 并提取 user_id
+// validateToken 验证 JWT token 并提取 user_id.
 func (s *Server) validateToken(tokenString string) (string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &AccessTokenClaims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
@@ -148,9 +149,9 @@ func (s *Server) validateToken(tokenString string) (string, error) {
 	return claims.UserID, nil
 }
 
-// loadPublicKey 从文件加载 RSA 公钥
+// loadPublicKey 从文件加载 RSA 公钥.
 func loadPublicKey(path string) (*rsa.PublicKey, error) {
-	keyData, err := os.ReadFile(path)
+	keyData, err := os.ReadFile(path) //nolint:gosec // 路径由配置文件指定，非用户输入
 	if err != nil {
 		return nil, fmt.Errorf("读取 RSA 公钥文件失败: %w", err)
 	}

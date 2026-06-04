@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,7 +12,7 @@ import (
 	"time"
 )
 
-// Summarizer 对话历史摘要生成器
+// Summarizer 对话历史摘要生成器.
 type Summarizer struct {
 	baseURL string
 	apiKey  string
@@ -19,7 +20,7 @@ type Summarizer struct {
 	client  *http.Client
 }
 
-// NewSummarizer 创建摘要生成器
+// NewSummarizer 创建摘要生成器.
 func NewSummarizer(baseURL, apiKey, model string) *Summarizer {
 	return &Summarizer{
 		baseURL: strings.TrimRight(baseURL, "/"),
@@ -50,7 +51,7 @@ type chatResponse struct {
 }
 
 // Summarize 生成对话摘要
-// existingSummary 为之前已保存的摘要（可为空），messages 为需要摘要的早期消息
+// existingSummary 为之前已保存的摘要（可为空），messages 为需要摘要的早期消息.
 func (s *Summarizer) Summarize(ctx context.Context, messages []string, existingSummary string) (string, error) {
 	var sb strings.Builder
 
@@ -96,7 +97,7 @@ func (s *Summarizer) Summarize(ctx context.Context, messages []string, existingS
 	if err != nil {
 		return "", fmt.Errorf("API 调用失败: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -113,7 +114,7 @@ func (s *Summarizer) Summarize(ctx context.Context, messages []string, existingS
 	}
 
 	if len(result.Choices) == 0 {
-		return "", fmt.Errorf("API 返回空结果")
+		return "", errors.New("API 返回空结果")
 	}
 
 	return strings.TrimSpace(result.Choices[0].Message.Content), nil

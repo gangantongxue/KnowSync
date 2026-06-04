@@ -12,11 +12,13 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+//nolint:revive // self-documenting
 type RepoStats struct {
 	repoDetailClient RepoDetailClient
 	fileClient       FileClient
 }
 
+//nolint:revive // self-documenting
 func NewRepoStats(rdc RepoDetailClient, fc FileClient) *RepoStats {
 	return &RepoStats{
 		repoDetailClient: rdc,
@@ -24,13 +26,14 @@ func NewRepoStats(rdc RepoDetailClient, fc FileClient) *RepoStats {
 	}
 }
 
-func (r *RepoStats) Info(ctx context.Context) (*schema.ToolInfo, error) {
+//nolint:revive // self-documenting
+func (r *RepoStats) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "repo_stats",
 		Desc: "获取知识库统计数据。不传 repo_id 时返回所有知识库的概览统计；传 repo_id 时返回指定知识库的详细统计（文件数、文件类型分布、总大小等）。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
-			"repo_id": {
-				Type:     "string",
+			ParamRepoID: {
+				Type:     TypeString,
 				Desc:     "知识库 ID（可选，不传时返回全部知识库概览）",
 				Required: false,
 			},
@@ -38,7 +41,8 @@ func (r *RepoStats) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	}, nil
 }
 
-func (r *RepoStats) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+//nolint:revive // self-documenting
+func (r *RepoStats) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return r.execute(ctx, arguments)
 }
 
@@ -52,7 +56,7 @@ func (r *RepoStats) execute(ctx context.Context, paramsJSON string) (string, err
 
 	userID, _ := ctx.Value(CtxKeyUserID).(string)
 	if userID == "" {
-		return `{"success": false, "message": "无法获取用户信息"}`, nil
+		return ErrRespUserInfo, nil
 	}
 
 	if params.RepoID != "" {
@@ -61,15 +65,15 @@ func (r *RepoStats) execute(ctx context.Context, paramsJSON string) (string, err
 	return r.overviewStats(ctx, userID)
 }
 
-// overviewStats 所有知识库概览统计
+// overviewStats 所有知识库概览统计.
 func (r *RepoStats) overviewStats(ctx context.Context, userID string) (string, error) {
 	repos, err := r.repoDetailClient.ListUserReposDetail(ctx, userID)
 	if err != nil {
-		return `{"success": false, "message": "获取知识库列表失败"}`, nil
+		return "", err
 	}
 
 	if len(repos) == 0 {
-		return `{"success": true, "total_repos": 0, "total_articles": 0, "repos": []}`, nil
+		return `{"success": true, "total_repos": 0, "total_articles": 0, KeyRepos: []}`, nil
 	}
 
 	var totalArticles int64
@@ -87,7 +91,7 @@ func (r *RepoStats) overviewStats(ctx context.Context, userID string) (string, e
 		totalArticles += repo.ArticleCount
 		desc := repo.Description
 		if desc == "" {
-			desc = "暂无描述"
+			desc = DescNoDesc
 		}
 		items = append(items, repoStat{
 			ID:            repo.ID,
@@ -105,15 +109,15 @@ func (r *RepoStats) overviewStats(ctx context.Context, userID string) (string, e
 	})
 
 	data, _ := json.Marshal(map[string]any{
-		"success":        true,
+		KeySuccess:       true,
 		"total_repos":    len(repos),
 		"total_articles": totalArticles,
-		"repos":          items,
+		KeyRepos:         items,
 	})
 	return string(data), nil
 }
 
-// repoDetailStats 单个知识库详细统计
+// repoDetailStats 单个知识库详细统计.
 func (r *RepoStats) repoDetailStats(ctx context.Context, userID, repoID string) (string, error) {
 	repo, err := r.repoDetailClient.GetRepo(ctx, repoID, userID)
 	if err != nil {
@@ -157,11 +161,11 @@ func (r *RepoStats) repoDetailStats(ctx context.Context, userID, repoID string) 
 	})
 
 	data, _ := json.Marshal(map[string]any{
-		"success":        true,
-		"repo_id":        repoID,
-		"name":           repo.Name,
-		"description":    repo.Description,
-		"visibility":     repo.Visibility,
+		KeySuccess:       true,
+		ParamRepoID:      repoID,
+		ParamName:        repo.Name,
+		ParamDesc:        repo.Description,
+		ParamVisibl:      repo.Visibility,
 		"article_count":  repo.ArticleCount,
 		"follower_count": repo.FollowerCount,
 		"total_files":    len(allFiles),
@@ -172,7 +176,7 @@ func (r *RepoStats) repoDetailStats(ctx context.Context, userID, repoID string) 
 	return string(data), nil
 }
 
-// walkFiles 递归遍历仓库文件
+// walkFiles 递归遍历仓库文件.
 func (r *RepoStats) walkFiles(ctx context.Context, ownerID, repoID, dirPath string) (files []FileEntry, dirCount int, err error) {
 	entries, err := r.fileClient.ListRepoFiles(ctx, ownerID, repoID, dirPath)
 	if err != nil {

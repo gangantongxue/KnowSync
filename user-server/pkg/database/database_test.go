@@ -13,8 +13,9 @@ import (
 )
 
 func TestGormLoggerConfig(t *testing.T) {
+	t.Parallel()
 	tempDir := t.TempDir()
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	cfg := &config.Config{
 		Database: model.DatabaseCfg{
@@ -72,20 +73,21 @@ func TestGormLoggerConfig(t *testing.T) {
 	if db != nil {
 		sqlDB, err := db.DB()
 		if err == nil && sqlDB != nil {
-			sqlDB.Close()
+			_ = sqlDB.Close()
 		}
 	}
 
-	if db != nil && db.Config != nil && db.Config.Logger == nil {
+	if db != nil && db.Config != nil && db.Logger == nil {
 		t.Error("gorm.Config.Logger is nil - logger was not applied correctly")
 	}
 }
 
 func TestNewDatabase_Integration(t *testing.T) {
+	t.Parallel()
 	t.Skip("Skipping integration test - requires real MySQL database connection")
 
 	tempDir := t.TempDir()
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	cfg := &config.Config{
 		Database: model.DatabaseCfg{

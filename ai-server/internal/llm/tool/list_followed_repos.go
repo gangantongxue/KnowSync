@@ -8,15 +8,18 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+//nolint:revive // self-documenting
 type ListFollowedRepos struct {
 	followClient FollowClient
 }
 
+//nolint:revive // self-documenting
 func NewListFollowedRepos(fc FollowClient) *ListFollowedRepos {
 	return &ListFollowedRepos{followClient: fc}
 }
 
-func (l *ListFollowedRepos) Info(ctx context.Context) (*schema.ToolInfo, error) {
+//nolint:revive // self-documenting
+func (l *ListFollowedRepos) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name:        "list_followed_repos",
 		Desc:        "查看当前用户已关注的知识库列表，包括知识库名称、描述、文章数量等信息。",
@@ -24,23 +27,24 @@ func (l *ListFollowedRepos) Info(ctx context.Context) (*schema.ToolInfo, error) 
 	}, nil
 }
 
-func (l *ListFollowedRepos) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+//nolint:revive // self-documenting
+func (l *ListFollowedRepos) InvokableRun(ctx context.Context, _ string, _ ...tool.Option) (string, error) {
 	return l.execute(ctx)
 }
 
 func (l *ListFollowedRepos) execute(ctx context.Context) (string, error) {
 	userID, _ := ctx.Value(CtxKeyUserID).(string)
 	if userID == "" {
-		return `{"repos": [], "message": "无法获取用户信息"}`, nil
+		return `{KeyRepos: [], "message": "无法获取用户信息"}`, nil
 	}
 
 	repos, err := l.followClient.ListFollowedRepos(ctx, userID)
 	if err != nil {
-		return `{"repos": [], "message": "获取关注列表失败"}`, nil
+		return "", err
 	}
 
 	if len(repos) == 0 {
-		return `{"repos": [], "message": "你还没有关注任何知识库"}`, nil
+		return `{KeyRepos: [], "message": "你还没有关注任何知识库"}`, nil
 	}
 
 	type repoItem struct {
@@ -55,7 +59,7 @@ func (l *ListFollowedRepos) execute(ctx context.Context) (string, error) {
 	for _, r := range repos {
 		desc := r.Description
 		if desc == "" {
-			desc = "暂无描述"
+			desc = DescNoDesc
 		}
 		items = append(items, repoItem{
 			ID:           r.ID,
@@ -68,8 +72,8 @@ func (l *ListFollowedRepos) execute(ctx context.Context) (string, error) {
 	}
 
 	data, _ := json.Marshal(map[string]any{
-		"repos": items,
-		"total": len(items),
+		KeyRepos: items,
+		KeyTotal: len(items),
 	})
 	return string(data), nil
 }

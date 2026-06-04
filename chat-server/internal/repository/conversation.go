@@ -7,17 +7,17 @@ import (
 	"gorm.io/gorm"
 )
 
-// ConversationRepository 会话仓库
+// ConversationRepository 会话仓库.
 type ConversationRepository struct {
 	DB *gorm.DB
 }
 
-// NewConversationRepository 创建会话仓库
+// NewConversationRepository 创建会话仓库.
 func NewConversationRepository(db *gorm.DB) *ConversationRepository {
 	return &ConversationRepository{DB: db}
 }
 
-// GetFriendConversations 获取用户的所有好友会话
+// GetFriendConversations 获取用户的所有好友会话.
 func (r *ConversationRepository) GetFriendConversations(ctx context.Context, userID string) ([]schema.Friend, error) {
 	var friends []schema.Friend
 	if err := r.DB.WithContext(ctx).
@@ -28,7 +28,7 @@ func (r *ConversationRepository) GetFriendConversations(ctx context.Context, use
 	return friends, nil
 }
 
-// GetGroupConversations 获取用户的所有群组会话（包含群组信息和成员角色）
+// GetGroupConversations 获取用户的所有群组会话（包含群组信息和成员角色）.
 func (r *ConversationRepository) GetGroupConversations(ctx context.Context, userID string) ([]GroupConversationInfo, error) {
 	var results []GroupConversationInfo
 	if err := r.DB.WithContext(ctx).
@@ -42,7 +42,7 @@ func (r *ConversationRepository) GetGroupConversations(ctx context.Context, user
 	return results, nil
 }
 
-// GroupConversationInfo 群组会话信息（包含成员角色和已读进度）
+// GroupConversationInfo 群组会话信息（包含成员角色和已读进度）.
 type GroupConversationInfo struct {
 	schema.Group
 	Role          string `gorm:"column:role"`
@@ -50,7 +50,7 @@ type GroupConversationInfo struct {
 	Pinned        int8   `gorm:"column:pinned"`
 }
 
-// UpdateFriendLastReadSeqID 更新好友最后读取的 seq_id
+// UpdateFriendLastReadSeqID 更新好友最后读取的 seq_id.
 func (r *ConversationRepository) UpdateFriendLastReadSeqID(ctx context.Context, userID, friendID string, seqID uint64) error {
 	return r.DB.WithContext(ctx).
 		Model(&schema.Friend{}).
@@ -58,7 +58,7 @@ func (r *ConversationRepository) UpdateFriendLastReadSeqID(ctx context.Context, 
 		Update("last_read_seq_id", seqID).Error
 }
 
-// UpdateGroupMemberLastReadSeqID 更新群成员最后读取的 seq_id
+// UpdateGroupMemberLastReadSeqID 更新群成员最后读取的 seq_id.
 func (r *ConversationRepository) UpdateGroupMemberLastReadSeqID(ctx context.Context, groupID, userID string, seqID uint64) error {
 	return r.DB.WithContext(ctx).
 		Model(&schema.GroupMember{}).
@@ -66,7 +66,9 @@ func (r *ConversationRepository) UpdateGroupMemberLastReadSeqID(ctx context.Cont
 		Update("last_read_seq_id", seqID).Error
 }
 
-// ToggleFriendPin 切换好友置顶
+// ToggleFriendPin 切换好友置顶.
+//
+//nolint:dupl // ToggleFriendPin/ToggleGroupPin 逻辑相似，保持独立
 func (r *ConversationRepository) ToggleFriendPin(ctx context.Context, userID, friendID string) (bool, error) {
 	var friend schema.Friend
 	if err := r.DB.WithContext(ctx).
@@ -87,7 +89,9 @@ func (r *ConversationRepository) ToggleFriendPin(ctx context.Context, userID, fr
 	return newPinned == 1, nil
 }
 
-// ToggleGroupPin 切换群组置顶
+// ToggleGroupPin 切换群组置顶.
+//
+//nolint:dupl // ToggleFriendPin/ToggleGroupPin 逻辑相似，保持独立
 func (r *ConversationRepository) ToggleGroupPin(ctx context.Context, groupID, userID string) (bool, error) {
 	var member schema.GroupMember
 	if err := r.DB.WithContext(ctx).
@@ -108,7 +112,7 @@ func (r *ConversationRepository) ToggleGroupPin(ctx context.Context, groupID, us
 	return newPinned == 1, nil
 }
 
-// DeleteFriendRelation 删除好友关系（双向）
+// DeleteFriendRelation 删除好友关系（双向）.
 func (r *ConversationRepository) DeleteFriendRelation(ctx context.Context, userID, friendID string) error {
 	return r.DB.WithContext(ctx).
 		Where("(user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)",

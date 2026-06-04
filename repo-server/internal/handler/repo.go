@@ -7,11 +7,11 @@ import (
 	"github.com/gangantongxue/knowsync/repo-server/pkg/database/schema"
 )
 
-// CreateRepo 创建知识库
+// CreateRepo 创建知识库.
 func (h *Handler) CreateRepo(ctx context.Context, req *pb.CreateRepoRequest) (*pb.CreateRepoResponse, error) {
 	repo, err := h.Service.CreateRepo(ctx, req.GetOwnerId(), req.GetName(), req.GetVisibility().String(), req.GetDescription())
 	if err != nil {
-		return &pb.CreateRepoResponse{Success: false, Msg: err.Error()}, nil
+		return nil, err
 	}
 	return &pb.CreateRepoResponse{
 		Success: true,
@@ -19,11 +19,11 @@ func (h *Handler) CreateRepo(ctx context.Context, req *pb.CreateRepoRequest) (*p
 	}, nil
 }
 
-// GetRepo 获取知识库详情
+// GetRepo 获取知识库详情.
 func (h *Handler) GetRepo(ctx context.Context, req *pb.GetRepoRequest) (*pb.GetRepoResponse, error) {
 	repo, role, err := h.Service.GetRepo(ctx, req.GetRepoId(), req.GetUserId())
 	if err != nil {
-		return &pb.GetRepoResponse{Success: false, Msg: err.Error()}, nil
+		return nil, err
 	}
 
 	myRole := pb.CollaboratorRole_COLLABORATOR_ROLE_UNSPECIFIED
@@ -42,7 +42,7 @@ func (h *Handler) GetRepo(ctx context.Context, req *pb.GetRepoRequest) (*pb.GetR
 	}, nil
 }
 
-// UpdateRepo 更新知识库
+// UpdateRepo 更新知识库.
 func (h *Handler) UpdateRepo(ctx context.Context, req *pb.UpdateRepoRequest) (*pb.UpdateRepoResponse, error) {
 	visibility := ""
 	if req.GetVisibility() != pb.RepoVisibility_REPO_VISIBILITY_UNSPECIFIED {
@@ -51,7 +51,7 @@ func (h *Handler) UpdateRepo(ctx context.Context, req *pb.UpdateRepoRequest) (*p
 
 	repo, err := h.Service.UpdateRepo(ctx, req.GetRepoId(), req.GetUserId(), req.GetName(), req.GetDescription(), visibility)
 	if err != nil {
-		return &pb.UpdateRepoResponse{Success: false, Msg: err.Error()}, nil
+		return nil, err
 	}
 
 	followerCount, _ := h.Service.Repository.CountFollowers(ctx, req.GetRepoId())
@@ -62,19 +62,19 @@ func (h *Handler) UpdateRepo(ctx context.Context, req *pb.UpdateRepoRequest) (*p
 	}, nil
 }
 
-// DeleteRepo 删除知识库
+// DeleteRepo 删除知识库.
 func (h *Handler) DeleteRepo(ctx context.Context, req *pb.DeleteRepoRequest) (*pb.DeleteRepoResponse, error) {
 	if err := h.Service.DeleteRepo(ctx, req.GetRepoId(), req.GetUserId()); err != nil {
-		return &pb.DeleteRepoResponse{Success: false, Msg: err.Error()}, nil
+		return nil, err
 	}
 	return &pb.DeleteRepoResponse{Success: true}, nil
 }
 
-// ListPublicRepos 获取所有公开知识库列表
-func (h *Handler) ListPublicRepos(ctx context.Context, req *pb.ListPublicReposRequest) (*pb.ListPublicReposResponse, error) {
+// ListPublicRepos 获取所有公开知识库列表.
+func (h *Handler) ListPublicRepos(ctx context.Context, _ *pb.ListPublicReposRequest) (*pb.ListPublicReposResponse, error) {
 	repos, err := h.Service.ListPublicRepos(ctx)
 	if err != nil {
-		return &pb.ListPublicReposResponse{Success: false}, nil
+		return nil, err
 	}
 
 	pbRepos := h.marshalRepoListWithFollowers(ctx, repos)
@@ -85,11 +85,11 @@ func (h *Handler) ListPublicRepos(ctx context.Context, req *pb.ListPublicReposRe
 	}, nil
 }
 
-// ListUserRepos 获取用户的知识库列表
+// ListUserRepos 获取用户的知识库列表.
 func (h *Handler) ListUserRepos(ctx context.Context, req *pb.ListUserReposRequest) (*pb.ListUserReposResponse, error) {
 	repos, err := h.Service.ListUserRepos(ctx, req.GetUserId())
 	if err != nil {
-		return &pb.ListUserReposResponse{Success: false}, nil
+		return nil, err
 	}
 
 	pbRepos := h.marshalRepoListWithFollowers(ctx, repos)
@@ -100,7 +100,7 @@ func (h *Handler) ListUserRepos(ctx context.Context, req *pb.ListUserReposReques
 	}, nil
 }
 
-// marshalRepoListWithFollowers 批量转换 Repo 列表并填充关注数
+// marshalRepoListWithFollowers 批量转换 Repo 列表并填充关注数.
 func (h *Handler) marshalRepoListWithFollowers(ctx context.Context, repos []schema.Repo) []*pb.Repo {
 	repoIDs := make([]string, len(repos))
 	for i, r := range repos {
@@ -115,14 +115,9 @@ func (h *Handler) marshalRepoListWithFollowers(ctx context.Context, repos []sche
 	return pbRepos
 }
 
-// marshalRepo 将数据库 Repo 转换为 protobuf Repo
-func marshalRepo(r *schema.Repo) *pb.Repo {
-	return marshalRepoWithFollowerCount(r, 0)
-}
-
-// marshalRepoWithFollowerCount 将数据库 Repo 转换为 protobuf Repo，附带关注数
+// marshalRepoWithFollowerCount 将数据库 Repo 转换为 protobuf Repo，附带关注数.
 func marshalRepoWithFollowerCount(r *schema.Repo, followerCount int64) *pb.Repo {
-	v, _ := pb.RepoVisibility_value[r.Visibility]
+	v := pb.RepoVisibility_value[r.Visibility]
 	return &pb.Repo{
 		Id:            r.ID,
 		OwnerId:       r.OwnerID,

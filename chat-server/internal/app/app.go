@@ -1,3 +1,4 @@
+// Package app 提供应用初始化和启动逻辑.
 package app
 
 import (
@@ -27,7 +28,7 @@ import (
 
 // NewApp 初始化并启动 chat-server 服务
 // 流程：加载配置 → 初始化日志 → 数据库 → Redis → 启动 gRPC 和 WebSocket 服务
-// 监听 SIGINT/SIGTERM 信号实现优雅退出
+// 监听 SIGINT/SIGTERM 信号实现优雅退出.
 func NewApp() error {
 	slog.Info("=====开始初始化应用=====")
 
@@ -125,7 +126,7 @@ func NewApp() error {
 
 		sqlDB, err := db.DB.DB()
 		if err == nil {
-			sqlDB.Close()
+			sqlDB.Close() //nolint:errcheck,gosec // 关闭数据库连接（fire and forget）
 		}
 
 		if err := r.RDB.Close(); err != nil {

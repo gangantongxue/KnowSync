@@ -10,7 +10,7 @@ import (
 
 const queueKey = "queue:vectorize"
 
-// VectorizeTask 向量化任务
+// VectorizeTask 向量化任务.
 type VectorizeTask struct {
 	UserID     string `json:"user_id"`
 	RepoID     string `json:"repo_id"`
@@ -19,8 +19,8 @@ type VectorizeTask struct {
 	RetryCount int    `json:"retry_count"`
 }
 
-// VectorizeArticle 将向量化任务推入队列后立即返回
-func (s *Service) VectorizeArticle(ctx context.Context, userID string, repoID, filePath string) error {
+// VectorizeArticle 将向量化任务推入队列后立即返回.
+func (s *Service) VectorizeArticle(ctx context.Context, userID, repoID, filePath string) error {
 	task := VectorizeTask{
 		UserID:    userID,
 		RepoID:    repoID,
@@ -37,7 +37,8 @@ func (s *Service) VectorizeArticle(ctx context.Context, userID string, repoID, f
 		return fmt.Errorf("任务入队失败: %w", err)
 	}
 
-	slog.Info("向量化任务已入队",
+	slog.Info(
+		"向量化任务已入队",
 		"user_id", userID,
 		"repo_id", repoID,
 		"file_path", filePath,
@@ -46,12 +47,12 @@ func (s *Service) VectorizeArticle(ctx context.Context, userID string, repoID, f
 	return nil
 }
 
-// DeleteRepoVectors 删除指定知识库的所有向量数据
+// DeleteRepoVectors 删除指定知识库的所有向量数据.
 func (s *Service) DeleteRepoVectors(_ context.Context, repoID string) error {
 	return s.VectorStore.DeleteRepoVectors(repoID)
 }
 
-// DeleteFileVectors 删除指定文件的向量数据
+// DeleteFileVectors 删除指定文件的向量数据.
 func (s *Service) DeleteFileVectors(_ context.Context, repoID, filePath string) error {
 	return s.VectorStore.DeleteFileVectors(context.Background(), repoID, filePath)
 }

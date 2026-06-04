@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strconv"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -13,7 +14,7 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// UpdateUserRequest 更新用户信息请求体
+// UpdateUserRequest 更新用户信息请求体.
 type UpdateUserRequest struct {
 	User struct {
 		Name   string `json:"name"`
@@ -22,20 +23,20 @@ type UpdateUserRequest struct {
 	} `json:"user"`
 }
 
-// DeleteUserRequest 注销账户请求体
+// DeleteUserRequest 注销账户请求体.
 type DeleteUserRequest struct {
 	Email      string `json:"email"`
 	Password   string `json:"password"`
 	VerifyCode string `json:"verify_code"`
 }
 
-// ResetPasswordRequest 重置密码请求体（已登录状态）
+// ResetPasswordRequest 重置密码请求体（已登录状态）.
 type ResetPasswordRequest struct {
 	OldPassword string `json:"old_password"`
 	NewPassword string `json:"new_password"`
 }
 
-// GetUser 获取用户信息
+// GetUser 获取用户信息.
 func (h *Handler) GetUser() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		userID, err := parseUserIDParam(ctx)
@@ -62,15 +63,15 @@ func (h *Handler) GetUser() app.HandlerFunc {
 		}
 
 		response.Success(c, ctx, map[string]any{
-			"id":     getUserResp.User.Id,
-			"name":   getUserResp.User.Name,
-			"email":  getUserResp.User.Email,
-			"avatar": getUserResp.User.Avatar,
+			"id":      getUserResp.User.Id,
+			KeyName:   getUserResp.User.Name,
+			KeyEmail:  getUserResp.User.Email,
+			KeyAvatar: getUserResp.User.Avatar,
 		})
 	}
 }
 
-// UpdateUser 更新用户信息
+// UpdateUser 更新用户信息.
 func (h *Handler) UpdateUser() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		var req UpdateUserRequest
@@ -120,7 +121,9 @@ func (h *Handler) UpdateUser() app.HandlerFunc {
 
 // SetAvatar 设置用户头像（multipart/form-data 文件上传）
 // 流程: 校验文件魔数 → 保存新文件 → SetAvatar gRPC → 返回
-// 使用时间戳命名文件，历史头像自动保留
+// 使用时间戳命名文件，历史头像自动保留.
+//
+//nolint:gocyclo // 头像文件解析涉及多种图片格式的魔数校验
 func (h *Handler) SetAvatar() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		// 从 JWT 上下文中获取当前登录用户 ID
@@ -142,7 +145,7 @@ func (h *Handler) SetAvatar() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "头像文件读取失败")
 			return
 		}
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 
 		// 读取文件头魔数，校验图片格式
 		head := make([]byte, 12)
@@ -155,17 +158,13 @@ func (h *Handler) SetAvatar() app.HandlerFunc {
 		var ext string
 		switch {
 		case n >= 3 && head[0] == 0xFF && head[1] == 0xD8 && head[2] == 0xFF:
-			// JPEG: 以 FFD8FF 开头
 			ext = ".jpg"
 		case n >= 4 && head[0] == 0x89 && head[1] == 0x50 && head[2] == 0x4E && head[3] == 0x47:
-			// PNG: 以 89504E47 开头
 			ext = ".png"
 		case n >= 4 && head[0] == 0x47 && head[1] == 0x49 && head[2] == 0x46 && head[3] == 0x38:
-			// GIF: 以 47494638 开头（GIF8）
 			ext = ".gif"
 		case n >= 12 && head[0] == 0x52 && head[1] == 0x49 && head[2] == 0x46 && head[3] == 0x46 &&
 			head[8] == 0x57 && head[9] == 0x45 && head[10] == 0x42 && head[11] == 0x50:
-			// WebP: RIFF 文件头 + WEBP 标识
 			ext = ".webp"
 		default:
 			response.Error(c, ctx, 400, errcode.ErrBadReq, "不支持的头像文件格式，仅支持 JPG/PNG/GIF/WebP")
@@ -182,7 +181,7 @@ func (h *Handler) SetAvatar() app.HandlerFunc {
 		}
 
 		// --- 保存新头像（时间戳文件名，保留历史头像）---
-		ts := fmt.Sprintf("%d", time.Now().UnixMilli())
+		ts := strconv.FormatInt(time.Now().UnixMilli(), 10)
 		key := fmt.Sprintf("%s/avatar/%s%s", uid, ts, ext)
 		if _, err := h.store.WriteFile(key, avatarReader); err != nil {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "头像文件保存失败")
@@ -207,7 +206,7 @@ func (h *Handler) SetAvatar() app.HandlerFunc {
 	}
 }
 
-// DeleteUser 注销账户
+// DeleteUser 注销账户.
 func (h *Handler) DeleteUser() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		var req DeleteUserRequest
@@ -248,7 +247,7 @@ func (h *Handler) DeleteUser() app.HandlerFunc {
 	}
 }
 
-// ResetPassword 重置密码（已登录状态）
+// ResetPassword 重置密码（已登录状态）.
 func (h *Handler) ResetPassword() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		var req ResetPasswordRequest

@@ -1,3 +1,4 @@
+// Package handler provides gRPC request handlers.
 package handler
 
 import (
@@ -6,14 +7,11 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// Register 注册用户
+// Register 注册用户.
 func (h *Handler) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	user, err := h.Service.Register(ctx, req.GetName(), req.GetEmail(), req.GetPassword(), req.GetVerifyCode())
 	if err != nil {
-		return &pb.RegisterResponse{
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, err
 	}
 	if user == nil {
 		return &pb.RegisterResponse{
@@ -32,15 +30,12 @@ func (h *Handler) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Re
 	}, nil
 }
 
-// Login 用户登录
+// Login 用户登录.
 func (h *Handler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	clientIP := getClientIP(ctx)
 	user, accessToken, refreshToken, err := h.Service.Login(ctx, req.GetEmail(), req.GetPassword(), clientIP)
 	if err != nil {
-		return &pb.LoginResponse{
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, err
 	}
 	return &pb.LoginResponse{
 		Success:      true,
@@ -56,15 +51,12 @@ func (h *Handler) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginRes
 	}, nil
 }
 
-// Logout 用户退出登录
+// Logout 用户退出登录.
 func (h *Handler) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.LogoutResponse, error) {
 	clientIP := getClientIP(ctx)
 	err := h.Service.Logout(ctx, req.GetRefreshToken(), clientIP)
 	if err != nil {
-		return &pb.LogoutResponse{
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, err
 	}
 	return &pb.LogoutResponse{
 		Success: true,
@@ -72,15 +64,12 @@ func (h *Handler) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.Logout
 	}, nil
 }
 
-// Refresh 刷新登录凭证
+// Refresh 刷新登录凭证.
 func (h *Handler) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.RefreshResponse, error) {
 	clientIP := getClientIP(ctx)
 	accessToken, refreshToken, user, err := h.Service.Refresh(ctx, req.GetRefreshToken(), clientIP)
 	if err != nil {
-		return &pb.RefreshResponse{
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, err
 	}
 	return &pb.RefreshResponse{
 		Success:      true,

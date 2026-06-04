@@ -9,13 +9,13 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// ListRepoFiles 查看仓库文件列表工具，实现 Eino InvokableTool 接口
+// ListRepoFiles 查看仓库文件列表工具，实现 Eino InvokableTool 接口.
 type ListRepoFiles struct {
 	repoDetailClient RepoDetailClient
 	fileClient       FileClient
 }
 
-// NewListRepoFiles 创建查看仓库文件列表工具
+// NewListRepoFiles 创建查看仓库文件列表工具.
 func NewListRepoFiles(rdc RepoDetailClient, fc FileClient) *ListRepoFiles {
 	return &ListRepoFiles{
 		repoDetailClient: rdc,
@@ -23,19 +23,19 @@ func NewListRepoFiles(rdc RepoDetailClient, fc FileClient) *ListRepoFiles {
 	}
 }
 
-// Info 返回工具元信息
-func (l *ListRepoFiles) Info(ctx context.Context) (*schema.ToolInfo, error) {
+// Info 返回工具元信息.
+func (l *ListRepoFiles) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "list_repo_files",
 		Desc: "查看指定知识库中的文件目录结构。使用 repo_id 指定知识库，可选的 path 参数指定子目录路径（不传则列出根目录）。返回文件和子目录列表。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
-			"repo_id": {
-				Type:     "string",
-				Desc:     "知识库 ID",
+			ParamRepoID: {
+				Type:     TypeString,
+				Desc:     DescRepoID,
 				Required: true,
 			},
 			"path": {
-				Type:     "string",
+				Type:     TypeString,
 				Desc:     "目录路径，不传则列出根目录（例如：docs/）",
 				Required: false,
 			},
@@ -43,8 +43,8 @@ func (l *ListRepoFiles) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	}, nil
 }
 
-// InvokableRun 执行工具调用
-func (l *ListRepoFiles) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+// InvokableRun 执行工具调用.
+func (l *ListRepoFiles) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return l.execute(ctx, arguments)
 }
 
@@ -89,11 +89,11 @@ func (l *ListRepoFiles) execute(ctx context.Context, paramsJSON string) (string,
 	}
 
 	data, _ := json.Marshal(map[string]any{
-		"repo_id":   params.RepoID,
+		ParamRepoID: params.RepoID,
 		"repo_name": repo.Name,
 		"path":      params.Path,
 		"files":     items,
-		"total":     len(items),
+		KeyTotal:    len(items),
 	})
 	return string(data), nil
 }

@@ -1,3 +1,4 @@
+// main AI 服务入口.
 package main
 
 import (

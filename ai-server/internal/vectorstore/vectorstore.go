@@ -1,9 +1,11 @@
+// Package vectorstore 提供向量存储和搜索能力.
 package vectorstore
 
 import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"strings"
 
 	"github.com/philippgille/chromem-go"
@@ -16,13 +18,13 @@ const (
 	batchSize        = 50
 )
 
-// Store 向量存储封装
+// Store 向量存储封装.
 type Store struct {
 	db   *chromem.DB
 	path string
 }
 
-// NewStore 创建向量存储
+// NewStore 创建向量存储.
 func NewStore(path string) (*Store, error) {
 	db, err := chromem.NewPersistentDB(path, false)
 	if err != nil {
@@ -33,14 +35,14 @@ func NewStore(path string) (*Store, error) {
 	return &Store{db: db, path: path}, nil
 }
 
-// collectionName 生成 Collection 名称
+// collectionName 生成 Collection 名称.
 func collectionName(repoID string) string {
 	name := strings.NewReplacer("-", "_", ".", "_", ":", "_").Replace(repoID)
 	return collectionPrefix + name
 }
 
-// getOrCreateCollection 获取或创建 Collection
-func (s *Store) getOrCreateCollection(ctx context.Context, repoID string) (*chromem.Collection, error) {
+// getOrCreateCollection 获取或创建 Collection.
+func (s *Store) getOrCreateCollection(_ context.Context, repoID string) (*chromem.Collection, error) {
 	name := collectionName(repoID)
 
 	col := s.db.GetCollection(name, nil)
@@ -57,7 +59,7 @@ func (s *Store) getOrCreateCollection(ctx context.Context, repoID string) (*chro
 	return col, nil
 }
 
-// StoreChunks 存储文档块的向量，embeddings 为每个 chunk 对应的向量，filePath 作为唯一标识
+// StoreChunks 存储文档块的向量，embeddings 为每个 chunk 对应的向量，filePath 作为唯一标识.
 func (s *Store) StoreChunks(ctx context.Context, repoID, filePath string, chunks []chunker.Chunk, embeddings [][]float64) error {
 	if len(chunks) == 0 {
 		return nil
@@ -99,8 +101,8 @@ func (s *Store) StoreChunks(ctx context.Context, repoID, filePath string, chunks
 				Metadata: map[string]string{
 					"file_path":    filePath,
 					"repo_id":      repoID,
-					"chunk_index":  fmt.Sprintf("%d", chunks[j].Index),
-					"total_chunks": fmt.Sprintf("%d", totalChunks),
+					"chunk_index":  strconv.Itoa(chunks[j].Index),
+					"total_chunks": strconv.Itoa(totalChunks),
 				},
 				Embedding: chunkEmbedding,
 			}
@@ -112,7 +114,8 @@ func (s *Store) StoreChunks(ctx context.Context, repoID, filePath string, chunks
 		}
 	}
 
-	slog.Info("存储向量完成",
+	slog.Info(
+		"存储向量完成",
 		"file_path", filePath,
 		"repo_id", repoID,
 		"chunks", totalChunks,
@@ -121,7 +124,7 @@ func (s *Store) StoreChunks(ctx context.Context, repoID, filePath string, chunks
 	return nil
 }
 
-// DeleteFileVectors 删除指定 file_path 的所有向量
+// DeleteFileVectors 删除指定 file_path 的所有向量.
 func (s *Store) DeleteFileVectors(ctx context.Context, repoID, filePath string) error {
 	col := s.db.GetCollection(collectionName(repoID), nil)
 	if col == nil {
@@ -135,7 +138,7 @@ func (s *Store) DeleteFileVectors(ctx context.Context, repoID, filePath string) 
 	return nil
 }
 
-// DeleteRepoVectors 删除指定 repo 的所有向量数据
+// DeleteRepoVectors 删除指定 repo 的所有向量数据.
 func (s *Store) DeleteRepoVectors(repoID string) error {
 	name := collectionName(repoID)
 	if err := s.db.DeleteCollection(name); err != nil {
@@ -146,7 +149,7 @@ func (s *Store) DeleteRepoVectors(repoID string) error {
 	return nil
 }
 
-// Search 在指定 repo 中搜索相似内容
+// Search 在指定 repo 中搜索相似内容.
 func (s *Store) Search(ctx context.Context, repoID string, embedding []float32, limit int) ([]chromem.Result, error) {
 	col := s.db.GetCollection(collectionName(repoID), nil)
 	if col == nil {
@@ -161,14 +164,14 @@ func (s *Store) Search(ctx context.Context, repoID string, embedding []float32, 
 	return results, nil
 }
 
-// SearchResult 跨 repo 搜索结果
+// SearchResult 跨 repo 搜索结果.
 type SearchResult struct {
 	RepoID  string
 	Content string
 	Score   float32
 }
 
-// SearchCrossRepos 在多个 repo 中搜索相似内容，返回合并结果
+// SearchCrossRepos 在多个 repo 中搜索相似内容，返回合并结果.
 func (s *Store) SearchCrossRepos(ctx context.Context, repoIDs []string, embedding []float32, limit int) ([]SearchResult, error) {
 	var all []SearchResult
 

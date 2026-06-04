@@ -1,3 +1,4 @@
+// Package app provides the application bootstrap and lifecycle management.
 package app
 
 import (
@@ -25,7 +26,7 @@ import (
 
 // NewApp 初始化并启动 user-server gRPC 服务
 // 流程：加载配置 → 初始化日志 → 数据库 → Redis → 仓库 → 邮件 → 服务 → 处理器 → 启动 gRPC
-// 监听 SIGINT/SIGTERM 信号实现优雅退出
+// 监听 SIGINT/SIGTERM 信号实现优雅退出.
 func NewApp() error {
 	slog.Info("=====开始初始化应用=====")
 
@@ -103,7 +104,9 @@ func NewApp() error {
 
 		sqlDB, err := db.DB.DB()
 		if err == nil {
-			sqlDB.Close()
+			if cerr := sqlDB.Close(); cerr != nil {
+				slog.Error("关闭数据库连接失败", "error", cerr)
+			}
 		}
 
 		if err := r.RDB.Close(); err != nil {

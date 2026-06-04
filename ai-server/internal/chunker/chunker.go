@@ -1,3 +1,4 @@
+// Package chunker 提供文档语义切分功能.
 package chunker
 
 import (
@@ -5,7 +6,7 @@ import (
 	"strings"
 )
 
-// Chunk 文档块
+// Chunk 文档块.
 type Chunk struct {
 	Text  string `json:"text"`
 	Index int    `json:"index"`
@@ -14,16 +15,16 @@ type Chunk struct {
 const (
 	defaultMaxTokens = 1000
 	// 估算：中文约 1.5 字符/token，英文约 4 字符/token
-	// 保守使用 2 字符/token
+	// 保守使用 2 字符/token.
 	charsPerToken = 2
 )
 
-// Chunker 语义切分器
+// Chunker 语义切分器.
 type Chunker struct {
 	maxTokens int
 }
 
-// NewChunker 创建语义切分器
+// NewChunker 创建语义切分器.
 func NewChunker(maxTokens int) *Chunker {
 	if maxTokens <= 0 {
 		maxTokens = defaultMaxTokens
@@ -31,7 +32,7 @@ func NewChunker(maxTokens int) *Chunker {
 	return &Chunker{maxTokens: maxTokens}
 }
 
-// Split 将文章内容按语义边界切分为多个块
+// Split 将文章内容按语义边界切分为多个块.
 func (c *Chunker) Split(content string) []Chunk {
 	if strings.TrimSpace(content) == "" {
 		return nil
@@ -65,7 +66,7 @@ func (c *Chunker) Split(content string) []Chunk {
 	return chunks
 }
 
-// splitByHeadings 按 Markdown 标题分割（# ## ### #### 等）
+// splitByHeadings 按 Markdown 标题分割（# ## ### #### 等）.
 func splitByHeadings(content string) []string {
 	lines := strings.Split(content, "\n")
 
@@ -92,7 +93,7 @@ func splitByHeadings(content string) []string {
 	return sections
 }
 
-// isHeading 判断是否为 Markdown 标题
+// isHeading 判断是否为 Markdown 标题.
 func isHeading(line string) bool {
 	if len(line) == 0 {
 		return false
@@ -104,7 +105,7 @@ func isHeading(line string) bool {
 	return i > 0 && i <= 6 && (len(line) == i || line[i] == ' ')
 }
 
-// splitByParagraphs 按空行分割段落，超长段落实行递归切分
+// splitByParagraphs 按空行分割段落，超长段落实行递归切分.
 func splitByParagraphs(section string, maxTokens int) []Chunk {
 	paragraphs := strings.Split(section, "\n\n")
 
@@ -149,7 +150,9 @@ func splitByParagraphs(section string, maxTokens int) []Chunk {
 	return chunks
 }
 
-// recursiveSplit 递归切分超长文本（按句号、逗号、换行）
+// recursiveSplit 递归切分超长文本（按句号、逗号、换行）.
+//
+//nolint:gocyclo,nestif // 递归切分逻辑需要处理多种分隔符和边界条件
 func recursiveSplit(text string, maxTokens int) []Chunk {
 	if estimateTokens(text) <= maxTokens {
 		return []Chunk{{Text: text}}
@@ -216,7 +219,7 @@ func recursiveSplit(text string, maxTokens int) []Chunk {
 	return splitByChars(text, maxTokens)
 }
 
-// splitByChars 按字符数切分（兜底方案）
+// splitByChars 按字符数切分（兜底方案）.
 func splitByChars(text string, maxTokens int) []Chunk {
 	maxChars := maxTokens * charsPerToken
 	runes := []rune(text)
@@ -230,7 +233,7 @@ func splitByChars(text string, maxTokens int) []Chunk {
 	return chunks
 }
 
-// estimateTokens 估算文本 token 数量
+// estimateTokens 估算文本 token 数量.
 func estimateTokens(text string) int {
 	return int(math.Ceil(float64(len([]rune(text))) / float64(charsPerToken)))
 }

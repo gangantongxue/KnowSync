@@ -1,3 +1,4 @@
+// Package handler 提供 gRPC 消息处理逻辑.
 package handler
 
 import (
@@ -33,14 +34,11 @@ func messageToPB(m *schema.Message) *pb.Message {
 	return pbMsg
 }
 
-// SendPrivateMessage 发送私聊消息
+// SendPrivateMessage 发送私聊消息.
 func (h *Handler) SendPrivateMessage(ctx context.Context, req *pb.SendPrivateMessageReq) (*pb.SendPrivateMessageResp, error) {
 	msg, err := h.Service.SendPrivateMessage(ctx, req.GetSenderId(), req.GetReceiverId(), req.GetContentType(), req.GetContent(), req.GetExtra(), req.GetReplyToId())
 	if err != nil {
-		return &pb.SendPrivateMessageResp{
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, err
 	}
 	return &pb.SendPrivateMessageResp{
 		Success: true,
@@ -49,14 +47,11 @@ func (h *Handler) SendPrivateMessage(ctx context.Context, req *pb.SendPrivateMes
 	}, nil
 }
 
-// SendGroupMessage 发送群聊消息
+// SendGroupMessage 发送群聊消息.
 func (h *Handler) SendGroupMessage(ctx context.Context, req *pb.SendGroupMessageReq) (*pb.SendGroupMessageResp, error) {
 	msg, err := h.Service.SendGroupMessage(ctx, req.GetSenderId(), req.GetGroupId(), req.GetContentType(), req.GetContent(), req.GetExtra(), req.GetMentions(), req.GetReplyToId())
 	if err != nil {
-		return &pb.SendGroupMessageResp{
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, err
 	}
 	return &pb.SendGroupMessageResp{
 		Success: true,
@@ -65,14 +60,11 @@ func (h *Handler) SendGroupMessage(ctx context.Context, req *pb.SendGroupMessage
 	}, nil
 }
 
-// GetMessages 获取消息列表
+// GetMessages 获取消息列表.
 func (h *Handler) GetMessages(ctx context.Context, req *pb.GetMessagesReq) (*pb.GetMessagesResp, error) {
 	messages, err := h.Service.GetMessages(ctx, req.GetConversationType(), req.GetConversationId(), req.GetBeforeSeqId(), int(req.GetLimit()))
 	if err != nil {
-		return &pb.GetMessagesResp{
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, err
 	}
 	pbMessages := make([]*pb.Message, len(messages))
 	for i := range messages {
@@ -80,34 +72,28 @@ func (h *Handler) GetMessages(ctx context.Context, req *pb.GetMessagesReq) (*pb.
 	}
 	return &pb.GetMessagesResp{
 		Success:  true,
-		Msg:      "获取成功",
+		Msg:      MsgSuccess,
 		Messages: pbMessages,
 	}, nil
 }
 
-// GetMessageByID 根据ID获取消息
+// GetMessageByID 根据ID获取消息.
 func (h *Handler) GetMessageByID(ctx context.Context, req *pb.GetMessageByIDReq) (*pb.GetMessageByIDResp, error) {
 	msg, err := h.Service.Repo.Message.GetMessageByID(ctx, req.GetMessageId())
 	if err != nil {
-		return &pb.GetMessageByIDResp{
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, err
 	}
 	return &pb.GetMessageByIDResp{
 		Success: true,
-		Msg:     "获取成功",
+		Msg:     MsgSuccess,
 		Message: messageToPB(msg),
 	}, nil
 }
 
-// RecallMessage 撤回消息
+// RecallMessage 撤回消息.
 func (h *Handler) RecallMessage(ctx context.Context, req *pb.RecallMessageReq) (*pb.RecallMessageResp, error) {
 	if err := h.Service.RecallMessage(ctx, req.GetMessageId(), req.GetSenderId()); err != nil {
-		return &pb.RecallMessageResp{
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, err
 	}
 	return &pb.RecallMessageResp{
 		Success: true,
@@ -115,14 +101,11 @@ func (h *Handler) RecallMessage(ctx context.Context, req *pb.RecallMessageReq) (
 	}, nil
 }
 
-// ForwardMessage 转发消息
+// ForwardMessage 转发消息.
 func (h *Handler) ForwardMessage(ctx context.Context, req *pb.ForwardMessageReq) (*pb.ForwardMessageResp, error) {
 	msg, err := h.Service.ForwardMessage(ctx, req.GetSenderId(), req.GetTargetConversationType(), req.GetTargetConversationId(), req.GetMessageIds())
 	if err != nil {
-		return &pb.ForwardMessageResp{
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, err
 	}
 	return &pb.ForwardMessageResp{
 		Success: true,
@@ -131,7 +114,7 @@ func (h *Handler) ForwardMessage(ctx context.Context, req *pb.ForwardMessageReq)
 	}, nil
 }
 
-// GetUnreadCount 获取未读数
+// GetUnreadCount 获取未读数.
 func (h *Handler) GetUnreadCount(ctx context.Context, req *pb.GetUnreadCountReq) (*pb.GetUnreadCountResp, error) {
 	convs := req.GetConversation()
 	infos := make([]service.ConversationInfo, len(convs))
@@ -143,14 +126,11 @@ func (h *Handler) GetUnreadCount(ctx context.Context, req *pb.GetUnreadCountReq)
 	}
 	counts, err := h.Service.GetUnreadCounts(ctx, req.GetUserId(), infos)
 	if err != nil {
-		return &pb.GetUnreadCountResp{
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, err
 	}
 	return &pb.GetUnreadCountResp{
 		Success: true,
-		Msg:     "获取成功",
+		Msg:     MsgSuccess,
 		Counts:  counts,
 	}, nil
 }

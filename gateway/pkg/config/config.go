@@ -1,3 +1,4 @@
+// Package config provides configuration loading for the gateway service.
 package config
 
 import (
@@ -7,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Config 网关全局配置
+// Config 网关全局配置.
 type Config struct {
 	Project      model.ProjectCfg      `yaml:"project" mapstructure:"project"`
 	Logger       model.LoggerCfg       `yaml:"logger" mapstructure:"logger"`
@@ -19,7 +20,7 @@ type Config struct {
 	ServiceToken model.ServiceTokenCfg `yaml:"service_token" mapstructure:"service_token"`
 }
 
-// NewConfig 读取 configs/config.yaml 并返回解析后的配置
+// NewConfig 读取 configs/config.yaml 并返回解析后的配置.
 func NewConfig() (*Config, error) {
 	v := viper.New()
 	v.SetConfigName("config")

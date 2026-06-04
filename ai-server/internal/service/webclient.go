@@ -8,18 +8,19 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gangantongxue/knowsync/ai-server/pkg/config/model"
 )
 
-// WebClient 外部网络服务客户端
+// WebClient 外部网络服务客户端.
 type WebClient struct {
 	httpClient *http.Client
 	searchURL  string
 }
 
-// NewWebClient 创建外部网络服务客户端
+// NewWebClient 创建外部网络服务客户端.
 func NewWebClient(cfg *model.WebSearchCfg) *WebClient {
 	searchURL := cfg.BaseURL
 	if searchURL == "" {
@@ -31,7 +32,7 @@ func NewWebClient(cfg *model.WebSearchCfg) *WebClient {
 	}
 }
 
-// FetchURL 获取 URL 内容
+// FetchURL 获取 URL 内容.
 func (w *WebClient) FetchURL(ctx context.Context, rawURL string) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
 	if err != nil {
@@ -44,7 +45,7 @@ func (w *WebClient) FetchURL(ctx context.Context, rawURL string) ([]byte, error)
 	if err != nil {
 		return nil, fmt.Errorf("请求失败: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("返回错误状态 %d", resp.StatusCode)
@@ -53,7 +54,9 @@ func (w *WebClient) FetchURL(ctx context.Context, rawURL string) ([]byte, error)
 	return io.ReadAll(resp.Body)
 }
 
-// Search 执行网络搜索
+// Search 执行网络搜索.
+//
+//nolint:gocyclo // 搜索需要处理多种搜索结果格式和错误情况
 func (w *WebClient) Search(ctx context.Context, query string) (string, error) {
 	q := url.Values{}
 	q.Set("q", query)
@@ -74,7 +77,7 @@ func (w *WebClient) Search(ctx context.Context, query string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("搜索请求失败: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -135,33 +138,41 @@ func (w *WebClient) Search(ctx context.Context, query string) (string, error) {
 
 	if len(ddgResponse.Results) > 0 {
 		result += "【搜索结果】\n"
+		var resultSb138 strings.Builder
 		for i, r := range ddgResponse.Results {
-			result += fmt.Sprintf("%d. %s\n   链接: %s\n", i+1, r.Text, r.FirstURL)
+			fmt.Fprintf(&resultSb138, "%d. %s\n   链接: %s\n", i+1, r.Text, r.FirstURL)
 		}
+		result += resultSb138.String()
 		result += "\n"
 	}
 
 	if len(ddgResponse.RelatedTopics) > 0 {
 		count := 0
 		result += "【相关主题】\n"
+		var resultSb147 strings.Builder
+		var resultSb151 strings.Builder
 		for _, topic := range ddgResponse.RelatedTopics {
 			if count >= 10 {
 				break
 			}
 			if topic.Text != "" {
 				count++
-				result += fmt.Sprintf("%d. %s\n   链接: %s\n", count, topic.Text, topic.FirstURL)
+				fmt.Fprintf(&resultSb147, "%d. %s\n   链接: %s\n", count, topic.Text, topic.FirstURL)
 			}
+			var resultSb155 strings.Builder
 			for _, sub := range topic.Topics {
 				if count >= 10 {
 					break
 				}
 				if sub.Text != "" {
 					count++
-					result += fmt.Sprintf("%d. %s\n   链接: %s\n", count, sub.Text, sub.FirstURL)
+					fmt.Fprintf(&resultSb155, "%d. %s\n   链接: %s\n", count, sub.Text, sub.FirstURL)
 				}
 			}
+			resultSb151.WriteString(resultSb155.String())
 		}
+		result += resultSb151.String()
+		result += resultSb147.String()
 		result += "\n"
 	}
 

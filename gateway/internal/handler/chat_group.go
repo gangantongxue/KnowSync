@@ -10,40 +10,40 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// CreateGroupReq 创建群组请求体
+// CreateGroupReq 创建群组请求体.
 type CreateGroupReq struct {
 	Name      string   `json:"name"`
 	Avatar    string   `json:"avatar"`
 	MemberIDs []string `json:"member_ids"`
 }
 
-// UpdateGroupReq 更新群信息请求体
+// UpdateGroupReq 更新群信息请求体.
 type UpdateGroupReq struct {
 	Name   string `json:"name"`
 	Avatar string `json:"avatar"`
 }
 
-// AddMembersReq 添加成员请求体
+// AddMembersReq 添加成员请求体.
 type AddMembersReq struct {
 	MemberIDs []string `json:"member_ids"`
 }
 
-// TransferOwnershipReq 转让群主请求体
+// TransferOwnershipReq 转让群主请求体.
 type TransferOwnershipReq struct {
 	NewOwnerID string `json:"new_owner_id"`
 }
 
-// SetAdminReq 设置管理员请求体
+// SetAdminReq 设置管理员请求体.
 type SetAdminReq struct {
 	UserID string `json:"user_id"`
 }
 
-// RemoveAdminReq 移除管理员请求体
+// RemoveAdminReq 移除管理员请求体.
 type RemoveAdminReq struct {
 	UserID string `json:"user_id"`
 }
 
-// CreateGroup 创建群组
+// CreateGroup 创建群组.
 func (h *Handler) CreateGroup() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -87,7 +87,7 @@ func (h *Handler) CreateGroup() app.HandlerFunc {
 	}
 }
 
-// GetGroupInfo 获取群信息
+// GetGroupInfo 获取群信息.
 func (h *Handler) GetGroupInfo() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -125,7 +125,7 @@ func (h *Handler) GetGroupInfo() app.HandlerFunc {
 	}
 }
 
-// UpdateGroup 更新群信息
+// UpdateGroup 更新群信息.
 func (h *Handler) UpdateGroup() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -173,7 +173,9 @@ func (h *Handler) UpdateGroup() app.HandlerFunc {
 	}
 }
 
-// LeaveGroup 退出群组
+// LeaveGroup 退出群组.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) LeaveGroup() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -213,7 +215,9 @@ func (h *Handler) LeaveGroup() app.HandlerFunc {
 	}
 }
 
-// AddMembers 添加群成员
+// AddMembers 添加群成员.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) AddMembers() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -260,7 +264,9 @@ func (h *Handler) AddMembers() app.HandlerFunc {
 	}
 }
 
-// RemoveMember 移除群成员
+// RemoveMember 移除群成员.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) RemoveMember() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -302,7 +308,7 @@ func (h *Handler) RemoveMember() app.HandlerFunc {
 	}
 }
 
-// GetGroupMembers 获取群成员列表
+// GetGroupMembers 获取群成员列表.
 func (h *Handler) GetGroupMembers() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid := ctx.GetString("user_id")
@@ -338,8 +344,8 @@ func (h *Handler) GetGroupMembers() app.HandlerFunc {
 			members = append(members, map[string]any{
 				"id":        m.Id,
 				"group_id":  m.GroupId,
-				"user_id":   m.UserId,
-				"role":      m.Role,
+				KeyUserID:   m.UserId,
+				KeyRole:     m.Role,
 				"joined_at": m.JoinedAt,
 			})
 		}
@@ -350,7 +356,9 @@ func (h *Handler) GetGroupMembers() app.HandlerFunc {
 	}
 }
 
-// TransferOwnership 转让群主
+// TransferOwnership 转让群主.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) TransferOwnership() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -397,7 +405,9 @@ func (h *Handler) TransferOwnership() app.HandlerFunc {
 	}
 }
 
-// SetAdmin 设置管理员
+// SetAdmin 设置管理员.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) SetAdmin() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -444,7 +454,9 @@ func (h *Handler) SetAdmin() app.HandlerFunc {
 	}
 }
 
-// RemoveAdmin 移除管理员
+// RemoveAdmin 移除管理员.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) RemoveAdmin() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -486,7 +498,9 @@ func (h *Handler) RemoveAdmin() app.HandlerFunc {
 	}
 }
 
-// GetUserGroups 获取用户群列表
+// GetUserGroups 获取用户群列表.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) GetUserGroups() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -526,15 +540,15 @@ func (h *Handler) GetUserGroups() app.HandlerFunc {
 	}
 }
 
-// marshalGroup 将 protobuf Group 转换为 HTTP JSON 响应格式
+// marshalGroup 将 protobuf Group 转换为 HTTP JSON 响应格式.
 func marshalGroup(g *pb.Group) map[string]any {
 	return map[string]any{
 		"id":           g.Id,
-		"name":         g.Name,
-		"avatar":       g.Avatar,
-		"owner_id":     g.OwnerId,
+		KeyName:        g.Name,
+		KeyAvatar:      g.Avatar,
+		KeyOwnerID:     g.OwnerId,
 		"member_count": g.MemberCount,
-		"created_at":   g.CreatedAt,
-		"updated_at":   g.UpdatedAt,
+		KeyCreatedAt:   g.CreatedAt,
+		KeyUpdatedAt:   g.UpdatedAt,
 	}
 }

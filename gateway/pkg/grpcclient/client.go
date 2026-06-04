@@ -1,3 +1,4 @@
+// Package grpcclient manages gRPC client connections to backend services.
 package grpcclient
 
 import (
@@ -9,12 +10,12 @@ import (
 )
 
 // Client 管理多个后端的 gRPC 连接
-// 后续添加新服务只需在配置中增加 entry，并在使用方通过 GetConn 获取连接
+// 后续添加新服务只需在配置中增加 entry，并在使用方通过 GetConn 获取连接.
 type Client struct {
 	conns map[string]*grpc.ClientConn
 }
 
-// NewClient 根据 targets 建立 gRPC 连接，targets 为服务名到地址的映射
+// NewClient 根据 targets 建立 gRPC 连接，targets 为服务名到地址的映射.
 func NewClient(targets map[string]string) (*Client, error) {
 	conns := make(map[string]*grpc.ClientConn, len(targets))
 
@@ -25,7 +26,7 @@ func NewClient(targets map[string]string) (*Client, error) {
 		if err != nil {
 			// 关闭已成功建立的连接
 			for _, c := range conns {
-				c.Close()
+				_ = c.Close()
 			}
 			return nil, fmt.Errorf("连接 %s gRPC 失败: %w", name, err)
 		}
@@ -36,12 +37,12 @@ func NewClient(targets map[string]string) (*Client, error) {
 	return &Client{conns: conns}, nil
 }
 
-// GetConn 按服务名获取 gRPC 连接，后续有新服务时通过此方法获取对应连接
+// GetConn 按服务名获取 gRPC 连接，后续有新服务时通过此方法获取对应连接.
 func (c *Client) GetConn(name string) *grpc.ClientConn {
 	return c.conns[name]
 }
 
-// Close 关闭所有 gRPC 连接
+// Close 关闭所有 gRPC 连接.
 func (c *Client) Close() error {
 	for name, conn := range c.conns {
 		if err := conn.Close(); err != nil {

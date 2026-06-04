@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// CreateGroup 创建群组，添加群主和初始成员
+// CreateGroup 创建群组，添加群主和初始成员.
 func (s *Service) CreateGroup(ctx context.Context, ownerID, name, avatar string, memberIDs []string) (*schema.Group, error) {
 	now := time.Now().Unix()
 	group := &schema.Group{
@@ -29,7 +29,7 @@ func (s *Service) CreateGroup(ctx context.Context, ownerID, name, avatar string,
 	ownerMember := &schema.GroupMember{
 		GroupID:  group.ID,
 		UserID:   ownerID,
-		Role:     "owner",
+		Role:     RoleOwner,
 		JoinedAt: now,
 	}
 	if err := s.Repo.GroupMember.AddMember(ctx, ownerMember); err != nil {
@@ -56,7 +56,7 @@ func (s *Service) CreateGroup(ctx context.Context, ownerID, name, avatar string,
 	return group, nil
 }
 
-// GetGroupInfo 获取群组信息及用户是否在群中
+// GetGroupInfo 获取群组信息及用户是否在群中.
 func (s *Service) GetGroupInfo(ctx context.Context, groupID, userID string) (*schema.Group, bool, error) {
 	group, err := s.Repo.Group.GetGroupByID(ctx, groupID)
 	if err != nil {
@@ -81,7 +81,7 @@ func (s *Service) GetGroupInfo(ctx context.Context, groupID, userID string) (*sc
 	return group, isMember, nil
 }
 
-// UpdateGroup 更新群组信息（仅群主可操作）
+// UpdateGroup 更新群组信息（仅群主可操作）.
 func (s *Service) UpdateGroup(ctx context.Context, groupID, userID, name, avatar string) error {
 	group, err := s.Repo.Group.GetGroupByID(ctx, groupID)
 	if err != nil {
@@ -108,7 +108,7 @@ func (s *Service) UpdateGroup(ctx context.Context, groupID, userID, name, avatar
 	return nil
 }
 
-// AddMembers 添加成员（群主/管理员可操作）
+// AddMembers 添加成员（群主/管理员可操作）.
 func (s *Service) AddMembers(ctx context.Context, groupID, operatorID string, memberIDs []string) error {
 	operator, err := s.Repo.GroupMember.GetMember(ctx, groupID, operatorID)
 	if err != nil {
@@ -119,7 +119,7 @@ func (s *Service) AddMembers(ctx context.Context, groupID, operatorID string, me
 		return err
 	}
 
-	if operator.Role != "owner" && operator.Role != "admin" {
+	if operator.Role != RoleOwner && operator.Role != RoleAdmin {
 		return errors.New("仅群主和管理员可以添加成员")
 	}
 
@@ -150,7 +150,7 @@ func (s *Service) AddMembers(ctx context.Context, groupID, operatorID string, me
 	return nil
 }
 
-// RemoveMember 移除成员
+// RemoveMember 移除成员.
 func (s *Service) RemoveMember(ctx context.Context, groupID, operatorID, targetUserID string) error {
 	if operatorID == targetUserID {
 		return errors.New("不能移除自己，请使用退出群组功能")
@@ -174,11 +174,11 @@ func (s *Service) RemoveMember(ctx context.Context, groupID, operatorID, targetU
 		return err
 	}
 
-	if operator.Role != "owner" && operator.Role != "admin" {
+	if operator.Role != RoleOwner && operator.Role != RoleAdmin {
 		return errors.New("仅群主和管理员可以移除成员")
 	}
 
-	if operator.Role == "admin" && (target.Role == "owner" || target.Role == "admin") {
+	if operator.Role == RoleAdmin && (target.Role == RoleOwner || target.Role == RoleAdmin) {
 		return errors.New("管理员不能移除群主或其他管理员")
 	}
 
@@ -190,7 +190,7 @@ func (s *Service) RemoveMember(ctx context.Context, groupID, operatorID, targetU
 	return nil
 }
 
-// LeaveGroup 退出群组
+// LeaveGroup 退出群组.
 func (s *Service) LeaveGroup(ctx context.Context, groupID, userID string) error {
 	member, err := s.Repo.GroupMember.GetMember(ctx, groupID, userID)
 	if err != nil {
@@ -201,7 +201,7 @@ func (s *Service) LeaveGroup(ctx context.Context, groupID, userID string) error 
 		return err
 	}
 
-	if member.Role == "owner" {
+	if member.Role == RoleOwner {
 		return errors.New("群主不能退出群组，请先转让群主或删除群组")
 	}
 
@@ -213,7 +213,7 @@ func (s *Service) LeaveGroup(ctx context.Context, groupID, userID string) error 
 	return nil
 }
 
-// TransferOwnership 转让群主
+// TransferOwnership 转让群主.
 func (s *Service) TransferOwnership(ctx context.Context, groupID, currentOwnerID, newOwnerID string) error {
 	if currentOwnerID == newOwnerID {
 		return errors.New("不能转让给自己")
@@ -227,7 +227,7 @@ func (s *Service) TransferOwnership(ctx context.Context, groupID, currentOwnerID
 		slog.Error("获取当前群主信息失败", "error", err)
 		return err
 	}
-	if currentOwner.Role != "owner" {
+	if currentOwner.Role != RoleOwner {
 		return errors.New("仅群主可以转让群组")
 	}
 
@@ -257,7 +257,7 @@ func (s *Service) TransferOwnership(ctx context.Context, groupID, currentOwnerID
 		return err
 	}
 
-	if err := s.Repo.GroupMember.UpdateMemberRole(ctx, groupID, newOwnerID, "owner"); err != nil {
+	if err := s.Repo.GroupMember.UpdateMemberRole(ctx, groupID, newOwnerID, RoleOwner); err != nil {
 		slog.Error("更新新群主角色失败", "error", err)
 		return err
 	}
@@ -265,7 +265,7 @@ func (s *Service) TransferOwnership(ctx context.Context, groupID, currentOwnerID
 	return nil
 }
 
-// SetAdmin 设置管理员（仅群主可操作）
+// SetAdmin 设置管理员（仅群主可操作）.
 func (s *Service) SetAdmin(ctx context.Context, groupID, operatorID, targetUserID string) error {
 	if operatorID == targetUserID {
 		return errors.New("不能设置自己为管理员")
@@ -279,7 +279,7 @@ func (s *Service) SetAdmin(ctx context.Context, groupID, operatorID, targetUserI
 		slog.Error("获取操作者信息失败", "error", err)
 		return err
 	}
-	if operator.Role != "owner" {
+	if operator.Role != RoleOwner {
 		return errors.New("仅群主可以设置管理员")
 	}
 
@@ -292,15 +292,15 @@ func (s *Service) SetAdmin(ctx context.Context, groupID, operatorID, targetUserI
 		return err
 	}
 
-	if target.Role == "owner" {
+	if target.Role == RoleOwner {
 		return errors.New("不能设置群主为管理员")
 	}
 
-	if target.Role == "admin" {
+	if target.Role == RoleAdmin {
 		return errors.New("该用户已经是管理员")
 	}
 
-	if err := s.Repo.GroupMember.UpdateMemberRole(ctx, groupID, targetUserID, "admin"); err != nil {
+	if err := s.Repo.GroupMember.UpdateMemberRole(ctx, groupID, targetUserID, RoleAdmin); err != nil {
 		slog.Error("设置管理员失败", "error", err)
 		return err
 	}
@@ -308,7 +308,7 @@ func (s *Service) SetAdmin(ctx context.Context, groupID, operatorID, targetUserI
 	return nil
 }
 
-// RemoveAdmin 移除管理员（仅群主可操作）
+// RemoveAdmin 移除管理员（仅群主可操作）.
 func (s *Service) RemoveAdmin(ctx context.Context, groupID, operatorID, targetUserID string) error {
 	if operatorID == targetUserID {
 		return errors.New("不能操作自己")
@@ -322,7 +322,7 @@ func (s *Service) RemoveAdmin(ctx context.Context, groupID, operatorID, targetUs
 		slog.Error("获取操作者信息失败", "error", err)
 		return err
 	}
-	if operator.Role != "owner" {
+	if operator.Role != RoleOwner {
 		return errors.New("仅群主可以移除管理员")
 	}
 
@@ -335,7 +335,7 @@ func (s *Service) RemoveAdmin(ctx context.Context, groupID, operatorID, targetUs
 		return err
 	}
 
-	if target.Role != "admin" {
+	if target.Role != RoleAdmin {
 		return errors.New("目标用户不是管理员")
 	}
 
@@ -347,7 +347,7 @@ func (s *Service) RemoveAdmin(ctx context.Context, groupID, operatorID, targetUs
 	return nil
 }
 
-// GetGroupMembers 获取群成员列表（必须为群成员）
+// GetGroupMembers 获取群成员列表（必须为群成员）.
 func (s *Service) GetGroupMembers(ctx context.Context, groupID, userID string) ([]schema.GroupMember, error) {
 	_, err := s.Repo.GroupMember.GetMember(ctx, groupID, userID)
 	if err != nil {
@@ -367,7 +367,7 @@ func (s *Service) GetGroupMembers(ctx context.Context, groupID, userID string) (
 	return members, nil
 }
 
-// GetUserGroups 获取用户加入的所有群组
+// GetUserGroups 获取用户加入的所有群组.
 func (s *Service) GetUserGroups(ctx context.Context, userID string) ([]repository.UserGroupInfo, error) {
 	groups, err := s.Repo.Group.GetUserGroups(ctx, userID)
 	if err != nil {
@@ -377,7 +377,7 @@ func (s *Service) GetUserGroups(ctx context.Context, userID string) ([]repositor
 	return groups, nil
 }
 
-// DeleteGroup 删除群组（仅群主可操作）
+// DeleteGroup 删除群组（仅群主可操作）.
 func (s *Service) DeleteGroup(ctx context.Context, groupID, userID string) error {
 	group, err := s.Repo.Group.GetGroupByID(ctx, groupID)
 	if err != nil {

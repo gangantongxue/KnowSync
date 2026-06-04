@@ -2,7 +2,7 @@ package model
 
 import "time"
 
-// DatabaseCfg 数据库配置项
+// DatabaseCfg 数据库配置项.
 type DatabaseCfg struct {
 	Host            string        `yaml:"host" mapstructure:"host"`
 	Port            int           `yaml:"port" mapstructure:"port"`

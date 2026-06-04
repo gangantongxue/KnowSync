@@ -12,6 +12,7 @@ import (
 	"github.com/gangantongxue/knowsync/user-server/pkg/mail"
 )
 
+// Service 业务服务层.
 type Service struct {
 	Cfg        *config.Config
 	Repository *repository.Repository
@@ -20,6 +21,7 @@ type Service struct {
 	privateKey *rsa.PrivateKey
 }
 
+// NewService 创建业务服务层.
 func NewService(cfg *config.Config, repository *repository.Repository, mailer *mail.Mailer, l *logger.Logger) (*Service, error) {
 	privateKey, err := auth.LoadPrivateKeyFromFile(cfg.Auth.RSAPrivateKeyPath)
 	if err != nil {

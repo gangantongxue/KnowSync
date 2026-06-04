@@ -1,8 +1,10 @@
+// Package worker 提供异步任务队列处理能力.
 package worker
 
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"time"
 
@@ -19,7 +21,7 @@ const (
 	poppTimeout = 0 // 0 = 阻塞等待
 )
 
-// Worker 后台向量化任务消费者
+// Worker 后台向量化任务消费者.
 type Worker struct {
 	rdb         *redis.Client
 	svc         *service.Service
@@ -30,7 +32,7 @@ type Worker struct {
 	maxRetries  int
 }
 
-// NewWorker 创建 Worker
+// NewWorker 创建 Worker.
 func NewWorker(
 	rdb *redis.Client,
 	svc *service.Service,
@@ -51,9 +53,10 @@ func NewWorker(
 	}
 }
 
-// Start 启动 worker 循环（阻塞）
+// Start 启动 worker 循环（阻塞）.
 func (w *Worker) Start(ctx context.Context) {
-	slog.Info("向量化 Worker 启动",
+	slog.Info(
+		"向量化 Worker 启动",
 		"concurrency", cap(w.sem),
 		"max_retries", w.maxRetries,
 	)
@@ -69,11 +72,11 @@ func (w *Worker) Start(ctx context.Context) {
 	}
 }
 
-// processNext 从队列获取并处理下一个任务
+// processNext 从队列获取并处理下一个任务.
 func (w *Worker) processNext(ctx context.Context) {
 	result, err := w.rdb.BRPop(ctx, poppTimeout, queueKey).Result()
 	if err != nil {
-		if err == context.Canceled || err == context.DeadlineExceeded {
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 			return
 		}
 		slog.Error("从队列获取任务失败", "error", err)
@@ -101,7 +104,7 @@ func (w *Worker) processNext(ctx context.Context) {
 	}()
 }
 
-// processTask 处理单个向量化任务
+// processTask 处理单个向量化任务.
 func (w *Worker) processTask(ctx context.Context, task *service.VectorizeTask) {
 	logger := slog.With(
 		"user_id", task.UserID,
@@ -156,11 +159,12 @@ func (w *Worker) processTask(ctx context.Context, task *service.VectorizeTask) {
 	logger.Info("向量化任务处理完成")
 }
 
-// handleFailure 处理任务失败（重试或丢弃）
+// handleFailure 处理任务失败（重试或丢弃）.
 func (w *Worker) handleFailure(reason string, task *service.VectorizeTask, err error) {
 	task.RetryCount++
 	if task.RetryCount > w.maxRetries {
-		slog.Error("任务超过最大重试次数，丢弃",
+		slog.Error(
+			"任务超过最大重试次数，丢弃",
 			"file_path", task.FilePath,
 			"retry_count", task.RetryCount,
 			"reason", reason,
@@ -179,7 +183,8 @@ func (w *Worker) handleFailure(reason string, task *service.VectorizeTask, err e
 	}
 
 	backoff := time.Duration(1<<task.RetryCount) * time.Second
-	slog.Warn("任务重新入队",
+	slog.Warn(
+		"任务重新入队",
 		"file_path", task.FilePath,
 		"retry_count", task.RetryCount,
 		"backoff", backoff,

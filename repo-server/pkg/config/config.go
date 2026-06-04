@@ -1,3 +1,4 @@
+// Package config 提供配置加载和解析功能.
 package config
 
 import (
@@ -7,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Config repo-server 全局配置
+// Config repo-server 全局配置.
 type Config struct {
 	Project  model.ProjectCfg  `yaml:"project" mapstructure:"project"`
 	Logger   model.LoggerCfg   `yaml:"logger" mapstructure:"logger"`
@@ -15,7 +16,7 @@ type Config struct {
 	GRPC     model.GRPCCfg     `yaml:"grpc" mapstructure:"grpc"`
 }
 
-// NewConfig 加载配置文件并返回解析后的配置
+// NewConfig 加载配置文件并返回解析后的配置.
 func NewConfig() (*Config, error) {
 	v := viper.New()
 	v.SetConfigName("config")

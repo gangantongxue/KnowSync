@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -10,7 +11,9 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// GetUserProfile 获取用户首页信息（用户信息 + 公开知识库 + 好友状态）
+// GetUserProfile 获取用户首页信息（用户信息 + 公开知识库 + 好友状态）.
+//
+//nolint:gocyclo // 涉及并发请求和多个条件分支
 func (h *Handler) GetUserProfile() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		targetUserID, err := parseUserIDParam(ctx)
@@ -76,7 +79,7 @@ func (h *Handler) GetUserProfile() app.HandlerFunc {
 
 		userResp := <-userCh
 		if userResp.err != nil {
-			if userResp.err == errUserNotFound {
+			if errors.Is(userResp.err, errUserNotFound) {
 				response.Error(c, ctx, 404, errcode.ErrNotFound, "用户不存在")
 				return
 			}
@@ -104,18 +107,18 @@ func (h *Handler) GetUserProfile() app.HandlerFunc {
 		friendStatus := h.determineFriendStatus(c, authUserID, targetUserID)
 
 		response.Success(c, ctx, map[string]any{
-			"user": map[string]any{
-				"id":     userResp.user.Id,
-				"name":   userResp.user.Name,
-				"avatar": userResp.user.Avatar,
+			KeyUser: map[string]any{
+				"id":      userResp.user.Id,
+				KeyName:   userResp.user.Name,
+				KeyAvatar: userResp.user.Avatar,
 			},
-			"repos":         publicRepos,
+			KeyRepos:        publicRepos,
 			"friend_status": friendStatus,
 		})
 	}
 }
 
-// ListUserPublicRepos 获取用户公开知识库列表
+// ListUserPublicRepos 获取用户公开知识库列表.
 func (h *Handler) ListUserPublicRepos() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		targetUserID, err := parseUserIDParam(ctx)
@@ -155,7 +158,9 @@ func (h *Handler) ListUserPublicRepos() app.HandlerFunc {
 	}
 }
 
-// determineFriendStatus 判断当前登录用户与目标用户的好友关系
+// determineFriendStatus 判断当前登录用户与目标用户的好友关系.
+//
+//nolint:gocyclo // 涉及三种好友状态的多个 gRPC 查询
 func (h *Handler) determineFriendStatus(c context.Context, authUserID, targetUserID string) string {
 	if authUserID == "" {
 		return "none"

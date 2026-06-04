@@ -10,18 +10,18 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// SendFriendRequestReq 发送好友申请请求体
+// SendFriendRequestReq 发送好友申请请求体.
 type SendFriendRequestReq struct {
 	ReceiverID string `json:"receiver_id"`
 	Remark     string `json:"remark"`
 }
 
-// UpdateFriendRemarkReq 更新好友备注请求体
+// UpdateFriendRemarkReq 更新好友备注请求体.
 type UpdateFriendRemarkReq struct {
 	Remark string `json:"remark"`
 }
 
-// SendFriendRequest 发送好友申请
+// SendFriendRequest 发送好友申请.
 func (h *Handler) SendFriendRequest() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -65,13 +65,15 @@ func (h *Handler) SendFriendRequest() app.HandlerFunc {
 				"receiver_id": resp.FriendRequest.ReceiverId,
 				"status":      resp.FriendRequest.Status,
 				"remark":      resp.FriendRequest.Remark,
-				"created_at":  resp.FriendRequest.CreatedAt,
+				KeyCreatedAt:  resp.FriendRequest.CreatedAt,
 			},
 		})
 	}
 }
 
-// GetFriendRequestsByReceiver 获取收到的好友申请
+// GetFriendRequestsByReceiver 获取收到的好友申请.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) GetFriendRequestsByReceiver() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -111,7 +113,9 @@ func (h *Handler) GetFriendRequestsByReceiver() app.HandlerFunc {
 	}
 }
 
-// GetFriendRequestsBySender 获取发送的好友申请
+// GetFriendRequestsBySender 获取发送的好友申请.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) GetFriendRequestsBySender() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -151,7 +155,9 @@ func (h *Handler) GetFriendRequestsBySender() app.HandlerFunc {
 	}
 }
 
-// AcceptFriendRequest 接受好友申请
+// AcceptFriendRequest 接受好友申请.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) AcceptFriendRequest() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -191,7 +197,9 @@ func (h *Handler) AcceptFriendRequest() app.HandlerFunc {
 	}
 }
 
-// RejectFriendRequest 拒绝好友申请
+// RejectFriendRequest 拒绝好友申请.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) RejectFriendRequest() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -231,7 +239,7 @@ func (h *Handler) RejectFriendRequest() app.HandlerFunc {
 	}
 }
 
-// GetFriendList 获取好友列表
+// GetFriendList 获取好友列表.
 func (h *Handler) GetFriendList() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -267,7 +275,7 @@ func (h *Handler) GetFriendList() app.HandlerFunc {
 		for _, f := range resp.Friends {
 			friends = append(friends, map[string]any{
 				"id":              f.Id,
-				"user_id":         f.UserId,
+				KeyUserID:         f.UserId,
 				"friend_id":       f.FriendId,
 				"remark":          f.Remark,
 				"last_message_at": f.LastMessageAt,
@@ -281,7 +289,9 @@ func (h *Handler) GetFriendList() app.HandlerFunc {
 	}
 }
 
-// DeleteFriend 删除好友
+// DeleteFriend 删除好友.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) DeleteFriend() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -321,7 +331,9 @@ func (h *Handler) DeleteFriend() app.HandlerFunc {
 	}
 }
 
-// UpdateFriendRemark 更新好友备注
+// UpdateFriendRemark 更新好友备注.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) UpdateFriendRemark() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -368,7 +380,7 @@ func (h *Handler) UpdateFriendRemark() app.HandlerFunc {
 	}
 }
 
-// SearchUsers 搜索用户
+// SearchUsers 搜索用户.
 func (h *Handler) SearchUsers() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		query := ctx.Query("q")
@@ -400,9 +412,9 @@ func (h *Handler) SearchUsers() app.HandlerFunc {
 		users := make([]map[string]any, 0, len(resp.Users))
 		for _, u := range resp.Users {
 			users = append(users, map[string]any{
-				"id":     u.Id,
-				"name":   u.Name,
-				"avatar": u.Avatar,
+				"id":      u.Id,
+				KeyName:   u.Name,
+				KeyAvatar: u.Avatar,
 			})
 		}
 
@@ -412,7 +424,7 @@ func (h *Handler) SearchUsers() app.HandlerFunc {
 	}
 }
 
-// marshalFriendRequest 将 protobuf FriendRequest 转换为 HTTP JSON 响应格式
+// marshalFriendRequest 将 protobuf FriendRequest 转换为 HTTP JSON 响应格式.
 func marshalFriendRequest(fr *pb.FriendRequest) map[string]any {
 	return map[string]any{
 		"id":          fr.Id,
@@ -420,7 +432,7 @@ func marshalFriendRequest(fr *pb.FriendRequest) map[string]any {
 		"receiver_id": fr.ReceiverId,
 		"status":      fr.Status,
 		"remark":      fr.Remark,
-		"created_at":  fr.CreatedAt,
-		"updated_at":  fr.UpdatedAt,
+		KeyCreatedAt:  fr.CreatedAt,
+		KeyUpdatedAt:  fr.UpdatedAt,
 	}
 }

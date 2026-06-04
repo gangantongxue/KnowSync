@@ -9,7 +9,7 @@ import (
 	"github.com/gangantongxue/knowsync/ai-server/internal/repository"
 )
 
-// mockSummaryRepo 模拟摘要存储
+// mockSummaryRepo 模拟摘要存储.
 type mockSummaryRepo struct {
 	summaries map[string]string
 }
@@ -19,14 +19,15 @@ func (m *mockSummaryRepo) UpdateSummary(sessionID, summary string) error {
 	return nil
 }
 
-// mockSummarizer 模拟摘要生成器
+// mockSummarizer 模拟摘要生成器.
 type mockSummarizer struct{}
 
-func (m *mockSummarizer) Summarize(ctx context.Context, messages []string, existingSummary string) (string, error) {
+func (m *mockSummarizer) Summarize(_ context.Context, _ []string, _ string) (string, error) {
 	return "这是模拟摘要：用户询问了知识库相关问题。", nil
 }
 
 func TestCompactIfNeeded_ShortConversation(t *testing.T) {
+	t.Parallel()
 	c := New(128_000, &mockSummarizer{}, &mockSummaryRepo{summaries: map[string]string{}})
 	msgs := []*schema.Message{
 		schema.UserMessage("你好"),
@@ -43,12 +44,13 @@ func TestCompactIfNeeded_ShortConversation(t *testing.T) {
 }
 
 func TestCompactIfNeeded_WithCompression(t *testing.T) {
+	t.Parallel()
 	repo := &mockSummaryRepo{summaries: map[string]string{}}
 	c := New(128_000, &mockSummarizer{}, repo)
 
 	// 构建超过阈值的消息（大量内容）
 	var msgs []*schema.Message
-	for i := 0; i < 200; i++ {
+	for i := range 200 {
 		if i%2 == 0 {
 			msgs = append(msgs, schema.UserMessage("用户问题 "+string(rune(i))+" "+string(make([]byte, 4000))))
 		} else {
@@ -83,6 +85,7 @@ func TestCompactIfNeeded_WithCompression(t *testing.T) {
 }
 
 func TestGroupTurns(t *testing.T) {
+	t.Parallel()
 	msgs := []*schema.Message{
 		schema.UserMessage("q1"),
 		schema.AssistantMessage("a1", nil),

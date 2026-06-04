@@ -1,3 +1,4 @@
+// Package middleware provides HTTP middleware for authentication and authorization.
 package middleware
 
 import (
@@ -11,11 +12,13 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// AccessTokenClaims represents the JWT claims for an access token.
 type AccessTokenClaims struct {
 	UserID string `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
+// Auth returns a middleware that verifies JWT access tokens using the given RSA public key.
 func Auth(publicKey *rsa.PublicKey) app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		authHeader := string(ctx.GetHeader("Authorization"))

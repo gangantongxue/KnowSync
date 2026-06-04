@@ -9,13 +9,13 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// DeleteFile 删除文件工具
+// DeleteFile 删除文件工具.
 type DeleteFile struct {
 	repoDetailClient RepoDetailClient
 	fileWriteClient  FileWriteClient
 }
 
-// NewDeleteFile 创建 DeleteFile 工具
+// NewDeleteFile 创建 DeleteFile 工具.
 func NewDeleteFile(rdc RepoDetailClient, fwc FileWriteClient) *DeleteFile {
 	return &DeleteFile{
 		repoDetailClient: rdc,
@@ -23,28 +23,28 @@ func NewDeleteFile(rdc RepoDetailClient, fwc FileWriteClient) *DeleteFile {
 	}
 }
 
-// Info 返回工具元信息
-func (d *DeleteFile) Info(ctx context.Context) (*schema.ToolInfo, error) {
+// Info 返回工具元信息.
+func (d *DeleteFile) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "delete_file",
 		Desc: "删除知识库中的文件。此操作不可撤销，务必先用 ask_user 让用户明确确认后再执行。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
-			"repo_id": {
-				Type:     "string",
-				Desc:     "知识库 ID",
+			ParamRepoID: {
+				Type:     TypeString,
+				Desc:     DescRepoID,
 				Required: true,
 			},
-			"file_path": {
-				Type:     "string",
-				Desc:     "文件路径，例如：docs/chapter1.md",
+			ParamFilePath: {
+				Type:     TypeString,
+				Desc:     DescFilePath,
 				Required: true,
 			},
 		}),
 	}, nil
 }
 
-// InvokableRun 执行工具调用
-func (d *DeleteFile) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+// InvokableRun 执行工具调用.
+func (d *DeleteFile) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return d.execute(ctx, arguments)
 }
 
@@ -58,7 +58,7 @@ func (d *DeleteFile) execute(ctx context.Context, paramsJSON string) (string, er
 	}
 
 	if params.RepoID == "" {
-		return `{"success": false, "message": "repo_id 不能为空"}`, nil
+		return ErrRespRepoIDEmpty, nil
 	}
 	if params.FilePath == "" {
 		return `{"success": false, "message": "file_path 不能为空"}`, nil
@@ -66,7 +66,7 @@ func (d *DeleteFile) execute(ctx context.Context, paramsJSON string) (string, er
 
 	userID, _ := ctx.Value(CtxKeyUserID).(string)
 	if userID == "" {
-		return `{"success": false, "message": "无法获取用户信息"}`, nil
+		return ErrRespUserInfo, nil
 	}
 
 	repo, err := d.repoDetailClient.GetRepo(ctx, params.RepoID, userID)
@@ -79,9 +79,9 @@ func (d *DeleteFile) execute(ctx context.Context, paramsJSON string) (string, er
 	}
 
 	data, _ := json.Marshal(map[string]any{
-		"success":   true,
-		"repo_id":   params.RepoID,
-		"file_path": params.FilePath,
+		KeySuccess:    true,
+		ParamRepoID:   params.RepoID,
+		ParamFilePath: params.FilePath,
 	})
 	return string(data), nil
 }

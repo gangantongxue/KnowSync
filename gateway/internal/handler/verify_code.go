@@ -9,19 +9,21 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// SendVerifyCodeRequest 发送验证码请求体
+// SendVerifyCodeRequest 发送验证码请求体.
 type SendVerifyCodeRequest struct {
 	Email string `json:"email"`
 }
 
-// ForgetPasswordRequest 忘记密码请求体
+// ForgetPasswordRequest 忘记密码请求体.
 type ForgetPasswordRequest struct {
 	Email      string `json:"email"`
 	Password   string `json:"password"`
 	VerifyCode string `json:"verify_code"`
 }
 
-// SendVerifyCode 发送邮箱验证码
+// SendVerifyCode 发送邮箱验证码.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) SendVerifyCode() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		var req SendVerifyCodeRequest
@@ -53,7 +55,7 @@ func (h *Handler) SendVerifyCode() app.HandlerFunc {
 	}
 }
 
-// ForgetPassword 忘记密码（通过邮箱验证码重置密码）
+// ForgetPassword 忘记密码（通过邮箱验证码重置密码）.
 func (h *Handler) ForgetPassword() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		var req ForgetPasswordRequest

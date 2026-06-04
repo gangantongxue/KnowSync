@@ -1,3 +1,4 @@
+// Package handler 提供 gRPC 消息处理逻辑.
 package handler
 
 import (
@@ -6,14 +7,11 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// GetConversationList 获取会话列表
+// GetConversationList 获取会话列表.
 func (h *Handler) GetConversationList(ctx context.Context, req *pb.GetConversationListReq) (*pb.GetConversationListResp, error) {
 	conversations, err := h.Service.GetConversationList(ctx, req.GetUserId())
 	if err != nil {
-		return &pb.GetConversationListResp{
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, err
 	}
 	pbConvs := make([]*pb.ConversationInfo, len(conversations))
 	for i, c := range conversations {
@@ -31,18 +29,15 @@ func (h *Handler) GetConversationList(ctx context.Context, req *pb.GetConversati
 	}
 	return &pb.GetConversationListResp{
 		Success:       true,
-		Msg:           "获取成功",
+		Msg:           MsgSuccess,
 		Conversations: pbConvs,
 	}, nil
 }
 
-// MarkConversationRead 标记会话已读
+// MarkConversationRead 标记会话已读.
 func (h *Handler) MarkConversationRead(ctx context.Context, req *pb.MarkConversationReadReq) (*pb.MarkConversationReadResp, error) {
 	if err := h.Service.MarkConversationRead(ctx, req.GetUserId(), req.GetConversationType(), req.GetConversationId()); err != nil {
-		return &pb.MarkConversationReadResp{
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, err
 	}
 	return &pb.MarkConversationReadResp{
 		Success: true,
@@ -50,14 +45,11 @@ func (h *Handler) MarkConversationRead(ctx context.Context, req *pb.MarkConversa
 	}, nil
 }
 
-// TogglePin 切换置顶
+// TogglePin 切换置顶.
 func (h *Handler) TogglePin(ctx context.Context, req *pb.TogglePinReq) (*pb.TogglePinResp, error) {
 	pinned, err := h.Service.TogglePin(ctx, req.GetUserId(), req.GetConversationType(), req.GetConversationId())
 	if err != nil {
-		return &pb.TogglePinResp{
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, err
 	}
 	return &pb.TogglePinResp{
 		Success: true,
@@ -66,13 +58,10 @@ func (h *Handler) TogglePin(ctx context.Context, req *pb.TogglePinReq) (*pb.Togg
 	}, nil
 }
 
-// DeleteConversation 删除会话
+// DeleteConversation 删除会话.
 func (h *Handler) DeleteConversation(ctx context.Context, req *pb.DeleteConversationReq) (*pb.DeleteConversationResp, error) {
 	if err := h.Service.DeleteConversation(ctx, req.GetUserId(), req.GetConversationType(), req.GetConversationId()); err != nil {
-		return &pb.DeleteConversationResp{
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, err
 	}
 	return &pb.DeleteConversationResp{
 		Success: true,

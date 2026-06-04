@@ -1,3 +1,4 @@
+// Package redis 提供 Redis 客户端初始化和管理.
 package redis
 
 import (
@@ -9,7 +10,7 @@ import (
 	"github.com/gangantongxue/knowsync/ai-server/pkg/config/model"
 )
 
-// NewRedis 创建 Redis 客户端
+// NewRedis 创建 Redis 客户端.
 func NewRedis(cfg *model.RedisCfg) (*redis.Client, error) {
 	addr := "localhost:6379"
 	if len(cfg.Addrs) > 0 {

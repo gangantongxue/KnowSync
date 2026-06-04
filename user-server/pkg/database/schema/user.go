@@ -1,3 +1,4 @@
+// Package schema provides GORM model definitions.
 package schema
 
 import (
@@ -10,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// User 用户表
+// User 用户表.
 type User struct {
 	ID       string `gorm:"primaryKey;type:varchar(20)" json:"id"`
 	Name     string `gorm:"column:name;type:varchar(64);not null" json:"name"`
@@ -23,26 +24,27 @@ type User struct {
 	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at;index" json:"deleted_at"`
 }
 
+// TableName 返回用户表名.
 func (u *User) TableName() string {
 	return "user"
 }
 
-// BeforeCreate 在创建用户前调用，生成随机数字 ID
-func (u *User) BeforeCreate(tx *gorm.DB) error {
+// BeforeCreate 在创建用户前调用，生成随机数字 ID.
+func (u *User) BeforeCreate(_ *gorm.DB) error {
 	if u.ID == "" {
 		u.ID = generateNumericID()
 	}
 	return nil
 }
 
-// generateNumericID 使用 crypto/rand 生成随机 uint64，格式化为十进制字符串
+// generateNumericID 使用 crypto/rand 生成随机 uint64，格式化为十进制字符串.
 func generateNumericID() string {
 	b := make([]byte, 8)
 	_, _ = rand.Read(b)
 	return strconv.FormatUint(binary.BigEndian.Uint64(b), 10)
 }
 
-// UserSession 用户会话表
+// UserSession 用户会话表.
 type UserSession struct {
 	ID               string         `gorm:"primaryKey;type:char(20)" json:"id"`
 	UserID           string         `gorm:"column:user_id;type:varchar(20);not null;index:user_id_index;uniqueIndex:user_id_refresh_token_hash_index,priority:1" json:"user_id"`
@@ -56,12 +58,13 @@ type UserSession struct {
 	DeletedAt        gorm.DeletedAt `gorm:"column:deleted_at;index" json:"deleted_at"`
 }
 
+// TableName 返回用户会话表名.
 func (u *UserSession) TableName() string {
 	return "user_session"
 }
 
-// BeforeCreate 在创建用户会话前调用
-func (u *UserSession) BeforeCreate(tx *gorm.DB) error {
+// BeforeCreate 在创建用户会话前调用.
+func (u *UserSession) BeforeCreate(_ *gorm.DB) error {
 	if u.ID == "" {
 		u.ID = xid.New().String()
 	}

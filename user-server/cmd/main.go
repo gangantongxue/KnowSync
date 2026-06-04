@@ -1,3 +1,4 @@
+// Package main is the entry point of the user-server application.
 package main
 
 import (

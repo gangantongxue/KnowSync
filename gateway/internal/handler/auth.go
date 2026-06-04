@@ -3,9 +3,11 @@ package handler
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
+	"strconv"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -15,23 +17,23 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// LoginRequest 登录请求体
+// LoginRequest 登录请求体.
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-// LogoutRequest 登出请求体
+// LogoutRequest 登出请求体.
 type LogoutRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-// RefreshRequest 刷新令牌请求体
+// RefreshRequest 刷新令牌请求体.
 type RefreshRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-// setRefreshTokenCookie 设置 refresh_token 为 httpOnly cookie
+// setRefreshTokenCookie 设置 refresh_token 为 httpOnly cookie.
 func setRefreshTokenCookie(ctx *app.RequestContext, token string) {
 	// 7天过期
 	maxAge := 7 * 24 * 60 * 60
@@ -40,7 +42,7 @@ func setRefreshTokenCookie(ctx *app.RequestContext, token string) {
 
 // Register 用户注册（multipart/form-data）
 // 字段: name, email, password, verify_code, avatar（文件，可选）
-// 流程: 解析表单 → 校验文件魔数 → Register gRPC → 保存头像 → SetAvatar gRPC → 返回
+// 流程: 解析表单 → 校验文件魔数 → Register gRPC → 保存头像 → SetAvatar gRPC → 返回.
 func (h *Handler) Register() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		name := ctx.PostForm("name")
@@ -54,48 +56,10 @@ func (h *Handler) Register() app.HandlerFunc {
 		}
 
 		// --- 处理可选的头像文件 ---
-		var avatarReader io.Reader
-		var avatarExt string
-
-		mf, _ := ctx.MultipartForm()
-		if mf != nil && mf.File != nil {
-			fhs := mf.File["avatar"]
-			if len(fhs) > 0 {
-				fileHeader := fhs[0]
-				f, err := fileHeader.Open()
-				if err != nil {
-					response.Error(c, ctx, 500, errcode.ErrBadReq, "头像文件读取失败")
-					return
-				}
-				defer f.Close()
-
-				// 读取文件头魔数，校验图片格式
-				head := make([]byte, 12)
-				n, readErr := io.ReadFull(f, head)
-				if readErr != nil && readErr != io.ErrUnexpectedEOF {
-					response.Error(c, ctx, 500, errcode.ErrBadReq, "头像文件读取失败")
-					return
-				}
-
-				// 通过文件头魔数判断真实类型，防止伪造扩展名
-				switch {
-				case n >= 3 && head[0] == 0xFF && head[1] == 0xD8 && head[2] == 0xFF:
-					avatarExt = ".jpg"
-				case n >= 4 && head[0] == 0x89 && head[1] == 0x50 && head[2] == 0x4E && head[3] == 0x47:
-					avatarExt = ".png"
-				case n >= 4 && head[0] == 0x47 && head[1] == 0x49 && head[2] == 0x46 && head[3] == 0x38:
-					avatarExt = ".gif"
-				case n >= 12 && head[0] == 0x52 && head[1] == 0x49 && head[2] == 0x46 && head[3] == 0x46 &&
-					head[8] == 0x57 && head[9] == 0x45 && head[10] == 0x42 && head[11] == 0x50:
-					avatarExt = ".webp"
-				default:
-					response.Error(c, ctx, 400, errcode.ErrBadReq, "不支持的头像文件格式，仅支持 JPG/PNG/GIF/WebP")
-					return
-				}
-
-				// 将已读取的魔数头部与剩余文件拼回完整流
-				avatarReader = io.MultiReader(bytes.NewReader(head[:n]), f)
-			}
+		avatarData, avatarExt, err := processAvatarFile(ctx)
+		if err != nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, err.Error())
+			return
 		}
 
 		// --- 调用 Register gRPC ---
@@ -125,10 +89,10 @@ func (h *Handler) Register() app.HandlerFunc {
 		userID := registerResp.User.Id
 		avatarURL := ""
 
-		if avatarReader != nil {
-			ts := fmt.Sprintf("%d", time.Now().UnixMilli())
+		if avatarData != nil {
+			ts := strconv.FormatInt(time.Now().UnixMilli(), 10)
 			key := fmt.Sprintf("%s/avatar/%s%s", userID, ts, avatarExt)
-			if _, err := h.store.WriteFile(key, avatarReader); err != nil {
+			if _, err := h.store.WriteFile(key, bytes.NewReader(avatarData)); err != nil {
 				slog.Warn("头像文件保存失败，注册已完成但未设置头像", "user_id", userID, "error", err)
 			} else {
 				avatarURL = fmt.Sprintf("/files/%s/avatar/%s%s", userID, ts, avatarExt)
@@ -142,17 +106,17 @@ func (h *Handler) Register() app.HandlerFunc {
 		}
 
 		response.Success(c, ctx, map[string]any{
-			"user": map[string]any{
-				"id":     registerResp.User.Id,
-				"name":   registerResp.User.Name,
-				"email":  registerResp.User.Email,
-				"avatar": avatarURL,
+			KeyUser: map[string]any{
+				"id":      registerResp.User.Id,
+				KeyName:   registerResp.User.Name,
+				KeyEmail:  registerResp.User.Email,
+				KeyAvatar: avatarURL,
 			},
 		})
 	}
 }
 
-// Login 用户登录
+// Login 用户登录.
 func (h *Handler) Login() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		var req LoginRequest
@@ -187,10 +151,10 @@ func (h *Handler) Login() app.HandlerFunc {
 		userInfo := map[string]any{}
 		if loginResp.User != nil {
 			userInfo = map[string]any{
-				"id":     loginResp.User.Id,
-				"name":   loginResp.User.Name,
-				"email":  loginResp.User.Email,
-				"avatar": loginResp.User.Avatar,
+				"id":      loginResp.User.Id,
+				KeyName:   loginResp.User.Name,
+				KeyEmail:  loginResp.User.Email,
+				KeyAvatar: loginResp.User.Avatar,
 			}
 		}
 		// 只返回 access_token（前端存储在 localStorage）
@@ -201,7 +165,9 @@ func (h *Handler) Login() app.HandlerFunc {
 	}
 }
 
-// Logout 用户登出
+// Logout 用户登出.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) Logout() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		var req LogoutRequest
@@ -234,7 +200,7 @@ func (h *Handler) Logout() app.HandlerFunc {
 }
 
 // Refresh 刷新 access token
-// 前端 401 时自动调用，refresh_token 通过 httpOnly cookie 自动携带
+// 前端 401 时自动调用，refresh_token 通过 httpOnly cookie 自动携带.
 func (h *Handler) Refresh() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		// 从 httpOnly cookie 读取 refresh_token
@@ -271,12 +237,61 @@ func (h *Handler) Refresh() app.HandlerFunc {
 		// 返回新的 access_token 和用户信息
 		response.Success(c, ctx, map[string]any{
 			"access_token": refreshResp.AccessToken,
-			"user": map[string]any{
-				"id":     refreshResp.User.Id,
-				"name":   refreshResp.User.Name,
-				"email":  refreshResp.User.Email,
-				"avatar": refreshResp.User.Avatar,
+			KeyUser: map[string]any{
+				"id":      refreshResp.User.Id,
+				KeyName:   refreshResp.User.Name,
+				KeyEmail:  refreshResp.User.Email,
+				KeyAvatar: refreshResp.User.Avatar,
 			},
 		})
 	}
+}
+
+// processAvatarFile 从 multipart 表单中解析头像文件，返回完整内容和扩展名.
+//
+//nolint:gocyclo // 文件魔数校验涉及多种图片格式分支
+func processAvatarFile(ctx *app.RequestContext) ([]byte, string, error) {
+	mf, _ := ctx.MultipartForm()
+	if mf == nil || mf.File == nil {
+		return nil, "", nil
+	}
+	fhs := mf.File["avatar"]
+	if len(fhs) == 0 {
+		return nil, "", nil
+	}
+
+	fileHeader := fhs[0]
+	f, err := fileHeader.Open()
+	if err != nil {
+		return nil, "", err
+	}
+	defer func() { _ = f.Close() }()
+
+	head := make([]byte, 12)
+	n, readErr := io.ReadFull(f, head)
+	if readErr != nil && readErr != io.ErrUnexpectedEOF {
+		return nil, "", readErr
+	}
+
+	var ext string
+	switch {
+	case n >= 3 && head[0] == 0xFF && head[1] == 0xD8 && head[2] == 0xFF:
+		ext = ".jpg"
+	case n >= 4 && head[0] == 0x89 && head[1] == 0x50 && head[2] == 0x4E && head[3] == 0x47:
+		ext = ".png"
+	case n >= 4 && head[0] == 0x47 && head[1] == 0x49 && head[2] == 0x46 && head[3] == 0x38:
+		ext = ".gif"
+	case n >= 12 && head[0] == 0x52 && head[1] == 0x49 && head[2] == 0x46 && head[3] == 0x46 &&
+		head[8] == 0x57 && head[9] == 0x45 && head[10] == 0x42 && head[11] == 0x50:
+		ext = ".webp"
+	default:
+		return nil, "", errors.New("不支持的头像文件格式，仅支持 JPG/PNG/GIF/WebP")
+	}
+
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return append(head[:n], data...), ext, nil
 }

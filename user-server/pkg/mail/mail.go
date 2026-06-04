@@ -1,3 +1,4 @@
+// Package mail provides email sending functionality.
 package mail
 
 import (
@@ -15,7 +16,7 @@ import (
 //go:embed templates/verify_code.html
 var verifyCodeTemplate string
 
-// Mailer 邮件发送器
+// Mailer 邮件发送器.
 type Mailer struct {
 	dialer   *gomail.Dialer
 	from     string
@@ -23,7 +24,7 @@ type Mailer struct {
 	logger   *logger.Logger
 }
 
-// NewMailer 创建邮件发送器
+// NewMailer 创建邮件发送器.
 func NewMailer(cfg *model.EmailCfg, l *logger.Logger) *Mailer {
 	dialer := gomail.NewDialer(cfg.SMTPHost, cfg.SMTPPort, cfg.Username, cfg.Password)
 	return &Mailer{
@@ -34,7 +35,7 @@ func NewMailer(cfg *model.EmailCfg, l *logger.Logger) *Mailer {
 	}
 }
 
-// SendVerifyCode 发送验证码邮件
+// SendVerifyCode 发送验证码邮件.
 func (m *Mailer) SendVerifyCode(to, code string) error {
 	body := strings.Replace(verifyCodeTemplate, "{CODE}", code, 1)
 

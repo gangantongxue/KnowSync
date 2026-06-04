@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// FriendRequest 好友申请表
+// FriendRequest 好友申请表.
 type FriendRequest struct {
 	ID         string `gorm:"primaryKey;type:char(20)" json:"id"`
 	SenderID   string `gorm:"column:sender_id;type:varchar(20);not null;index:idx_sender" json:"sender_id"`
@@ -16,11 +16,13 @@ type FriendRequest struct {
 	UpdatedAt  int64  `gorm:"column:updated_at;type:bigint;not null" json:"updated_at"`
 }
 
+// TableName 返回好友申请表名.
 func (f *FriendRequest) TableName() string {
 	return "friend_requests"
 }
 
-func (f *FriendRequest) BeforeCreate(tx *gorm.DB) error {
+// BeforeCreate GORM 创建前钩子，自动生成 ID.
+func (f *FriendRequest) BeforeCreate(_ *gorm.DB) error {
 	if f.ID == "" {
 		f.ID = xid.New().String()
 	}

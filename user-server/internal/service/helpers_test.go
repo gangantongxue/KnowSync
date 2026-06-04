@@ -6,6 +6,7 @@ import (
 )
 
 func TestHashPassword(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		password string
@@ -19,6 +20,7 @@ func TestHashPassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			hash, err := HashPassword(tt.password)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HashPassword() error = %v, wantErr = %v", err, tt.wantErr)
@@ -35,6 +37,7 @@ func TestHashPassword(t *testing.T) {
 }
 
 func TestHashPassword_SamePasswordDifferentHash(t *testing.T) {
+	t.Parallel()
 	password := "testpassword"
 
 	h1, err := HashPassword(password)
@@ -53,6 +56,7 @@ func TestHashPassword_SamePasswordDifferentHash(t *testing.T) {
 }
 
 func TestCheckPassword(t *testing.T) {
+	t.Parallel()
 	password := "securePassword123!"
 	hash, err := HashPassword(password)
 	if err != nil {
@@ -60,30 +64,35 @@ func TestCheckPassword(t *testing.T) {
 	}
 
 	t.Run("correct password", func(t *testing.T) {
+		t.Parallel()
 		if err := CheckPassword(password, hash); err != nil {
 			t.Errorf("CheckPassword() error = %v, want nil", err)
 		}
 	})
 
 	t.Run("incorrect password", func(t *testing.T) {
+		t.Parallel()
 		if err := CheckPassword("wrongpassword", hash); err == nil {
 			t.Error("CheckPassword() expected error, got nil")
 		}
 	})
 
 	t.Run("empty password", func(t *testing.T) {
+		t.Parallel()
 		if err := CheckPassword("", hash); err == nil {
 			t.Error("CheckPassword() with empty password expected error, got nil")
 		}
 	})
 
 	t.Run("empty hash", func(t *testing.T) {
+		t.Parallel()
 		if err := CheckPassword(password, ""); err == nil {
 			t.Error("CheckPassword() with empty hash expected error, got nil")
 		}
 	})
 
 	t.Run("invalid hash format", func(t *testing.T) {
+		t.Parallel()
 		if err := CheckPassword(password, "invalidhash"); err == nil {
 			t.Error("CheckPassword() with invalid hash expected error, got nil")
 		}

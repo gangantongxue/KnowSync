@@ -1,3 +1,4 @@
+// Package logger provides structured logging with multi-output support.
 package logger
 
 import (
@@ -12,14 +13,14 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-// Logger 封装 slog.Logger，支持同时向控制台和文件输出
+// Logger 封装 slog.Logger，支持同时向控制台和文件输出.
 type Logger struct {
 	Logger       *slog.Logger
 	MultiHandler *MultiHandler
 	Cfg          *config.Config
 }
 
-// NewLogger 创建日志记录器，控制台使用文本格式，文件使用 JSON 格式 + 自动轮转
+// NewLogger 创建日志记录器，控制台使用文本格式，文件使用 JSON 格式 + 自动轮转.
 func NewLogger(cfg *config.Config) (*Logger, error) {
 	fileWriter := &lumberjack.Logger{
 		Filename:   filepath.Join(cfg.Logger.Dir, "gateway.log"),
@@ -52,7 +53,7 @@ func NewLogger(cfg *config.Config) (*Logger, error) {
 	return &Logger{Logger: logger, MultiHandler: multiHandler, Cfg: cfg}, nil
 }
 
-// Printf 格式化输出日志，用于 Redis 等第三方库的日志适配
+// Printf 格式化输出日志，用于 Redis 等第三方库的日志适配.
 func (l *Logger) Printf(ctx context.Context, format string, v ...any) {
 	msg := fmt.Sprintf(format, v...)
 	if strings.Contains(msg, "ping") {
@@ -61,7 +62,7 @@ func (l *Logger) Printf(ctx context.Context, format string, v ...any) {
 	l.Logger.InfoContext(ctx, msg)
 }
 
-// MultiHandler 实现同时向多个 slog.Handler 输出
+// MultiHandler 实现同时向多个 slog.Handler 输出.
 type MultiHandler struct {
 	handlers []slog.Handler
 }
@@ -70,6 +71,7 @@ func newMultiHandler(handlers ...slog.Handler) *MultiHandler {
 	return &MultiHandler{handlers: handlers}
 }
 
+// Enabled returns true if any of the underlying handlers has the level enabled.
 func (h *MultiHandler) Enabled(ctx context.Context, level slog.Level) bool {
 	for _, handler := range h.handlers {
 		if handler.Enabled(ctx, level) {
@@ -79,6 +81,7 @@ func (h *MultiHandler) Enabled(ctx context.Context, level slog.Level) bool {
 	return false
 }
 
+// Handle sends the log record to all underlying handlers that have the level enabled.
 func (h *MultiHandler) Handle(ctx context.Context, r slog.Record) error {
 	for _, handler := range h.handlers {
 		if handler.Enabled(ctx, r.Level) {
@@ -90,6 +93,7 @@ func (h *MultiHandler) Handle(ctx context.Context, r slog.Record) error {
 	return nil
 }
 
+// WithAttrs returns a new MultiHandler with the given attributes attached.
 func (h *MultiHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	newHandlers := make([]slog.Handler, len(h.handlers))
 	for i, handler := range h.handlers {
@@ -98,6 +102,7 @@ func (h *MultiHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &MultiHandler{handlers: newHandlers}
 }
 
+// WithGroup returns a new MultiHandler with the given group name.
 func (h *MultiHandler) WithGroup(name string) slog.Handler {
 	newHandlers := make([]slog.Handler, len(h.handlers))
 	for i, handler := range h.handlers {

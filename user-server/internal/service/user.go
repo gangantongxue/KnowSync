@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// GetUser 获取用户信息
+// GetUser 获取用户信息.
 func (s *Service) GetUser(ctx context.Context, userID string) (*schema.User, error) {
 	user, err := s.Repository.GetUser(ctx, userID)
 	if err != nil {
@@ -23,11 +23,11 @@ func (s *Service) GetUser(ctx context.Context, userID string) (*schema.User, err
 	return user, nil
 }
 
-// UpdateUserInfo 更新用户信息
-func (s *Service) UpdateUserInfo(ctx context.Context, userID string, name, email, avatar string) (*schema.User, error) {
+// UpdateUserInfo 更新用户信息.
+func (s *Service) UpdateUserInfo(ctx context.Context, userID, name, email, avatar string) (*schema.User, error) {
 	user, err := s.Repository.GetUser(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("用户不存在")
+		return nil, errors.New("用户不存在")
 	}
 
 	if name != "" {
@@ -49,11 +49,11 @@ func (s *Service) UpdateUserInfo(ctx context.Context, userID string, name, email
 	return user, nil
 }
 
-// SetAvatar 设置用户头像
-func (s *Service) SetAvatar(ctx context.Context, userID string, avatar string) error {
+// SetAvatar 设置用户头像.
+func (s *Service) SetAvatar(ctx context.Context, userID, avatar string) error {
 	user, err := s.Repository.GetUser(ctx, userID)
 	if err != nil {
-		return fmt.Errorf("用户不存在")
+		return errors.New("用户不存在")
 	}
 
 	user.Avatar = avatar
@@ -66,24 +66,24 @@ func (s *Service) SetAvatar(ctx context.Context, userID string, avatar string) e
 	return nil
 }
 
-// Unregister 注销用户
-func (s *Service) Unregister(ctx context.Context, userID string, email, password, verifyCode string) error {
+// Unregister 注销用户.
+func (s *Service) Unregister(ctx context.Context, userID, email, password, verifyCode string) error {
 	// 1. 验证码校验
 	storedCode, err := s.Repository.GetVerifyCode(ctx, email)
 	if err != nil {
-		return fmt.Errorf("验证码已过期或不存在")
+		return errors.New("验证码已过期或不存在")
 	}
 	if storedCode != verifyCode {
-		return fmt.Errorf("验证码错误")
+		return errors.New("验证码错误")
 	}
 
 	// 2. 查找用户并校验密码
 	user, err := s.Repository.GetUser(ctx, userID)
 	if err != nil {
-		return fmt.Errorf("用户不存在")
+		return errors.New("用户不存在")
 	}
 	if err := CheckPassword(password, user.Password); err != nil {
-		return fmt.Errorf("密码错误")
+		return errors.New("密码错误")
 	}
 
 	// 3. 删除用户

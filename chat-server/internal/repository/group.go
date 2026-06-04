@@ -7,22 +7,22 @@ import (
 	"gorm.io/gorm"
 )
 
-// GroupRepository 群组仓库
+// GroupRepository 群组仓库.
 type GroupRepository struct {
 	DB *gorm.DB
 }
 
-// NewGroupRepository 创建群组仓库
+// NewGroupRepository 创建群组仓库.
 func NewGroupRepository(db *gorm.DB) *GroupRepository {
 	return &GroupRepository{DB: db}
 }
 
-// CreateGroup 创建群组
+// CreateGroup 创建群组.
 func (r *GroupRepository) CreateGroup(ctx context.Context, group *schema.Group) error {
 	return r.DB.WithContext(ctx).Create(group).Error
 }
 
-// GetGroupByID 根据ID获取群组
+// GetGroupByID 根据ID获取群组.
 func (r *GroupRepository) GetGroupByID(ctx context.Context, id string) (*schema.Group, error) {
 	var group schema.Group
 	if err := r.DB.WithContext(ctx).Where("id = ?", id).First(&group).Error; err != nil {
@@ -31,23 +31,23 @@ func (r *GroupRepository) GetGroupByID(ctx context.Context, id string) (*schema.
 	return &group, nil
 }
 
-// UpdateGroup 更新群组信息
+// UpdateGroup 更新群组信息.
 func (r *GroupRepository) UpdateGroup(ctx context.Context, group *schema.Group) error {
 	return r.DB.WithContext(ctx).Save(group).Error
 }
 
-// DeleteGroup 删除群组
+// DeleteGroup 删除群组.
 func (r *GroupRepository) DeleteGroup(ctx context.Context, groupID string) error {
 	return r.DB.WithContext(ctx).Where("id = ?", groupID).Delete(&schema.Group{}).Error
 }
 
-// UserGroupInfo 用户群组信息（包含成员角色）
+// UserGroupInfo 用户群组信息（包含成员角色）.
 type UserGroupInfo struct {
 	schema.Group
 	Role string
 }
 
-// GetUserGroups 获取用户加入的所有群组（包含成员角色）
+// GetUserGroups 获取用户加入的所有群组（包含成员角色）.
 func (r *GroupRepository) GetUserGroups(ctx context.Context, userID string) ([]UserGroupInfo, error) {
 	var results []UserGroupInfo
 	if err := r.DB.WithContext(ctx).
@@ -62,29 +62,29 @@ func (r *GroupRepository) GetUserGroups(ctx context.Context, userID string) ([]U
 	return results, nil
 }
 
-// GroupMemberRepository 群组成员仓库
+// GroupMemberRepository 群组成员仓库.
 type GroupMemberRepository struct {
 	DB *gorm.DB
 }
 
-// NewGroupMemberRepository 创建群组成员仓库
+// NewGroupMemberRepository 创建群组成员仓库.
 func NewGroupMemberRepository(db *gorm.DB) *GroupMemberRepository {
 	return &GroupMemberRepository{DB: db}
 }
 
-// AddMember 添加成员
+// AddMember 添加成员.
 func (r *GroupMemberRepository) AddMember(ctx context.Context, member *schema.GroupMember) error {
 	return r.DB.WithContext(ctx).Create(member).Error
 }
 
-// RemoveMember 移除成员
+// RemoveMember 移除成员.
 func (r *GroupMemberRepository) RemoveMember(ctx context.Context, groupID, userID string) error {
 	return r.DB.WithContext(ctx).
 		Where("group_id = ? AND user_id = ?", groupID, userID).
 		Delete(&schema.GroupMember{}).Error
 }
 
-// UpdateMemberRole 更新成员角色
+// UpdateMemberRole 更新成员角色.
 func (r *GroupMemberRepository) UpdateMemberRole(ctx context.Context, groupID, userID, role string) error {
 	return r.DB.WithContext(ctx).
 		Model(&schema.GroupMember{}).
@@ -92,7 +92,7 @@ func (r *GroupMemberRepository) UpdateMemberRole(ctx context.Context, groupID, u
 		Update("role", role).Error
 }
 
-// GetMembers 获取所有成员
+// GetMembers 获取所有成员.
 func (r *GroupMemberRepository) GetMembers(ctx context.Context, groupID string) ([]schema.GroupMember, error) {
 	var members []schema.GroupMember
 	if err := r.DB.WithContext(ctx).
@@ -104,7 +104,7 @@ func (r *GroupMemberRepository) GetMembers(ctx context.Context, groupID string) 
 	return members, nil
 }
 
-// GetMember 获取单个成员
+// GetMember 获取单个成员.
 func (r *GroupMemberRepository) GetMember(ctx context.Context, groupID, userID string) (*schema.GroupMember, error) {
 	var member schema.GroupMember
 	if err := r.DB.WithContext(ctx).
@@ -115,7 +115,7 @@ func (r *GroupMemberRepository) GetMember(ctx context.Context, groupID, userID s
 	return &member, nil
 }
 
-// CountMembers 统计成员数
+// CountMembers 统计成员数.
 func (r *GroupMemberRepository) CountMembers(ctx context.Context, groupID string) (int64, error) {
 	var count int64
 	if err := r.DB.WithContext(ctx).

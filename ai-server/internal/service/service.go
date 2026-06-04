@@ -17,7 +17,7 @@ import (
 	"github.com/gangantongxue/knowsync/ai-server/pkg/config/model"
 )
 
-// Service 业务逻辑层
+// Service 业务逻辑层.
 type Service struct {
 	Cfg         *model.Config
 	RDB         *redis.Client
@@ -31,7 +31,7 @@ type Service struct {
 	Compactor   *compactor.Compactor // 上下文管理器（溢出压缩）
 }
 
-// NewService 创建业务逻辑层
+// NewService 创建业务逻辑层.
 func NewService(cfg *model.Config, rdb *redis.Client, client *Client, repo *repository.Repository, llmModel *llm.ChatModel, emb *embedder.Client, vs *vectorstore.Store) (*Service, error) {
 	// 初始化上下文管理器
 	summarizer := compactor.NewSummarizer(cfg.LLM.BaseURL, cfg.LLM.APIKey, cfg.LLM.Model)
@@ -58,7 +58,7 @@ func NewService(cfg *model.Config, rdb *redis.Client, client *Client, repo *repo
 	return svc, nil
 }
 
-// initAgent 用工具列表初始化 ReAct Agent（全局初始化一次）
+// initAgent 用工具列表初始化 ReAct Agent（全局初始化一次）.
 func (s *Service) initAgent(ctx context.Context) error {
 	// 确认策略配置
 	writePolicies := map[string]llmtool.ConfirmLevel{

@@ -9,24 +9,24 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// SearchUsers 搜索用户工具
+// SearchUsers 搜索用户工具.
 type SearchUsers struct {
 	userSearchClient UserSearchClient
 }
 
-// NewSearchUsers 创建 SearchUsers 工具
+// NewSearchUsers 创建 SearchUsers 工具.
 func NewSearchUsers(usc UserSearchClient) *SearchUsers {
 	return &SearchUsers{userSearchClient: usc}
 }
 
-// Info 返回工具元信息
-func (s *SearchUsers) Info(ctx context.Context) (*schema.ToolInfo, error) {
+// Info 返回工具元信息.
+func (s *SearchUsers) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "search_users",
 		Desc: "搜索平台上的用户，返回用户列表及 ID。用于查找要添加为协作者的用户。返回结果包含用户 ID 和名称。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
 			"keyword": {
-				Type:     "string",
+				Type:     TypeString,
 				Desc:     "搜索关键词，用于匹配用户名称",
 				Required: true,
 			},
@@ -34,8 +34,8 @@ func (s *SearchUsers) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	}, nil
 }
 
-// InvokableRun 执行工具调用
-func (s *SearchUsers) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+// InvokableRun 执行工具调用.
+func (s *SearchUsers) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return s.execute(ctx, arguments)
 }
 
@@ -62,12 +62,12 @@ func (s *SearchUsers) execute(ctx context.Context, paramsJSON string) (string, e
 	}
 	items := make([]userItem, 0, len(users))
 	for _, u := range users {
-		items = append(items, userItem{ID: u.ID, Name: u.Name})
+		items = append(items, userItem(u))
 	}
 
 	data, _ := json.Marshal(map[string]any{
-		"users": items,
-		"total": len(items),
+		"users":  items,
+		KeyTotal: len(items),
 	})
 	return string(data), nil
 }

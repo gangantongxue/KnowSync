@@ -1,7 +1,9 @@
+// Package auth provides JWT token generation, validation, and RSA key loading.
 package auth
 
 import (
 	"crypto/rsa"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -9,11 +11,13 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// AccessTokenClaims JWT access token 声明.
 type AccessTokenClaims struct {
 	UserID string `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
+// GenerateAccessToken 生成 JWT access token.
 func GenerateAccessToken(userID string, key *rsa.PrivateKey, ttl time.Duration) (string, error) {
 	claims := AccessTokenClaims{
 		UserID: userID,
@@ -32,6 +36,7 @@ func GenerateAccessToken(userID string, key *rsa.PrivateKey, ttl time.Duration) 
 	return tokenString, nil
 }
 
+// ValidateAccessToken 验证 JWT access token 并返回用户 ID.
 func ValidateAccessToken(tokenString string, key *rsa.PublicKey) (string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &AccessTokenClaims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
@@ -45,13 +50,15 @@ func ValidateAccessToken(tokenString string, key *rsa.PublicKey) (string, error)
 
 	claims, ok := token.Claims.(*AccessTokenClaims)
 	if !ok || !token.Valid {
-		return "", fmt.Errorf("JWT 声明解析失败")
+		return "", errors.New("JWT 声明解析失败")
 	}
 
 	return claims.UserID, nil
 }
 
+// LoadPrivateKeyFromFile 从文件加载 RSA 私钥.
 func LoadPrivateKeyFromFile(path string) (*rsa.PrivateKey, error) {
+	//nolint:gosec // path is configured, not user-controlled
 	keyData, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("读取 RSA 私钥文件失败: %w", err)
@@ -59,7 +66,9 @@ func LoadPrivateKeyFromFile(path string) (*rsa.PrivateKey, error) {
 	return jwt.ParseRSAPrivateKeyFromPEM(keyData)
 }
 
+// LoadPublicKeyFromFile 从文件加载 RSA 公钥.
 func LoadPublicKeyFromFile(path string) (*rsa.PublicKey, error) {
+	//nolint:gosec // path is configured, not user-controlled
 	keyData, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("读取 RSA 公钥文件失败: %w", err)

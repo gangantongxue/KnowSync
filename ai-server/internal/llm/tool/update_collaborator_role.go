@@ -1,4 +1,4 @@
-package tool
+package tool //nolint:dupl // 与 add_collaborator.go 结构相似但逻辑不同
 
 import (
 	"context"
@@ -9,13 +9,13 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// UpdateCollaboratorRole 变更协作者角色工具
+// UpdateCollaboratorRole 变更协作者角色工具.
 type UpdateCollaboratorRole struct {
 	repoDetailClient   RepoDetailClient
 	collaboratorClient CollaboratorClient
 }
 
-// NewUpdateCollaboratorRole 创建 UpdateCollaboratorRole 工具
+// NewUpdateCollaboratorRole 创建 UpdateCollaboratorRole 工具.
 func NewUpdateCollaboratorRole(rdc RepoDetailClient, cc CollaboratorClient) *UpdateCollaboratorRole {
 	return &UpdateCollaboratorRole{
 		repoDetailClient:   rdc,
@@ -23,24 +23,24 @@ func NewUpdateCollaboratorRole(rdc RepoDetailClient, cc CollaboratorClient) *Upd
 	}
 }
 
-// Info 返回工具元信息
-func (u *UpdateCollaboratorRole) Info(ctx context.Context) (*schema.ToolInfo, error) {
+// Info 返回工具元信息.
+func (u *UpdateCollaboratorRole) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "update_collaborator_role",
 		Desc: "变更知识库协作者的角色。务必先用 ask_user 让用户确认后再执行。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
-			"repo_id": {
-				Type:     "string",
-				Desc:     "知识库 ID",
+			ParamRepoID: {
+				Type:     TypeString,
+				Desc:     DescRepoID,
 				Required: true,
 			},
-			"user_id": {
-				Type:     "string",
+			ParamUserID: {
+				Type:     TypeString,
 				Desc:     "协作者用户 ID",
 				Required: true,
 			},
-			"role": {
-				Type:     "string",
+			ParamRole: {
+				Type:     TypeString,
 				Desc:     "新角色：ADMIN、DEVELOPER 或 VIEWER",
 				Required: true,
 			},
@@ -48,8 +48,8 @@ func (u *UpdateCollaboratorRole) Info(ctx context.Context) (*schema.ToolInfo, er
 	}, nil
 }
 
-// InvokableRun 执行工具调用
-func (u *UpdateCollaboratorRole) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+// InvokableRun 执行工具调用.
+func (u *UpdateCollaboratorRole) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return u.execute(ctx, arguments)
 }
 
@@ -64,7 +64,7 @@ func (u *UpdateCollaboratorRole) execute(ctx context.Context, paramsJSON string)
 	}
 
 	if params.RepoID == "" {
-		return `{"success": false, "message": "repo_id 不能为空"}`, nil
+		return ErrRespRepoIDEmpty, nil
 	}
 	if params.UserID == "" {
 		return `{"success": false, "message": "user_id 不能为空"}`, nil
@@ -75,7 +75,7 @@ func (u *UpdateCollaboratorRole) execute(ctx context.Context, paramsJSON string)
 
 	userID, _ := ctx.Value(CtxKeyUserID).(string)
 	if userID == "" {
-		return `{"success": false, "message": "无法获取用户信息"}`, nil
+		return ErrRespUserInfo, nil
 	}
 
 	// 验证仓库存在且有权限
@@ -88,10 +88,10 @@ func (u *UpdateCollaboratorRole) execute(ctx context.Context, paramsJSON string)
 	}
 
 	data, _ := json.Marshal(map[string]any{
-		"success": true,
-		"repo_id": params.RepoID,
-		"user_id": params.UserID,
-		"role":    params.Role,
+		KeySuccess:  true,
+		ParamRepoID: params.RepoID,
+		ParamUserID: params.UserID,
+		ParamRole:   params.Role,
 	})
 	return string(data), nil
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// GetConversationList 获取会话列表
+// GetConversationList 获取会话列表.
 func (h *Handler) GetConversationList() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -44,8 +44,8 @@ func (h *Handler) GetConversationList() app.HandlerFunc {
 			conv := map[string]any{
 				"conversation_type": c.ConversationType,
 				"conversation_id":   c.ConversationId,
-				"name":              c.Name,
-				"avatar":            c.Avatar,
+				KeyName:             c.Name,
+				KeyAvatar:           c.Avatar,
 				"unread_count":      c.UnreadCount,
 				"last_message_at":   c.LastMessageAt,
 				"pinned":            c.Pinned,
@@ -63,7 +63,9 @@ func (h *Handler) GetConversationList() app.HandlerFunc {
 	}
 }
 
-// MarkConversationRead 标记会话已读
+// MarkConversationRead 标记会话已读.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) MarkConversationRead() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -105,7 +107,7 @@ func (h *Handler) MarkConversationRead() app.HandlerFunc {
 	}
 }
 
-// TogglePin 切换会话置顶
+// TogglePin 切换会话置顶.
 func (h *Handler) TogglePin() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -149,7 +151,9 @@ func (h *Handler) TogglePin() app.HandlerFunc {
 	}
 }
 
-// DeleteConversation 删除会话
+// DeleteConversation 删除会话.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) DeleteConversation() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)

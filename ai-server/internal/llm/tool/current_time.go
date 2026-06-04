@@ -3,19 +3,23 @@ package tool
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 	"time"
 
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 )
 
+//nolint:revive // self-documenting
 type CurrentTime struct{}
 
+//nolint:revive // self-documenting
 func NewCurrentTime() *CurrentTime {
 	return &CurrentTime{}
 }
 
-func (c *CurrentTime) Info(ctx context.Context) (*schema.ToolInfo, error) {
+//nolint:revive // self-documenting
+func (c *CurrentTime) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name:        "current_time",
 		Desc:        "获取当前的日期和时间信息，包括年月日、星期、时分秒和时区。当你需要知道当前时间或计算时间相关问题时使用此工具。",
@@ -23,7 +27,8 @@ func (c *CurrentTime) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	}, nil
 }
 
-func (c *CurrentTime) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
+//nolint:revive // self-documenting
+func (c *CurrentTime) InvokableRun(ctx context.Context, arguments string, _ ...tool.Option) (string, error) {
 	return c.execute()
 }
 
@@ -77,7 +82,7 @@ func formatInt(n int) string {
 		n = -n
 	}
 	if n < 10 {
-		return "0" + string(rune('0'+n))
+		return "0" + strconv.Itoa(n)
 	}
-	return string(rune('0'+n/10)) + string(rune('0'+n%10))
+	return strconv.Itoa(n)
 }

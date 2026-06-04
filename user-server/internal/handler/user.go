@@ -6,7 +6,7 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// GetUser 获取用户信息
+// GetUser 获取用户信息.
 func (h *Handler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
 	user, err := h.Service.GetUser(ctx, req.GetUserId())
 	if err != nil {
@@ -33,7 +33,7 @@ func (h *Handler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetU
 	}, nil
 }
 
-// UpdateUserInfo 更新用户信息
+// UpdateUserInfo 更新用户信息.
 func (h *Handler) UpdateUserInfo(ctx context.Context, req *pb.UpdateUserInfoRequest) (*pb.UpdateUserInfoResponse, error) {
 	user, err := h.Service.UpdateUserInfo(ctx, req.GetUser().GetId(), req.GetUser().GetName(), req.GetUser().GetEmail(), req.GetUser().GetAvatar())
 	if err != nil {
@@ -60,7 +60,7 @@ func (h *Handler) UpdateUserInfo(ctx context.Context, req *pb.UpdateUserInfoRequ
 	}, nil
 }
 
-// SetAvatar 设置用户头像
+// SetAvatar 设置用户头像.
 func (h *Handler) SetAvatar(ctx context.Context, req *pb.SetAvatarRequest) (*pb.SetAvatarResponse, error) {
 	err := h.Service.SetAvatar(ctx, req.GetUserId(), req.GetAvatar())
 	if err != nil {
@@ -75,7 +75,7 @@ func (h *Handler) SetAvatar(ctx context.Context, req *pb.SetAvatarRequest) (*pb.
 	}, nil
 }
 
-// Unregister 注销用户
+// Unregister 注销用户.
 func (h *Handler) Unregister(ctx context.Context, req *pb.UnregisterRequest) (*pb.UnregisterResponse, error) {
 	err := h.Service.Unregister(ctx, req.GetUserId(), req.GetEmail(), req.GetPassword(), req.GetVerifyCode())
 	if err != nil {

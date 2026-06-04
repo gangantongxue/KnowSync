@@ -10,7 +10,7 @@ import (
 	"github.com/gangantongxue/knowsync/ai-server/internal/service"
 )
 
-// extractServiceToken 从 gRPC metadata 中提取 service token
+// extractServiceToken 从 gRPC metadata 中提取 service token.
 func extractServiceToken(ctx context.Context) string {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
@@ -23,7 +23,7 @@ func extractServiceToken(ctx context.Context) string {
 	return tokens[0]
 }
 
-// withServiceToken 将 service token 注入 context
+// withServiceToken 将 service token 注入 context.
 func withServiceToken(ctx context.Context, token string) context.Context {
 	if token == "" {
 		return ctx
@@ -31,7 +31,7 @@ func withServiceToken(ctx context.Context, token string) context.Context {
 	return context.WithValue(ctx, tool.CtxKeyServiceToken, token)
 }
 
-// Chat 流式对话
+// Chat 流式对话.
 func (h *Handler) Chat(req *pb.ChatRequest, stream pb.AIService_ChatServer) error {
 	cb := func(event *service.ChatEvent) error {
 		resp := &pb.ChatResponse{
@@ -72,7 +72,10 @@ func (h *Handler) Chat(req *pb.ChatRequest, stream pb.AIService_ChatServer) erro
 	return nil
 }
 
-// GetChatSessions 获取会话列表（游标分页）
+// GetChatSessions 获取会话列表（游标分页）.
+//
+//nolint:revive // ctx required by interface
+//nolint:revive // ctx required by interface
 func (h *Handler) GetChatSessions(ctx context.Context, req *pb.GetChatSessionsRequest) (*pb.GetChatSessionsResponse, error) {
 	limit := int(req.GetLimit())
 	if limit <= 0 {
@@ -81,7 +84,7 @@ func (h *Handler) GetChatSessions(ctx context.Context, req *pb.GetChatSessionsRe
 
 	sessions, hasMore, err := h.Service.Repo.ListSessions(req.GetUserId(), req.GetCursor(), limit)
 	if err != nil {
-		return &pb.GetChatSessionsResponse{
+		return &pb.GetChatSessionsResponse{ //nolint:nilerr // 项目约定：handler 将业务错误编码到响应体中
 			Success: false,
 			Msg:     err.Error(),
 		}, nil
@@ -105,7 +108,10 @@ func (h *Handler) GetChatSessions(ctx context.Context, req *pb.GetChatSessionsRe
 	}, nil
 }
 
-// GetChatMessages 获取会话消息列表（游标分页）
+// GetChatMessages 获取会话消息列表（游标分页）.
+//
+//nolint:revive // ctx required by interface
+//nolint:revive // ctx required by interface
 func (h *Handler) GetChatMessages(ctx context.Context, req *pb.GetChatMessagesRequest) (*pb.GetChatMessagesResponse, error) {
 	limit := int(req.GetLimit())
 	if limit <= 0 {
@@ -114,7 +120,7 @@ func (h *Handler) GetChatMessages(ctx context.Context, req *pb.GetChatMessagesRe
 
 	messages, hasMore, err := h.Service.Repo.ListMessages(req.GetSessionId(), req.GetCursor(), limit)
 	if err != nil {
-		return &pb.GetChatMessagesResponse{
+		return &pb.GetChatMessagesResponse{ //nolint:nilerr // 项目约定：handler 将业务错误编码到响应体中
 			Success: false,
 			Msg:     err.Error(),
 		}, nil
@@ -139,10 +145,13 @@ func (h *Handler) GetChatMessages(ctx context.Context, req *pb.GetChatMessagesRe
 	}, nil
 }
 
-// DeleteChatSession 删除会话
+// DeleteChatSession 删除会话.
+//
+//nolint:revive // ctx required by interface
+//nolint:revive // ctx required by interface
 func (h *Handler) DeleteChatSession(ctx context.Context, req *pb.DeleteChatSessionRequest) (*pb.DeleteChatSessionResponse, error) {
 	if err := h.Service.Repo.DeleteSession(req.GetSessionId(), req.GetUserId()); err != nil {
-		return &pb.DeleteChatSessionResponse{
+		return &pb.DeleteChatSessionResponse{ //nolint:nilerr // 项目约定：handler 将业务错误编码到响应体中
 			Success: false,
 			Msg:     err.Error(),
 		}, nil

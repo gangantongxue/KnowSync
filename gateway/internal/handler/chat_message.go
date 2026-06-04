@@ -11,7 +11,7 @@ import (
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
-// SendPrivateMessageReq 发送私聊消息请求体
+// SendPrivateMessageReq 发送私聊消息请求体.
 type SendPrivateMessageReq struct {
 	ReceiverID  string `json:"receiver_id"`
 	ContentType string `json:"content_type"`
@@ -20,7 +20,7 @@ type SendPrivateMessageReq struct {
 	ReplyToID   string `json:"reply_to_id"`
 }
 
-// SendGroupMessageReq 发送群聊消息请求体
+// SendGroupMessageReq 发送群聊消息请求体.
 type SendGroupMessageReq struct {
 	GroupID     string   `json:"group_id"`
 	ContentType string   `json:"content_type"`
@@ -30,14 +30,14 @@ type SendGroupMessageReq struct {
 	ReplyToID   string   `json:"reply_to_id"`
 }
 
-// ForwardMessageReq 转发消息请求体
+// ForwardMessageReq 转发消息请求体.
 type ForwardMessageReq struct {
 	TargetConversationType string   `json:"target_conversation_type"`
 	TargetConversationID   string   `json:"target_conversation_id"`
 	MessageIDs             []string `json:"message_ids"`
 }
 
-// SendPrivateMessage 发送私聊消息
+// SendPrivateMessage 发送私聊消息.
 func (h *Handler) SendPrivateMessage() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -78,12 +78,12 @@ func (h *Handler) SendPrivateMessage() app.HandlerFunc {
 		}
 
 		response.Success(c, ctx, map[string]any{
-			"message": marshalMessageResp(resp.Message),
+			KeyMessage: marshalMessageResp(resp.Message),
 		})
 	}
 }
 
-// SendGroupMessage 发送群聊消息
+// SendGroupMessage 发送群聊消息.
 func (h *Handler) SendGroupMessage() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -125,12 +125,12 @@ func (h *Handler) SendGroupMessage() app.HandlerFunc {
 		}
 
 		response.Success(c, ctx, map[string]any{
-			"message": marshalMessageResp(resp.Message),
+			KeyMessage: marshalMessageResp(resp.Message),
 		})
 	}
 }
 
-// GetMessages 获取消息列表
+// GetMessages 获取消息列表.
 func (h *Handler) GetMessages() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		conversationType := ctx.Query("conversation_type")
@@ -186,7 +186,9 @@ func (h *Handler) GetMessages() app.HandlerFunc {
 	}
 }
 
-// RecallMessage 撤回消息
+// RecallMessage 撤回消息.
+//
+//nolint:dupl // handler 结构一致是 gateway 层自然模式
 func (h *Handler) RecallMessage() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -226,7 +228,7 @@ func (h *Handler) RecallMessage() app.HandlerFunc {
 	}
 }
 
-// ForwardMessage 转发消息
+// ForwardMessage 转发消息.
 func (h *Handler) ForwardMessage() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -265,12 +267,12 @@ func (h *Handler) ForwardMessage() app.HandlerFunc {
 		}
 
 		response.Success(c, ctx, map[string]any{
-			"message": marshalMessageResp(resp.Message),
+			KeyMessage: marshalMessageResp(resp.Message),
 		})
 	}
 }
 
-// GetUnreadCount 获取未读数
+// GetUnreadCount 获取未读数.
 func (h *Handler) GetUnreadCount() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		uid, ok := getAuthUserID(ctx)
@@ -305,7 +307,7 @@ func (h *Handler) GetUnreadCount() app.HandlerFunc {
 	}
 }
 
-// marshalMessageResp 将 protobuf Message 转换为 HTTP JSON 响应格式
+// marshalMessageResp 将 protobuf Message 转换为 HTTP JSON 响应格式.
 func marshalMessageResp(m *pb.Message) map[string]any {
 	return map[string]any{
 		"id":                m.Id,
@@ -314,10 +316,10 @@ func marshalMessageResp(m *pb.Message) map[string]any {
 		"seq_id":            m.SeqId,
 		"sender_id":         m.SenderId,
 		"content_type":      m.ContentType,
-		"content":           m.Content,
+		KeyContent:          m.Content,
 		"extra":             m.Extra,
 		"reply_to_id":       m.ReplyToId,
 		"status":            m.Status,
-		"created_at":        m.CreatedAt,
+		KeyCreatedAt:        m.CreatedAt,
 	}
 }
