@@ -52,6 +52,7 @@ export default function RepoList() {
             <div className="mt-4 flex gap-2 text-xs text-gray-400">
               <span>文章: {selectedRepo.article_count}</span>
               <span>可见性: {selectedRepo.visibility === 'PUBLIC' ? '公开' : '私有'}</span>
+              {selectedRepo.follower_count > 0 && <span>关注: {selectedRepo.follower_count}</span>}
             </div>
             <button
               onClick={() => navigate(`/repos/${selectedRepo.id}`)}

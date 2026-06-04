@@ -1,18 +1,24 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useRepo } from '../../store/repo-context'
+import { useAuth } from '../../store/auth-context'
 import * as repoApi from '../../lib/repos'
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const navigate = useNavigate()
-  const { repos, loadRepos } = useRepo()
+  const { repos, followedRepos, loadRepos, loadFollowedRepos } = useRepo()
+  const { user } = useAuth()
 
   const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState('')
   const [newDesc, setNewDesc] = useState('')
   const [newVisibility, setNewVisibility] = useState<'PUBLIC' | 'PRIVATE'>('PUBLIC')
   const [creating, setCreating] = useState(false)
+  const [followedExpanded, setFollowedExpanded] = useState(false)
+
+  const myRepos = repos.filter(r => r.owner_id === user?.id)
+  const collabRepos = repos.filter(r => r.owner_id !== user?.id)
 
   const resetCreateForm = () => {
     setNewName('')
@@ -35,11 +41,31 @@ export default function Sidebar() {
     setCreating(false)
   }
 
+  const handleFollowedToggle = () => {
+    if (!followedExpanded) {
+      loadFollowedRepos()
+    }
+    setFollowedExpanded(!followedExpanded)
+  }
+
+  const repoItem = (r: typeof repos[0]) => (
+    <button
+      key={r.id}
+      onClick={() => navigate(`/repos/${r.id}`)}
+      className="flex items-center gap-2 w-full px-2 py-1.5 rounded text-sm text-gray-700 hover:bg-gray-100 mb-0.5"
+    >
+      <span className="w-5 h-5 rounded bg-emerald-100 text-emerald-700 text-xs flex items-center justify-center shrink-0">
+        {r.name.charAt(0)}
+      </span>
+      <span className="truncate">{r.name}</span>
+    </button>
+  )
+
   if (collapsed) {
     return (
       <div className="w-12 border-r border-gray-200 bg-gray-50 flex flex-col items-center py-2 gap-3 shrink-0">
         <button onClick={() => setCollapsed(false)} className="text-gray-400 hover:text-gray-600 text-lg" title="展开侧栏">☰</button>
-        {repos.slice(0, 5).map(r => (
+        {myRepos.slice(0, 3).map(r => (
           <button key={r.id} onClick={() => navigate(`/repos/${r.id}`)} className="w-8 h-8 rounded bg-gray-200 text-xs text-gray-600 hover:bg-gray-300" title={r.name}>
             {r.name.charAt(0)}
           </button>
@@ -50,7 +76,6 @@ export default function Sidebar() {
 
   return (
     <div className="w-56 border-r border-gray-200 bg-gray-50 flex flex-col shrink-0 overflow-hidden">
-      {/* 顶部：折叠按钮 */}
       <div className="flex items-center justify-end p-2 border-b border-gray-200">
         <button
           onClick={() => setCollapsed(true)}
@@ -61,8 +86,8 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {/* 知识库列表 */}
       <div className="flex-1 overflow-y-auto p-2">
+        {/* 新建按钮 */}
         <div className="flex items-center justify-between px-2 py-1">
           <span className="text-xs text-gray-400 font-medium">知识库</span>
           <button
@@ -72,18 +97,37 @@ export default function Sidebar() {
             + 新建
           </button>
         </div>
-        {repos.map(repo => (
+
+        {/* 我的知识库 */}
+        {myRepos.map(repoItem)}
+
+        {/* 分隔线 + 协作知识库 */}
+        {collabRepos.length > 0 && (
+          <>
+            <hr className="my-2 border-gray-200" />
+            {collabRepos.map(repoItem)}
+          </>
+        )}
+
+        {/* 分隔线 + 我的关注（可折叠） */}
+        <hr className="my-2 border-gray-200" />
+        <div>
           <button
-            key={repo.id}
-            onClick={() => navigate(`/repos/${repo.id}`)}
-            className="flex items-center gap-2 w-full px-2 py-1.5 rounded text-sm text-gray-700 hover:bg-gray-100 mb-0.5"
+            onClick={handleFollowedToggle}
+            className="flex items-center gap-1 w-full px-2 py-1 text-xs text-gray-400 font-medium hover:text-gray-600"
           >
-            <span className="w-5 h-5 rounded bg-emerald-100 text-emerald-700 text-xs flex items-center justify-center shrink-0">
-              {repo.name.charAt(0)}
-            </span>
-            <span className="truncate">{repo.name}</span>
+            <span className={`transition-transform ${followedExpanded ? 'rotate-90' : ''}`}>▶</span>
+            <span>我的关注</span>
           </button>
-        ))}
+          {followedExpanded && followedRepos.length > 0 && (
+            <div className="mt-1">
+              {followedRepos.map(repoItem)}
+            </div>
+          )}
+          {followedExpanded && followedRepos.length === 0 && (
+            <div className="px-2 py-2 text-xs text-gray-400">暂无关注</div>
+          )}
+        </div>
       </div>
 
       {/* 新建知识库弹窗 */}

@@ -139,7 +139,7 @@ export default function RepoSettings({ repo, myRole, onUpdate, onClose, onDelete
   const roleLabels: Record<string, string> = {
     ADMIN: '管理员',
     DEVELOPER: '开发者',
-    VIEWER: '查看者',
+    VIEWER: '浏览者',
   }
 
   return (
@@ -255,7 +255,7 @@ export default function RepoSettings({ repo, myRole, onUpdate, onClose, onDelete
                       <select value={collab.role} onChange={e => handleUpdateRole(collab.user_id, e.target.value)} className="text-xs border border-gray-200 rounded px-1 py-0.5 bg-white">
                         <option value="ADMIN">管理员</option>
                         <option value="DEVELOPER">开发者</option>
-                        <option value="VIEWER">查看者</option>
+                        <option value="VIEWER">浏览者</option>
                       </select>
                       <button onClick={() => handleRemove(collab.user_id)} className="text-gray-400 hover:text-red-500 text-xs" title="移除">✕</button>
                     </div>
@@ -270,7 +270,7 @@ export default function RepoSettings({ repo, myRole, onUpdate, onClose, onDelete
               <input value={newUserId} onChange={e => setNewUserId(e.target.value)} placeholder="用户 ID" className="w-full px-2 py-1 border border-gray-300 rounded text-xs" autoFocus />
               <select value={newRole} onChange={e => setNewRole(e.target.value)} className="w-full px-2 py-1 border border-gray-300 rounded text-xs">
                 <option value="DEVELOPER">开发者</option>
-                <option value="VIEWER">查看者</option>
+                <option value="VIEWER">浏览者</option>
               </select>
               <div className="flex gap-2">
                 <button onClick={handleAdd} className="px-2 py-1 bg-emerald-500 text-white rounded text-xs hover:bg-emerald-600">添加</button>

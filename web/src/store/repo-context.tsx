@@ -3,12 +3,14 @@ import * as repoApi from '../lib/repos'
 
 interface RepoState {
   repos: repoApi.Repo[]
+  followedRepos: repoApi.Repo[]
   currentRepoId: string | null
   isLoading: boolean
 }
 
 type RepoAction =
   | { type: 'SET_REPOS'; repos: repoApi.Repo[] }
+  | { type: 'SET_FOLLOWED_REPOS'; repos: repoApi.Repo[] }
   | { type: 'ADD_REPO'; repo: repoApi.Repo }
   | { type: 'UPDATE_REPO'; repo: repoApi.Repo }
   | { type: 'REMOVE_REPO'; repoId: string }
@@ -19,6 +21,8 @@ function repoReducer(state: RepoState, action: RepoAction): RepoState {
   switch (action.type) {
     case 'SET_REPOS':
       return { ...state, repos: action.repos }
+    case 'SET_FOLLOWED_REPOS':
+      return { ...state, followedRepos: action.repos }
     case 'ADD_REPO':
       return { ...state, repos: [action.repo, ...state.repos] }
     case 'UPDATE_REPO':
@@ -34,6 +38,7 @@ function repoReducer(state: RepoState, action: RepoAction): RepoState {
 
 interface RepoContextValue extends RepoState {
   loadRepos: () => Promise<void>
+  loadFollowedRepos: () => Promise<void>
   selectRepo: (repoId: string | null) => void
 }
 
@@ -42,6 +47,7 @@ const RepoContext = createContext<RepoContextValue | null>(null)
 export function RepoProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(repoReducer, {
     repos: [],
+    followedRepos: [],
     currentRepoId: null,
     isLoading: false,
   })
@@ -57,12 +63,21 @@ export function RepoProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'SET_LOADING', loading: false })
   }, [])
 
+  const loadFollowedRepos = useCallback(async () => {
+    try {
+      const repos = await repoApi.listFollowedRepos()
+      dispatch({ type: 'SET_FOLLOWED_REPOS', repos })
+    } catch {
+      // ignore
+    }
+  }, [])
+
   const selectRepo = useCallback((repoId: string | null) => {
     dispatch({ type: 'SET_CURRENT_REPO', repoId })
   }, [])
 
   return (
-    <RepoContext.Provider value={{ ...state, loadRepos, selectRepo }}>
+    <RepoContext.Provider value={{ ...state, loadRepos, loadFollowedRepos, selectRepo }}>
       {children}
     </RepoContext.Provider>
   )

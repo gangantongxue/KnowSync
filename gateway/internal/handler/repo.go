@@ -117,8 +117,9 @@ func (h *Handler) GetRepo() app.HandlerFunc {
 		}
 
 		response.Success(c, ctx, map[string]any{
-			"repo":    marshalRepoResponse(resp.Repo),
-			"my_role": resp.MyRole.String(),
+			"repo":         marshalRepoResponse(resp.Repo),
+			"my_role":      resp.MyRole.String(),
+			"is_following": resp.IsFollowing,
 		})
 	}
 }
@@ -264,14 +265,15 @@ func (h *Handler) ListUserRepos() app.HandlerFunc {
 // marshalRepoResponse 将 protobuf Repo 转换为 HTTP JSON 响应格式
 func marshalRepoResponse(r *pb.Repo) map[string]any {
 	return map[string]any{
-		"id":            r.Id,
-		"owner_id":      r.OwnerId,
-		"name":          r.Name,
-		"visibility":    r.Visibility.String(),
-		"description":   r.Description,
-		"article_count": r.ArticleCount,
-		"created_at":    r.CreatedAt,
-		"updated_at":    r.UpdatedAt,
+		"id":             r.Id,
+		"owner_id":       r.OwnerId,
+		"name":           r.Name,
+		"visibility":     r.Visibility.String(),
+		"description":    r.Description,
+		"article_count":  r.ArticleCount,
+		"follower_count": r.FollowerCount,
+		"created_at":     r.CreatedAt,
+		"updated_at":     r.UpdatedAt,
 	}
 }
 

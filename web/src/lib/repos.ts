@@ -7,6 +7,7 @@ export interface Repo {
   visibility: string
   description: string
   article_count: number
+  follower_count: number
   created_at: string
   updated_at: string
 }
@@ -16,9 +17,14 @@ export async function listRepos(): Promise<Repo[]> {
   return res.data.repos
 }
 
-export async function getRepo(repoId: string): Promise<Repo & { my_role: string }> {
-  const res = await request<{ repo: Repo; my_role: string }>(`/repos/${repoId}`)
-  return { ...res.data.repo, my_role: res.data.my_role }
+export async function listFollowedRepos(): Promise<Repo[]> {
+  const res = await request<{ repos: Repo[] }>('/repos/followed')
+  return res.data.repos
+}
+
+export async function getRepo(repoId: string): Promise<Repo & { my_role: string; is_following: boolean }> {
+  const res = await request<{ repo: Repo; my_role: string; is_following: boolean }>(`/repos/${repoId}`)
+  return { ...res.data.repo, my_role: res.data.my_role, is_following: res.data.is_following }
 }
 
 export async function createRepo(name: string, description?: string, visibility?: string): Promise<Repo> {
@@ -39,4 +45,12 @@ export async function updateRepo(repoId: string, data: { name?: string; descript
 
 export async function deleteRepo(repoId: string): Promise<void> {
   await request(`/repos/${repoId}`, { method: 'DELETE' })
+}
+
+export async function followRepo(repoId: string): Promise<void> {
+  await request(`/repos/${repoId}/follow`, { method: 'POST' })
+}
+
+export async function unfollowRepo(repoId: string): Promise<void> {
+  await request(`/repos/${repoId}/follow`, { method: 'DELETE' })
 }

@@ -57,6 +57,7 @@ export default function RepoCard({ repo, onSelect, onUpdate }: RepoCardProps) {
           </span>
         </div>
         <p className="text-xs text-gray-400 mt-0.5 truncate">{repo.description || `${repo.article_count} 篇文章`}</p>
+        {repo.follower_count > 0 && <p className="text-xs text-gray-400 mt-0.5">{repo.follower_count} 关注</p>}
       </div>
 
       <div className="relative" onClick={e => e.stopPropagation()}>

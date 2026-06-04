@@ -42,9 +42,12 @@ func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client
 			repos := authorized.Group("/repos")
 			repos.POST("", hdl.CreateRepo())
 			repos.GET("", hdl.ListUserRepos())
+			repos.GET("/followed", hdl.ListFollowedRepos())
 			repos.GET("/:repo_id", hdl.GetRepo())
 			repos.PUT("/:repo_id", hdl.UpdateRepo())
 			repos.DELETE("/:repo_id", hdl.DeleteRepo())
+			repos.POST("/:repo_id/follow", hdl.FollowRepo())
+			repos.DELETE("/:repo_id/follow", hdl.UnfollowRepo())
 
 			files := repos.Group("/:repo_id/files")
 			files.GET("/tree", hdl.GetRepoTree())

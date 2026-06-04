@@ -21,6 +21,7 @@ interface RepoTreeProps {
   repoId: string
   repo: Repo | null
   refreshKey?: number
+  readOnly?: boolean
 }
 
 interface TreeNode {
@@ -31,7 +32,7 @@ interface TreeNode {
   depth: number
 }
 
-export default function RepoTree({ repoId, repo, refreshKey }: RepoTreeProps) {
+export default function RepoTree({ repoId, repo, refreshKey, readOnly }: RepoTreeProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const [rootEntries, setRootEntries] = useState<FileEntry[]>([])
@@ -113,6 +114,7 @@ export default function RepoTree({ repoId, repo, refreshKey }: RepoTreeProps) {
 
   // --- 操作 ---
   const handleCreateFile = async (targetPath: string) => {
+    if (readOnly) return
     const name = prompt('请输入文件名称（含 .md 后缀）:')
     if (!name?.trim()) return
     const filePath = targetPath ? `${targetPath}/${name.trim()}` : name.trim()
@@ -121,6 +123,7 @@ export default function RepoTree({ repoId, repo, refreshKey }: RepoTreeProps) {
   }
 
   const handleCreateDir = async (targetPath: string) => {
+    if (readOnly) return
     const name = prompt('请输入文件夹名称:')
     if (!name?.trim()) return
     const dirPath = targetPath ? `${targetPath}/${name.trim()}` : name.trim()
@@ -136,6 +139,7 @@ export default function RepoTree({ repoId, repo, refreshKey }: RepoTreeProps) {
   }
 
   const handleDelete = async (entryPath: string) => {
+    if (readOnly) return
     const name = entryPath.split('/').pop() || entryPath
     if (!confirm(`确定删除「${name}」？`)) return
     try {
@@ -153,6 +157,7 @@ export default function RepoTree({ repoId, repo, refreshKey }: RepoTreeProps) {
   }
 
   const handleRename = async (entryPath: string) => {
+    if (readOnly) return
     const name = entryPath.split('/').pop() || entryPath
     const newName = prompt('新名称:', name)
     if (!newName?.trim() || newName === name) return
@@ -171,6 +176,7 @@ export default function RepoTree({ repoId, repo, refreshKey }: RepoTreeProps) {
   }
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (readOnly) return
     const files = e.target.files
     if (!files?.length) return
     await uploadFiles(files, '')
@@ -178,6 +184,7 @@ export default function RepoTree({ repoId, repo, refreshKey }: RepoTreeProps) {
   }
 
   const uploadFiles = async (files: FileList, targetPath: string) => {
+    if (readOnly) return
     setUploading(true)
     let errorCount = 0
     for (const file of Array.from(files)) {
@@ -198,6 +205,7 @@ export default function RepoTree({ repoId, repo, refreshKey }: RepoTreeProps) {
 
   // --- 拖拽 ---
   const handleDragOver = (e: React.DragEvent, targetPath: string) => {
+    if (readOnly) return
     e.preventDefault()
     e.stopPropagation()
     e.dataTransfer.dropEffect = 'copy'
@@ -207,6 +215,7 @@ export default function RepoTree({ repoId, repo, refreshKey }: RepoTreeProps) {
   const handleDragLeave = () => setDragTarget(null)
 
   const handleDrop = async (e: React.DragEvent, targetPath: string) => {
+    if (readOnly) return
     e.preventDefault()
     e.stopPropagation()
     setDragTarget(null)
@@ -215,6 +224,7 @@ export default function RepoTree({ repoId, repo, refreshKey }: RepoTreeProps) {
 
   // --- 右键 ---
   const handleContextMenu = (e: React.MouseEvent, entry?: FileEntry, entryPath?: string) => {
+    if (readOnly) return
     e.preventDefault()
     e.stopPropagation()
     setContextMenu({ x: e.clientX, y: e.clientY, entry, path: entryPath })
@@ -222,42 +232,44 @@ export default function RepoTree({ repoId, repo, refreshKey }: RepoTreeProps) {
 
   return (
     <div className="h-full flex flex-col" onClick={() => setContextMenu(null)}>
-      {/* 根目录操作按钮 */}
-      <div className="flex items-center gap-1 p-2 border-b border-gray-100 shrink-0">
-        <span className="text-xs text-gray-400 font-medium mr-auto">根目录</span>
-        <button
-          onClick={() => handleCreateDir('')}
-          className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-400 hover:text-emerald-600"
-          title="新建文件夹"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
-        </button>
-        <button
-          onClick={() => handleCreateFile('')}
-          className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-400 hover:text-emerald-600"
-          title="新建文章"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
-        </button>
-        <label className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-400 hover:text-emerald-600 cursor-pointer" title="上传文件">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <input type="file" onChange={handleFileSelect} className="hidden" multiple />
-        </label>
-      </div>
+      {/* 根目录操作按钮 — 只读模式下隐藏 */}
+      {!readOnly && (
+        <div className="flex items-center gap-1 p-2 border-b border-gray-100 shrink-0">
+          <span className="text-xs text-gray-400 font-medium mr-auto">根目录</span>
+          <button
+            onClick={() => handleCreateDir('')}
+            className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-400 hover:text-emerald-600"
+            title="新建文件夹"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+          </button>
+          <button
+            onClick={() => handleCreateFile('')}
+            className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-400 hover:text-emerald-600"
+            title="新建文章"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+          </button>
+          <label className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 text-gray-400 hover:text-emerald-600 cursor-pointer" title="上传文件">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <input type="file" onChange={handleFileSelect} className="hidden" multiple />
+          </label>
+        </div>
+      )}
 
       {/* 文件列表（可拖拽投放区） */}
       <div
         className={`flex-1 overflow-y-auto p-1 transition-colors ${uploading ? 'opacity-50' : ''}`}
-        onDragOver={(e) => handleDragOver(e, '')}
+        onDragOver={(e) => !readOnly && handleDragOver(e, '')}
         onDragLeave={handleDragLeave}
-        onDrop={(e) => handleDrop(e, '')}
+        onDrop={(e) => !readOnly && handleDrop(e, '')}
         onContextMenu={(e) => handleContextMenu(e)}
       >
         {loading ? (
           <div className="text-xs text-gray-400 px-2 py-4 text-center">加载中...</div>
         ) : tree.length === 0 ? (
-          <div className={`text-xs px-2 py-8 text-center rounded-lg border-2 border-dashed m-1 transition-colors ${dragTarget === '' ? 'border-emerald-300 text-emerald-500' : 'border-gray-200 text-gray-400'}`}>
-            拖拽文件到此处上传
+          <div className={`text-xs px-2 py-8 text-center rounded-lg border-2 border-dashed m-1 transition-colors ${!readOnly && dragTarget === '' ? 'border-emerald-300 text-emerald-500' : 'border-gray-200 text-gray-400'}`}>
+            {readOnly ? '暂无文件' : '拖拽文件到此处上传'}
           </div>
         ) : (
           tree.map(node => (
@@ -268,6 +280,7 @@ export default function RepoTree({ repoId, repo, refreshKey }: RepoTreeProps) {
               hoverDir={hoverDir}
               dragTarget={dragTarget}
               expandedDirs={expandedDirs}
+              readOnly={readOnly}
               onToggle={toggleDir}
               onNavigate={(filePath) => {
                 if (isBinaryFile(filePath) && repo?.owner_id) {
@@ -324,6 +337,7 @@ function TreeNodeRow({
   hoverDir,
   dragTarget,
   expandedDirs,
+  readOnly,
   onToggle,
   onNavigate,
   onContextMenu,
@@ -340,6 +354,7 @@ function TreeNodeRow({
   hoverDir: string | null
   dragTarget: string | null
   expandedDirs: Set<string>
+  readOnly?: boolean
   onToggle: (path: string) => void
   onNavigate: (path: string) => void
   onContextMenu: (e: React.MouseEvent, entry?: FileEntry, path?: string) => void
@@ -370,7 +385,7 @@ function TreeNodeRow({
       onContextMenu={(e) => onContextMenu(e, { name: node.name, type: node.type, size: node.size }, node.path)}
       onMouseEnter={() => isDir && onHoverDir(node.path)}
       onMouseLeave={() => isDir && onHoverDir(null)}
-      {...(isDir ? {
+      {...(isDir && !readOnly ? {
         onDragOver: (e: React.DragEvent) => onDragOver(e, node.path),
         onDragLeave: onDragLeave,
         onDrop: (e: React.DragEvent) => onDrop(e, node.path),
@@ -395,8 +410,8 @@ function TreeNodeRow({
       {/* 名称 */}
       <span className="truncate text-xs">{node.name}</span>
 
-      {/* 右侧：文件大小 / 文件夹悬停操作 */}
-      {isDir ? (
+      {/* 右侧：文件大小 / 文件夹悬停操作（只读模式不显示） */}
+      {!readOnly && isDir ? (
         <div className={`ml-auto flex items-center gap-0.5 shrink-0 ${hoverDir === node.path ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
           <button
             onClick={(e) => { e.stopPropagation(); onCreateDir(node.path) }}
@@ -422,7 +437,7 @@ function TreeNodeRow({
           </label>
         </div>
       ) : (
-        <span className="text-xs text-gray-400 ml-auto shrink-0">{formatSize(node.size)}</span>
+        <span className="text-xs text-gray-400 ml-auto shrink-0">{isDir ? '' : formatSize(node.size)}</span>
       )}
     </div>
   )

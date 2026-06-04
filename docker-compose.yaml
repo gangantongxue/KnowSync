@@ -68,7 +68,7 @@ services:
         condition: service_started
     volumes:
       - ./gateway/logs:/app/logs
-      - ./data:/app/data
+      - ./data/files:/app/data
     networks:
       - knowsync-net
 
@@ -99,6 +99,7 @@ services:
         condition: service_started
     volumes:
       - ./ai-server/logs:/app/logs
+      - ./data/vectors:/app/data/vectors
     networks:
       - knowsync-net
 

@@ -29,6 +29,9 @@ const (
 	RepoService_UpdateCollaborator_FullMethodName = "/proto.RepoService/UpdateCollaborator"
 	RepoService_RemoveCollaborator_FullMethodName = "/proto.RepoService/RemoveCollaborator"
 	RepoService_ListCollaborators_FullMethodName  = "/proto.RepoService/ListCollaborators"
+	RepoService_FollowRepo_FullMethodName         = "/proto.RepoService/FollowRepo"
+	RepoService_UnfollowRepo_FullMethodName       = "/proto.RepoService/UnfollowRepo"
+	RepoService_ListFollowedRepos_FullMethodName  = "/proto.RepoService/ListFollowedRepos"
 )
 
 // RepoServiceClient is the client API for RepoService service.
@@ -45,6 +48,9 @@ type RepoServiceClient interface {
 	UpdateCollaborator(ctx context.Context, in *UpdateCollaboratorRequest, opts ...grpc.CallOption) (*UpdateCollaboratorResponse, error)
 	RemoveCollaborator(ctx context.Context, in *RemoveCollaboratorRequest, opts ...grpc.CallOption) (*RemoveCollaboratorResponse, error)
 	ListCollaborators(ctx context.Context, in *ListCollaboratorsRequest, opts ...grpc.CallOption) (*ListCollaboratorsResponse, error)
+	FollowRepo(ctx context.Context, in *FollowRepoRequest, opts ...grpc.CallOption) (*FollowRepoResponse, error)
+	UnfollowRepo(ctx context.Context, in *UnfollowRepoRequest, opts ...grpc.CallOption) (*UnfollowRepoResponse, error)
+	ListFollowedRepos(ctx context.Context, in *ListFollowedReposRequest, opts ...grpc.CallOption) (*ListFollowedReposResponse, error)
 }
 
 type repoServiceClient struct {
@@ -155,6 +161,36 @@ func (c *repoServiceClient) ListCollaborators(ctx context.Context, in *ListColla
 	return out, nil
 }
 
+func (c *repoServiceClient) FollowRepo(ctx context.Context, in *FollowRepoRequest, opts ...grpc.CallOption) (*FollowRepoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FollowRepoResponse)
+	err := c.cc.Invoke(ctx, RepoService_FollowRepo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *repoServiceClient) UnfollowRepo(ctx context.Context, in *UnfollowRepoRequest, opts ...grpc.CallOption) (*UnfollowRepoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UnfollowRepoResponse)
+	err := c.cc.Invoke(ctx, RepoService_UnfollowRepo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *repoServiceClient) ListFollowedRepos(ctx context.Context, in *ListFollowedReposRequest, opts ...grpc.CallOption) (*ListFollowedReposResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListFollowedReposResponse)
+	err := c.cc.Invoke(ctx, RepoService_ListFollowedRepos_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RepoServiceServer is the server API for RepoService service.
 // All implementations must embed UnimplementedRepoServiceServer
 // for forward compatibility.
@@ -169,6 +205,9 @@ type RepoServiceServer interface {
 	UpdateCollaborator(context.Context, *UpdateCollaboratorRequest) (*UpdateCollaboratorResponse, error)
 	RemoveCollaborator(context.Context, *RemoveCollaboratorRequest) (*RemoveCollaboratorResponse, error)
 	ListCollaborators(context.Context, *ListCollaboratorsRequest) (*ListCollaboratorsResponse, error)
+	FollowRepo(context.Context, *FollowRepoRequest) (*FollowRepoResponse, error)
+	UnfollowRepo(context.Context, *UnfollowRepoRequest) (*UnfollowRepoResponse, error)
+	ListFollowedRepos(context.Context, *ListFollowedReposRequest) (*ListFollowedReposResponse, error)
 	mustEmbedUnimplementedRepoServiceServer()
 }
 
@@ -208,6 +247,15 @@ func (UnimplementedRepoServiceServer) RemoveCollaborator(context.Context, *Remov
 }
 func (UnimplementedRepoServiceServer) ListCollaborators(context.Context, *ListCollaboratorsRequest) (*ListCollaboratorsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListCollaborators not implemented")
+}
+func (UnimplementedRepoServiceServer) FollowRepo(context.Context, *FollowRepoRequest) (*FollowRepoResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method FollowRepo not implemented")
+}
+func (UnimplementedRepoServiceServer) UnfollowRepo(context.Context, *UnfollowRepoRequest) (*UnfollowRepoResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UnfollowRepo not implemented")
+}
+func (UnimplementedRepoServiceServer) ListFollowedRepos(context.Context, *ListFollowedReposRequest) (*ListFollowedReposResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListFollowedRepos not implemented")
 }
 func (UnimplementedRepoServiceServer) mustEmbedUnimplementedRepoServiceServer() {}
 func (UnimplementedRepoServiceServer) testEmbeddedByValue()                     {}
@@ -410,6 +458,60 @@ func _RepoService_ListCollaborators_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RepoService_FollowRepo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FollowRepoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepoServiceServer).FollowRepo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RepoService_FollowRepo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepoServiceServer).FollowRepo(ctx, req.(*FollowRepoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RepoService_UnfollowRepo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnfollowRepoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepoServiceServer).UnfollowRepo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RepoService_UnfollowRepo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepoServiceServer).UnfollowRepo(ctx, req.(*UnfollowRepoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RepoService_ListFollowedRepos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListFollowedReposRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepoServiceServer).ListFollowedRepos(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RepoService_ListFollowedRepos_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepoServiceServer).ListFollowedRepos(ctx, req.(*ListFollowedReposRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RepoService_ServiceDesc is the grpc.ServiceDesc for RepoService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -456,6 +558,18 @@ var RepoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListCollaborators",
 			Handler:    _RepoService_ListCollaborators_Handler,
+		},
+		{
+			MethodName: "FollowRepo",
+			Handler:    _RepoService_FollowRepo_Handler,
+		},
+		{
+			MethodName: "UnfollowRepo",
+			Handler:    _RepoService_UnfollowRepo_Handler,
+		},
+		{
+			MethodName: "ListFollowedRepos",
+			Handler:    _RepoService_ListFollowedRepos_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

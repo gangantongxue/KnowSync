@@ -26,6 +26,7 @@ message Repo {
   int64 article_count = 6;
   string created_at = 7;
   string updated_at = 8;
+  int64 follower_count = 9;
 }
 
 message Collaborator {
@@ -57,6 +58,7 @@ message GetRepoResponse {
   string msg = 2;
   Repo repo = 3;
   CollaboratorRole my_role = 4;
+  bool is_following = 5;
 }
 
 message UpdateRepoRequest {
@@ -144,6 +146,35 @@ message ListCollaboratorsResponse {
   repeated Collaborator collaborators = 2;
 }
 
+message FollowRepoRequest {
+  string repo_id = 1;
+  string user_id = 2;
+}
+
+message FollowRepoResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
+message UnfollowRepoRequest {
+  string repo_id = 1;
+  string user_id = 2;
+}
+
+message UnfollowRepoResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
+message ListFollowedReposRequest {
+  string user_id = 1;
+}
+
+message ListFollowedReposResponse {
+  bool success = 1;
+  repeated Repo repos = 2;
+}
+
 service RepoService {
   rpc CreateRepo(CreateRepoRequest) returns (CreateRepoResponse);
   rpc GetRepo(GetRepoRequest) returns (GetRepoResponse);
@@ -156,4 +187,8 @@ service RepoService {
   rpc UpdateCollaborator(UpdateCollaboratorRequest) returns (UpdateCollaboratorResponse);
   rpc RemoveCollaborator(RemoveCollaboratorRequest) returns (RemoveCollaboratorResponse);
   rpc ListCollaborators(ListCollaboratorsRequest) returns (ListCollaboratorsResponse);
+
+  rpc FollowRepo(FollowRepoRequest) returns (FollowRepoResponse);
+  rpc UnfollowRepo(UnfollowRepoRequest) returns (UnfollowRepoResponse);
+  rpc ListFollowedRepos(ListFollowedReposRequest) returns (ListFollowedReposResponse);
 }

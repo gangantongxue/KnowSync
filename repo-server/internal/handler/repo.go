@@ -15,7 +15,7 @@ func (h *Handler) CreateRepo(ctx context.Context, req *pb.CreateRepoRequest) (*p
 	}
 	return &pb.CreateRepoResponse{
 		Success: true,
-		Repo:    marshalRepo(repo),
+		Repo:    marshalRepoWithFollowerCount(repo, 0),
 	}, nil
 }
 
@@ -31,10 +31,14 @@ func (h *Handler) GetRepo(ctx context.Context, req *pb.GetRepoRequest) (*pb.GetR
 		myRole = pb.CollaboratorRole(v)
 	}
 
+	followerCount, _ := h.Service.Repository.CountFollowers(ctx, req.GetRepoId())
+	isFollowing, _ := h.Service.Repository.IsFollowing(ctx, req.GetUserId(), req.GetRepoId())
+
 	return &pb.GetRepoResponse{
-		Success: true,
-		Repo:    marshalRepo(repo),
-		MyRole:  myRole,
+		Success:     true,
+		Repo:        marshalRepoWithFollowerCount(repo, followerCount),
+		MyRole:      myRole,
+		IsFollowing: isFollowing,
 	}, nil
 }
 
@@ -49,9 +53,12 @@ func (h *Handler) UpdateRepo(ctx context.Context, req *pb.UpdateRepoRequest) (*p
 	if err != nil {
 		return &pb.UpdateRepoResponse{Success: false, Msg: err.Error()}, nil
 	}
+
+	followerCount, _ := h.Service.Repository.CountFollowers(ctx, req.GetRepoId())
+
 	return &pb.UpdateRepoResponse{
 		Success: true,
-		Repo:    marshalRepo(repo),
+		Repo:    marshalRepoWithFollowerCount(repo, followerCount),
 	}, nil
 }
 
@@ -70,10 +77,7 @@ func (h *Handler) ListPublicRepos(ctx context.Context, req *pb.ListPublicReposRe
 		return &pb.ListPublicReposResponse{Success: false}, nil
 	}
 
-	pbRepos := make([]*pb.Repo, 0, len(repos))
-	for i := range repos {
-		pbRepos = append(pbRepos, marshalRepo(&repos[i]))
-	}
+	pbRepos := h.marshalRepoListWithFollowers(ctx, repos)
 
 	return &pb.ListPublicReposResponse{
 		Success: true,
@@ -88,10 +92,7 @@ func (h *Handler) ListUserRepos(ctx context.Context, req *pb.ListUserReposReques
 		return &pb.ListUserReposResponse{Success: false}, nil
 	}
 
-	pbRepos := make([]*pb.Repo, 0, len(repos))
-	for i := range repos {
-		pbRepos = append(pbRepos, marshalRepo(&repos[i]))
-	}
+	pbRepos := h.marshalRepoListWithFollowers(ctx, repos)
 
 	return &pb.ListUserReposResponse{
 		Success: true,
@@ -99,17 +100,38 @@ func (h *Handler) ListUserRepos(ctx context.Context, req *pb.ListUserReposReques
 	}, nil
 }
 
+// marshalRepoListWithFollowers 批量转换 Repo 列表并填充关注数
+func (h *Handler) marshalRepoListWithFollowers(ctx context.Context, repos []schema.Repo) []*pb.Repo {
+	repoIDs := make([]string, len(repos))
+	for i, r := range repos {
+		repoIDs[i] = r.ID
+	}
+	counts, _ := h.Service.Repository.BatchCountFollowers(ctx, repoIDs)
+
+	pbRepos := make([]*pb.Repo, 0, len(repos))
+	for _, r := range repos {
+		pbRepos = append(pbRepos, marshalRepoWithFollowerCount(&r, counts[r.ID]))
+	}
+	return pbRepos
+}
+
 // marshalRepo 将数据库 Repo 转换为 protobuf Repo
 func marshalRepo(r *schema.Repo) *pb.Repo {
+	return marshalRepoWithFollowerCount(r, 0)
+}
+
+// marshalRepoWithFollowerCount 将数据库 Repo 转换为 protobuf Repo，附带关注数
+func marshalRepoWithFollowerCount(r *schema.Repo, followerCount int64) *pb.Repo {
 	v, _ := pb.RepoVisibility_value[r.Visibility]
 	return &pb.Repo{
-		Id:           r.ID,
-		OwnerId:      r.OwnerID,
-		Name:         r.Name,
-		Visibility:   pb.RepoVisibility(v),
-		Description:  r.Description,
-		ArticleCount: r.ArticleCount,
-		CreatedAt:    r.CreatedAt.Format("2006-01-02T15:04:05Z"),
-		UpdatedAt:    r.UpdatedAt.Format("2006-01-02T15:04:05Z"),
+		Id:            r.ID,
+		OwnerId:       r.OwnerID,
+		Name:          r.Name,
+		Visibility:    pb.RepoVisibility(v),
+		Description:   r.Description,
+		ArticleCount:  r.ArticleCount,
+		CreatedAt:     r.CreatedAt.Format("2006-01-02T15:04:05Z"),
+		UpdatedAt:     r.UpdatedAt.Format("2006-01-02T15:04:05Z"),
+		FollowerCount: followerCount,
 	}
 }

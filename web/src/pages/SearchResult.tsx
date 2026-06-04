@@ -2,13 +2,20 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { request } from '../lib/client'
 import { getRepo } from '../lib/repos'
+import { getUser } from '../lib/auth'
 import type { Repo } from '../lib/repos'
+import type { UserInfo } from '../lib/auth'
+
+interface RepoWithAuthor {
+  repo: Repo
+  author: UserInfo | null
+}
 
 export default function SearchResult() {
   const [searchParams] = useSearchParams()
   const query = searchParams.get('q') || ''
   const navigate = useNavigate()
-  const [repos, setRepos] = useState<Repo[]>([])
+  const [items, setItems] = useState<RepoWithAuthor[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
@@ -26,11 +33,16 @@ export default function SearchResult() {
         setHasMore(res.data.has_more)
 
         const details = await Promise.all(
-          (res.data.repo_ids || []).map(id => getRepo(id).catch(() => null))
+          (res.data.repo_ids || []).map(async id => {
+            const repo = await getRepo(id).catch(() => null)
+            if (!repo) return null
+            const author = await getUser(repo.owner_id).catch(() => null)
+            return { repo, author } as RepoWithAuthor
+          })
         )
-        setRepos(details.filter(Boolean) as Repo[])
+        setItems(details.filter(Boolean) as RepoWithAuthor[])
       } catch {
-        setRepos([])
+        setItems([])
       }
       setLoading(false)
     }
@@ -44,11 +56,11 @@ export default function SearchResult() {
 
       {loading ? (
         <div className="text-gray-400 text-sm">搜索中...</div>
-      ) : repos.length === 0 ? (
+      ) : items.length === 0 ? (
         <div className="text-gray-400 text-sm py-8 text-center">未找到匹配的知识库</div>
       ) : (
         <div className="space-y-3">
-          {repos.map(repo => (
+          {items.map(({ repo, author }) => (
             <div
               key={repo.id}
               onClick={() => navigate(`/repos/${repo.id}`)}
@@ -56,9 +68,20 @@ export default function SearchResult() {
             >
               <h3 className="text-sm font-medium text-gray-800">{repo.name}</h3>
               <p className="text-xs text-gray-500 mt-1">{repo.description || '暂无描述'}</p>
-              <div className="flex gap-3 mt-2 text-xs text-gray-400">
-                <span>{repo.article_count} 篇文章</span>
-                <span>{repo.visibility === 'PUBLIC' ? '公开' : '私有'}</span>
+              <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
+                {author && (
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-xs flex items-center justify-center shrink-0 overflow-hidden">
+                      {author.avatar ? (
+                        <img src={author.avatar} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                      ) : (
+                        author.name?.charAt(0) || '?'
+                      )}
+                    </div>
+                    <span className="text-gray-500">{author.name || '未知用户'}</span>
+                  </div>
+                )}
+                <span>{repo.follower_count} 关注</span>
               </div>
             </div>
           ))}

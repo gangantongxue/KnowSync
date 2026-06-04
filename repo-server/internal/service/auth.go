@@ -8,6 +8,7 @@ import (
 // CheckRepoPermission 校验用户在知识库中的权限
 // requiredRoles 为允许的角色列表，满足任一角色即通过
 // 公开知识库的 VIEWER 级别操作对非协作者也开放
+// 关注者拥有 VIEWER 权限
 func (s *Service) CheckRepoPermission(ctx context.Context, repoID, userID string, requiredRoles ...string) error {
 	role, err := s.Repository.GetUserRole(ctx, repoID, userID)
 	if err != nil {
@@ -16,7 +17,13 @@ func (s *Service) CheckRepoPermission(ctx context.Context, repoID, userID string
 			if repoErr != nil {
 				return ErrNotFound
 			}
+			// 公开知识库对非协作者开放 VIEWER 权限
 			if repo.Visibility == "PUBLIC" && isRoleSufficient("VIEWER", requiredRoles) {
+				return nil
+			}
+			// 关注者拥有 VIEWER 权限
+			following, fErr := s.Repository.IsFollowing(ctx, userID, repoID)
+			if fErr == nil && following && isRoleSufficient("VIEWER", requiredRoles) {
 				return nil
 			}
 			return ErrPermissionDenied
