@@ -27,12 +27,13 @@ type ToolList []tool.InvokableTool
 
 // RepoInfo 仓库基本信息
 type RepoInfo struct {
-	ID           string
-	OwnerID      string
-	Name         string
-	Visibility   string
-	Description  string
-	ArticleCount int64
+	ID            string
+	OwnerID       string
+	Name          string
+	Visibility    string
+	Description   string
+	ArticleCount  int64
+	FollowerCount int64
 }
 
 // FileEntry 文件/目录项
@@ -136,6 +137,23 @@ type FollowClient interface {
 	FollowRepo(ctx context.Context, userID, repoID string) error
 	UnfollowRepo(ctx context.Context, userID, repoID string) error
 	ListFollowedRepos(ctx context.Context, userID string) ([]RepoInfo, error)
+}
+
+// WebFetcher 网络资源获取接口
+type WebFetcher interface {
+	FetchURL(ctx context.Context, url string) ([]byte, error)
+}
+
+// WebSearcher 网络搜索接口
+type WebSearcher interface {
+	Search(ctx context.Context, query string) (string, error)
+}
+
+// SearchResult 搜索结果项
+type SearchResult struct {
+	Title   string `json:"title"`
+	URL     string `json:"url"`
+	Snippet string `json:"snippet"`
 }
 
 // UserInfo 用户信息

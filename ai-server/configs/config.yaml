@@ -42,3 +42,7 @@ chromem:
 worker:
   concurrency: 3
   max_retries: 3
+
+web_search:
+  base_url: https://api.duckduckgo.com/
+  api_key: ""

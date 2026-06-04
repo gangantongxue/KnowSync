@@ -30,52 +30,10 @@ func NewConfig() (*model.Config, error) {
 		slog.Warn("未找到配置文件，使用默认值和环境变量")
 	}
 
-	cfg := &model.Config{
-		GRPC: model.GRPCCfg{
-			Port: v.GetInt("grpc.port"),
-		},
-		Log: model.LogCfg{
-			Level: v.GetString("log.level"),
-			Dir:   v.GetString("log.dir"),
-		},
-		Redis: model.RedisCfg{
-			Addrs:    v.GetStringSlice("redis.addrs"),
-			Password: v.GetString("redis.password"),
-			DB:       v.GetInt("redis.db"),
-		},
-		Database: model.DatabaseCfg{
-			Host:     v.GetString("database.host"),
-			Port:     v.GetInt("database.port"),
-			User:     v.GetString("database.user"),
-			Password: v.GetString("database.password"),
-			DBName:   v.GetString("database.dbname"),
-		},
-		Gateway: model.GatewayCfg{
-			Addr: v.GetString("gateway.addr"),
-		},
-		ServiceToken: model.ServiceTokenCfg{
-			Secret: v.GetString("service_token.secret"),
-		},
-		Embedder: model.EmbedderCfg{
-			BaseURL:    v.GetString("embedder.base_url"),
-			APIKey:     v.GetString("embedder.api_key"),
-			Model:      v.GetString("embedder.model"),
-			Dimensions: v.GetInt("embedder.dimensions"),
-		},
-		LLM: model.LLMCfg{
-			BaseURL:           v.GetString("llm.base_url"),
-			APIKey:            v.GetString("llm.api_key"),
-			Model:             v.GetString("llm.model"),
-			ThinkingIntensity: v.GetString("llm.thinking_intensity"),
-		},
-		Chromem: model.ChromemCfg{
-			Path: v.GetString("chromem.path"),
-		},
-		Worker: model.WorkerCfg{
-			Concurrency: v.GetInt("worker.concurrency"),
-			MaxRetries:  v.GetInt("worker.max_retries"),
-		},
+	var cfg model.Config
+	if err := v.Unmarshal(&cfg); err != nil {
+		return nil, err
 	}
 
-	return cfg, nil
+	return &cfg, nil
 }

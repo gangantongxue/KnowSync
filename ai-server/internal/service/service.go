@@ -12,6 +12,7 @@ import (
 	"github.com/gangantongxue/knowsync/ai-server/internal/llm"
 	llmtool "github.com/gangantongxue/knowsync/ai-server/internal/llm/tool"
 	"github.com/gangantongxue/knowsync/ai-server/internal/repository"
+	"github.com/gangantongxue/knowsync/ai-server/internal/service/compactor"
 	"github.com/gangantongxue/knowsync/ai-server/internal/vectorstore"
 	"github.com/gangantongxue/knowsync/ai-server/pkg/config/model"
 )
@@ -21,24 +22,32 @@ type Service struct {
 	Cfg         *model.Config
 	RDB         *redis.Client
 	Client      *Client
+	Web         *WebClient
 	Repo        *repository.Repository
 	LLM         *llm.ChatModel
 	Embedder    *embedder.Client
 	VectorStore *vectorstore.Store
-	AskedUser   *llm.AskedUser // ask_user 工具回调检测
+	AskedUser   *llm.AskedUser       // ask_user 工具回调检测
+	Compactor   *compactor.Compactor // 上下文管理器（溢出压缩）
 }
 
 // NewService 创建业务逻辑层
 func NewService(cfg *model.Config, rdb *redis.Client, client *Client, repo *repository.Repository, llmModel *llm.ChatModel, emb *embedder.Client, vs *vectorstore.Store) (*Service, error) {
+	// 初始化上下文管理器
+	summarizer := compactor.NewSummarizer(cfg.LLM.BaseURL, cfg.LLM.APIKey, cfg.LLM.Model)
+	ctxMgr := compactor.New(128_000, summarizer, repo)
+
 	svc := &Service{
 		Cfg:         cfg,
 		RDB:         rdb,
 		Client:      client,
+		Web:         NewWebClient(&cfg.WebSearch),
 		Repo:        repo,
 		LLM:         llmModel,
 		Embedder:    emb,
 		VectorStore: vs,
 		AskedUser:   &llm.AskedUser{},
+		Compactor:   ctxMgr,
 	}
 
 	// 初始化 Agent 并注册工具
@@ -66,6 +75,8 @@ func (s *Service) initAgent(ctx context.Context) error {
 		"list_collaborators":       llmtool.ConfirmNever,
 		"follow_repo":              llmtool.ConfirmOptional,
 		"unfollow_repo":            llmtool.ConfirmOptional,
+		"import_from_url":          llmtool.ConfirmOptional,
+		"generate_diagram":         llmtool.ConfirmOptional,
 	}
 
 	// onAskUser 回调
@@ -106,6 +117,17 @@ func (s *Service) initAgent(ctx context.Context) error {
 		llmtool.NewFollowRepo(s.Client),
 		llmtool.NewUnfollowRepo(s.Client),
 		llmtool.NewListFollowedRepos(s.Client),
+
+		// 新增知识库统计工具
+		llmtool.NewRepoStats(s.Client, s.Client),
+
+		// 新增通用增强工具
+		llmtool.NewCurrentTime(),
+		llmtool.NewCalculator(),
+		llmtool.NewWebSearch(s.Web),
+		llmtool.NewImportFromURL(s.Web, s.Client),
+		llmtool.NewGenerateDiagram(s.Client),
+		llmtool.NewDiffText(),
 	}
 
 	if err := s.LLM.InitAgent(ctx, tools, writePolicies); err != nil {

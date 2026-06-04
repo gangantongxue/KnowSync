@@ -172,12 +172,13 @@ func (c *Client) ListUserReposDetail(ctx context.Context, userID string) ([]tool
 
 	var result struct {
 		Repos []struct {
-			ID           string `json:"id"`
-			OwnerID      string `json:"owner_id"`
-			Name         string `json:"name"`
-			Visibility   string `json:"visibility"`
-			Description  string `json:"description"`
-			ArticleCount int64  `json:"article_count"`
+			ID            string `json:"id"`
+			OwnerID       string `json:"owner_id"`
+			Name          string `json:"name"`
+			Visibility    string `json:"visibility"`
+			Description   string `json:"description"`
+			ArticleCount  int64  `json:"article_count"`
+			FollowerCount int64  `json:"follower_count"`
 		} `json:"repos"`
 	}
 	if err := json.Unmarshal(body, &result); err != nil {
@@ -187,12 +188,13 @@ func (c *Client) ListUserReposDetail(ctx context.Context, userID string) ([]tool
 	infos := make([]tool.RepoInfo, 0, len(result.Repos))
 	for _, r := range result.Repos {
 		infos = append(infos, tool.RepoInfo{
-			ID:           r.ID,
-			OwnerID:      r.OwnerID,
-			Name:         r.Name,
-			Visibility:   r.Visibility,
-			Description:  r.Description,
-			ArticleCount: r.ArticleCount,
+			ID:            r.ID,
+			OwnerID:       r.OwnerID,
+			Name:          r.Name,
+			Visibility:    r.Visibility,
+			Description:   r.Description,
+			ArticleCount:  r.ArticleCount,
+			FollowerCount: r.FollowerCount,
 		})
 	}
 	return infos, nil
@@ -209,12 +211,13 @@ func (c *Client) GetRepo(ctx context.Context, repoID, userID string) (*tool.Repo
 
 	var result struct {
 		Repo struct {
-			ID           string `json:"id"`
-			OwnerID      string `json:"owner_id"`
-			Name         string `json:"name"`
-			Visibility   string `json:"visibility"`
-			Description  string `json:"description"`
-			ArticleCount int64  `json:"article_count"`
+			ID            string `json:"id"`
+			OwnerID       string `json:"owner_id"`
+			Name          string `json:"name"`
+			Visibility    string `json:"visibility"`
+			Description   string `json:"description"`
+			ArticleCount  int64  `json:"article_count"`
+			FollowerCount int64  `json:"follower_count"`
 		} `json:"repo"`
 	}
 	if err := json.Unmarshal(body, &result); err != nil {
@@ -222,12 +225,13 @@ func (c *Client) GetRepo(ctx context.Context, repoID, userID string) (*tool.Repo
 	}
 
 	return &tool.RepoInfo{
-		ID:           result.Repo.ID,
-		OwnerID:      result.Repo.OwnerID,
-		Name:         result.Repo.Name,
-		Visibility:   result.Repo.Visibility,
-		Description:  result.Repo.Description,
-		ArticleCount: result.Repo.ArticleCount,
+		ID:            result.Repo.ID,
+		OwnerID:       result.Repo.OwnerID,
+		Name:          result.Repo.Name,
+		Visibility:    result.Repo.Visibility,
+		Description:   result.Repo.Description,
+		ArticleCount:  result.Repo.ArticleCount,
+		FollowerCount: result.Repo.FollowerCount,
 	}, nil
 }
 
@@ -240,12 +244,13 @@ func (c *Client) ListPublicReposDetail(ctx context.Context) ([]tool.RepoInfo, er
 
 	var result struct {
 		Repos []struct {
-			ID           string `json:"id"`
-			OwnerID      string `json:"owner_id"`
-			Name         string `json:"name"`
-			Visibility   string `json:"visibility"`
-			Description  string `json:"description"`
-			ArticleCount int64  `json:"article_count"`
+			ID            string `json:"id"`
+			OwnerID       string `json:"owner_id"`
+			Name          string `json:"name"`
+			Visibility    string `json:"visibility"`
+			Description   string `json:"description"`
+			ArticleCount  int64  `json:"article_count"`
+			FollowerCount int64  `json:"follower_count"`
 		} `json:"repos"`
 	}
 	if err := json.Unmarshal(body, &result); err != nil {
@@ -255,12 +260,13 @@ func (c *Client) ListPublicReposDetail(ctx context.Context) ([]tool.RepoInfo, er
 	infos := make([]tool.RepoInfo, 0, len(result.Repos))
 	for _, r := range result.Repos {
 		infos = append(infos, tool.RepoInfo{
-			ID:           r.ID,
-			OwnerID:      r.OwnerID,
-			Name:         r.Name,
-			Visibility:   r.Visibility,
-			Description:  r.Description,
-			ArticleCount: r.ArticleCount,
+			ID:            r.ID,
+			OwnerID:       r.OwnerID,
+			Name:          r.Name,
+			Visibility:    r.Visibility,
+			Description:   r.Description,
+			ArticleCount:  r.ArticleCount,
+			FollowerCount: r.FollowerCount,
 		})
 	}
 	return infos, nil
@@ -498,12 +504,13 @@ func (c *Client) ListFollowedRepos(ctx context.Context, userID string) ([]tool.R
 
 	var result struct {
 		Repos []struct {
-			ID           string `json:"id"`
-			OwnerID      string `json:"owner_id"`
-			Name         string `json:"name"`
-			Visibility   string `json:"visibility"`
-			Description  string `json:"description"`
-			ArticleCount int64  `json:"article_count"`
+			ID            string `json:"id"`
+			OwnerID       string `json:"owner_id"`
+			Name          string `json:"name"`
+			Visibility    string `json:"visibility"`
+			Description   string `json:"description"`
+			ArticleCount  int64  `json:"article_count"`
+			FollowerCount int64  `json:"follower_count"`
 		} `json:"repos"`
 	}
 	if err := json.Unmarshal(body, &result); err != nil {
@@ -513,12 +520,13 @@ func (c *Client) ListFollowedRepos(ctx context.Context, userID string) ([]tool.R
 	infos := make([]tool.RepoInfo, 0, len(result.Repos))
 	for _, r := range result.Repos {
 		infos = append(infos, tool.RepoInfo{
-			ID:           r.ID,
-			OwnerID:      r.OwnerID,
-			Name:         r.Name,
-			Visibility:   r.Visibility,
-			Description:  r.Description,
-			ArticleCount: r.ArticleCount,
+			ID:            r.ID,
+			OwnerID:       r.OwnerID,
+			Name:          r.Name,
+			Visibility:    r.Visibility,
+			Description:   r.Description,
+			ArticleCount:  r.ArticleCount,
+			FollowerCount: r.FollowerCount,
 		})
 	}
 	return infos, nil

@@ -9,11 +9,13 @@ import (
 
 // ChatSession 会话表
 type ChatSession struct {
-	ID        string    `gorm:"primaryKey;type:char(20)" json:"id"`
-	UserID    string    `gorm:"column:user_id;type:varchar(20);not null;index:idx_user_id" json:"user_id"`
-	Title     string    `gorm:"column:title;type:varchar(255);not null;default:'新对话'" json:"title"`
-	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime" json:"created_at"`
-	UpdatedAt time.Time `gorm:"column:updated_at;autoUpdateTime" json:"updated_at"`
+	ID               string     `gorm:"primaryKey;type:char(20)" json:"id"`
+	UserID           string     `gorm:"column:user_id;type:varchar(20);not null;index:idx_user_id" json:"user_id"`
+	Title            string     `gorm:"column:title;type:varchar(255);not null;default:'新对话'" json:"title"`
+	Summary          string     `gorm:"column:summary;type:longtext" json:"summary"`
+	SummaryUpdatedAt *time.Time `gorm:"column:summary_updated_at" json:"summary_updated_at"`
+	CreatedAt        time.Time  `gorm:"column:created_at;autoCreateTime" json:"created_at"`
+	UpdatedAt        time.Time  `gorm:"column:updated_at;autoUpdateTime" json:"updated_at"`
 }
 
 func (s *ChatSession) TableName() string {
@@ -71,6 +73,16 @@ func (r *Repository) ListSessions(userID string, cursor int64, limit int) ([]Cha
 func (r *Repository) UpdateSessionTitle(sessionID, title string) error {
 	return r.DB.Model(&ChatSession{}).Where("id = ?", sessionID).
 		Update("title", title).Error
+}
+
+// UpdateSummary 更新会话摘要
+func (r *Repository) UpdateSummary(sessionID, summary string) error {
+	now := time.Now()
+	return r.DB.Model(&ChatSession{}).Where("id = ?", sessionID).
+		Updates(map[string]any{
+			"summary":            summary,
+			"summary_updated_at": &now,
+		}).Error
 }
 
 // DeleteSession 删除会话及其所有消息

@@ -81,6 +81,13 @@ func (s *Service) Chat(ctx context.Context, reqUserID string, reqSessionID, mess
 		return
 	}
 
+	// 3.5 上下文压缩（溢出检测 + 自动摘要）
+	messages, err = s.Compactor.CompactIfNeeded(ctx, messages, session)
+	if err != nil {
+		slog.Error("上下文压缩失败", "error", err)
+		// 压缩失败不阻塞对话，继续使用原始消息
+	}
+
 	// 4. 判断是否为首次对话
 	isFirstRound := false
 	{

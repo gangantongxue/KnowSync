@@ -18,3 +18,10 @@
 ## 执行命令规范
 
 - 有可用的 `task` 命令，优先使用 `task` 命令执行任务
+
+## 配置管理规范
+
+- **使用 viper 自动解析** — 禁止逐字段手动绑定，统一使用 `v.AutomaticEnv()` + `v.Unmarshal(&cfg)` 自动解析配置
+- **所有配置结构体字段**须同时包含 `yaml` 和 `mapstructure` 标签，确保 YAML 反序列化与环境变量绑定一致
+- **环境变量优先级高于配置文件** — 始终在 `v.ReadInConfig()` 之前调用 `v.AutomaticEnv()`，利用 viper 的 env > config 优先级顺序
+- **环境变量前缀**遵循 `KNOWSYNC_{SERVER_NAME}` 格式（如 `KNOWSYNC_USER_SERVER`、`KNOWSYNC_GATEWAY`），键路径中的 `.` 替换为 `_`

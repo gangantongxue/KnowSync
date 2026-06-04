@@ -4,13 +4,13 @@ import "log/slog"
 
 // LoggerCfg 日志配置项
 type LoggerCfg struct {
-	Level      string `yaml:"level"`
-	Dir        string `yaml:"dir"`
-	MaxSize    int    `yaml:"max_size"`
-	MaxBackups int    `yaml:"max_backups"`
-	MaxAge     int    `yaml:"max_age"`
-	Compress   bool   `yaml:"compress"`
-	LocalTime  bool   `yaml:"local_time"`
+	Level      string `yaml:"level" mapstructure:"level"`
+	Dir        string `yaml:"dir" mapstructure:"dir"`
+	MaxSize    int    `yaml:"max_size" mapstructure:"max_size"`
+	MaxBackups int    `yaml:"max_backups" mapstructure:"max_backups"`
+	MaxAge     int    `yaml:"max_age" mapstructure:"max_age"`
+	Compress   bool   `yaml:"compress" mapstructure:"compress"`
+	LocalTime  bool   `yaml:"local_time" mapstructure:"local_time"`
 }
 
 // GetLevel 将配置中的日志级别字符串转换为 slog.Level
