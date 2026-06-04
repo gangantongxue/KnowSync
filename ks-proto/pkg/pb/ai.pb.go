@@ -1250,6 +1250,104 @@ func (x *VectorizeArticleResponse) GetMsg() string {
 	return ""
 }
 
+// DeleteRepoVectorsRequest 删除知识库向量请求
+type DeleteRepoVectorsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RepoId        string                 `protobuf:"bytes,1,opt,name=repo_id,json=repoId,proto3" json:"repo_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteRepoVectorsRequest) Reset() {
+	*x = DeleteRepoVectorsRequest{}
+	mi := &file_ai_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteRepoVectorsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRepoVectorsRequest) ProtoMessage() {}
+
+func (x *DeleteRepoVectorsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRepoVectorsRequest.ProtoReflect.Descriptor instead.
+func (*DeleteRepoVectorsRequest) Descriptor() ([]byte, []int) {
+	return file_ai_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *DeleteRepoVectorsRequest) GetRepoId() string {
+	if x != nil {
+		return x.RepoId
+	}
+	return ""
+}
+
+// DeleteRepoVectorsResponse 删除知识库向量响应
+type DeleteRepoVectorsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteRepoVectorsResponse) Reset() {
+	*x = DeleteRepoVectorsResponse{}
+	mi := &file_ai_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteRepoVectorsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRepoVectorsResponse) ProtoMessage() {}
+
+func (x *DeleteRepoVectorsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRepoVectorsResponse.ProtoReflect.Descriptor instead.
+func (*DeleteRepoVectorsResponse) Descriptor() ([]byte, []int) {
+	return file_ai_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *DeleteRepoVectorsResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *DeleteRepoVectorsResponse) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
 var File_ai_proto protoreflect.FileDescriptor
 
 const file_ai_proto_rawDesc = "" +
@@ -1351,7 +1449,12 @@ const file_ai_proto_rawDesc = "" +
 	"\tfile_path\x18\x03 \x01(\tR\bfilePath\"F\n" +
 	"\x18VectorizeArticleResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg2\xa7\x04\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\"3\n" +
+	"\x18DeleteRepoVectorsRequest\x12\x17\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\"G\n" +
+	"\x19DeleteRepoVectorsResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg2\xff\x04\n" +
 	"\tAIService\x121\n" +
 	"\x04Chat\x12\x12.proto.ChatRequest\x1a\x13.proto.ChatResponse0\x01\x125\n" +
 	"\x06Search\x12\x14.proto.SearchRequest\x1a\x15.proto.SearchResponse\x12P\n" +
@@ -1359,7 +1462,8 @@ const file_ai_proto_rawDesc = "" +
 	"\x0fGetChatMessages\x12\x1d.proto.GetChatMessagesRequest\x1a\x1e.proto.GetChatMessagesResponse\x12V\n" +
 	"\x11DeleteChatSession\x12\x1f.proto.DeleteChatSessionRequest\x1a .proto.DeleteChatSessionResponse\x12_\n" +
 	"\x14UpdateRepoVisibility\x12\".proto.UpdateRepoVisibilityRequest\x1a#.proto.UpdateRepoVisibilityResponse\x12S\n" +
-	"\x10VectorizeArticle\x12\x1e.proto.VectorizeArticleRequest\x1a\x1f.proto.VectorizeArticleResponseB\x11Z\x0fks-proto/pkg/pbb\x06proto3"
+	"\x10VectorizeArticle\x12\x1e.proto.VectorizeArticleRequest\x1a\x1f.proto.VectorizeArticleResponse\x12V\n" +
+	"\x11DeleteRepoVectors\x12\x1f.proto.DeleteRepoVectorsRequest\x1a .proto.DeleteRepoVectorsResponseB\x11Z\x0fks-proto/pkg/pbb\x06proto3"
 
 var (
 	file_ai_proto_rawDescOnce sync.Once
@@ -1373,7 +1477,7 @@ func file_ai_proto_rawDescGZIP() []byte {
 	return file_ai_proto_rawDescData
 }
 
-var file_ai_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_ai_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_ai_proto_goTypes = []any{
 	(*ChatSession)(nil),                  // 0: proto.ChatSession
 	(*ChatMessage)(nil),                  // 1: proto.ChatMessage
@@ -1393,6 +1497,8 @@ var file_ai_proto_goTypes = []any{
 	(*UpdateRepoVisibilityResponse)(nil), // 15: proto.UpdateRepoVisibilityResponse
 	(*VectorizeArticleRequest)(nil),      // 16: proto.VectorizeArticleRequest
 	(*VectorizeArticleResponse)(nil),     // 17: proto.VectorizeArticleResponse
+	(*DeleteRepoVectorsRequest)(nil),     // 18: proto.DeleteRepoVectorsRequest
+	(*DeleteRepoVectorsResponse)(nil),    // 19: proto.DeleteRepoVectorsResponse
 }
 var file_ai_proto_depIdxs = []int32{
 	4,  // 0: proto.ChatResponse.ask_user_event:type_name -> proto.AskUserEvent
@@ -1405,15 +1511,17 @@ var file_ai_proto_depIdxs = []int32{
 	10, // 7: proto.AIService.DeleteChatSession:input_type -> proto.DeleteChatSessionRequest
 	14, // 8: proto.AIService.UpdateRepoVisibility:input_type -> proto.UpdateRepoVisibilityRequest
 	16, // 9: proto.AIService.VectorizeArticle:input_type -> proto.VectorizeArticleRequest
-	5,  // 10: proto.AIService.Chat:output_type -> proto.ChatResponse
-	13, // 11: proto.AIService.Search:output_type -> proto.SearchResponse
-	7,  // 12: proto.AIService.GetChatSessions:output_type -> proto.GetChatSessionsResponse
-	9,  // 13: proto.AIService.GetChatMessages:output_type -> proto.GetChatMessagesResponse
-	11, // 14: proto.AIService.DeleteChatSession:output_type -> proto.DeleteChatSessionResponse
-	15, // 15: proto.AIService.UpdateRepoVisibility:output_type -> proto.UpdateRepoVisibilityResponse
-	17, // 16: proto.AIService.VectorizeArticle:output_type -> proto.VectorizeArticleResponse
-	10, // [10:17] is the sub-list for method output_type
-	3,  // [3:10] is the sub-list for method input_type
+	18, // 10: proto.AIService.DeleteRepoVectors:input_type -> proto.DeleteRepoVectorsRequest
+	5,  // 11: proto.AIService.Chat:output_type -> proto.ChatResponse
+	13, // 12: proto.AIService.Search:output_type -> proto.SearchResponse
+	7,  // 13: proto.AIService.GetChatSessions:output_type -> proto.GetChatSessionsResponse
+	9,  // 14: proto.AIService.GetChatMessages:output_type -> proto.GetChatMessagesResponse
+	11, // 15: proto.AIService.DeleteChatSession:output_type -> proto.DeleteChatSessionResponse
+	15, // 16: proto.AIService.UpdateRepoVisibility:output_type -> proto.UpdateRepoVisibilityResponse
+	17, // 17: proto.AIService.VectorizeArticle:output_type -> proto.VectorizeArticleResponse
+	19, // 18: proto.AIService.DeleteRepoVectors:output_type -> proto.DeleteRepoVectorsResponse
+	11, // [11:19] is the sub-list for method output_type
+	3,  // [3:11] is the sub-list for method input_type
 	3,  // [3:3] is the sub-list for extension type_name
 	3,  // [3:3] is the sub-list for extension extendee
 	0,  // [0:3] is the sub-list for field type_name
@@ -1435,7 +1543,7 @@ func file_ai_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ai_proto_rawDesc), len(file_ai_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   18,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

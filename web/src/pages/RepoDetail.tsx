@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Outlet, useParams, useLocation } from 'react-router-dom'
+import { Outlet, useParams, useLocation, useNavigate } from 'react-router-dom'
 import { getRepo } from '../lib/repos'
 import type { Repo } from '../lib/repos'
 import RepoTree from '../components/Repo/RepoTree'
@@ -8,12 +8,14 @@ import RepoSettings from '../components/Repo/RepoSettings'
 export default function RepoDetail() {
   const { repoId } = useParams<{ repoId: string }>()
   const location = useLocation()
+  const navigate = useNavigate()
   const [repo, setRepo] = useState<Repo | null>(null)
+  const [myRole, setMyRole] = useState('')
   const [showSettings, setShowSettings] = useState(false)
 
   const loadRepo = () => {
     if (!repoId) return
-    getRepo(repoId).then(setRepo).catch(() => {})
+    getRepo(repoId).then(r => { setRepo(r); setMyRole(r.my_role) }).catch(() => {})
   }
 
   useEffect(() => { loadRepo() }, [repoId])
@@ -66,7 +68,7 @@ export default function RepoDetail() {
       {showSettings && repo && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onClick={() => setShowSettings(false)}>
           <div className="bg-white rounded-xl shadow-xl w-[480px] max-h-[85vh] overflow-y-auto mx-4" onClick={e => e.stopPropagation()}>
-            <RepoSettings repo={repo} onUpdate={loadRepo} onClose={() => setShowSettings(false)} />
+            <RepoSettings repo={repo} myRole={myRole} onUpdate={loadRepo} onClose={() => setShowSettings(false)} onDelete={() => { setShowSettings(false); navigate('/repos') }} />
           </div>
         </div>
       )}

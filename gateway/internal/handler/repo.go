@@ -202,7 +202,27 @@ func (h *Handler) DeleteRepo() app.HandlerFunc {
 			slog.Warn("删除知识库存储目录失败", "repo_id", repoID, "error", err)
 		}
 
+		// 异步清理向量存储，避免影响删除响应速度
+		go h.deleteRepoVectors(repoID)
+
 		response.Success(c, ctx, nil)
+	}
+}
+
+// deleteRepoVectors 异步删除知识库向量数据
+func (h *Handler) deleteRepoVectors(repoID string) {
+	conn := h.grpcClient.GetConn("ai_server")
+	if conn == nil {
+		slog.Warn("获取 ai_server 连接失败，跳过向量清理", "repo_id", repoID)
+		return
+	}
+
+	client := pb.NewAIServiceClient(conn)
+	_, err := client.DeleteRepoVectors(context.Background(), &pb.DeleteRepoVectorsRequest{
+		RepoId: repoID,
+	})
+	if err != nil {
+		slog.Warn("删除知识库向量数据失败", "repo_id", repoID, "error", err)
 	}
 }
 

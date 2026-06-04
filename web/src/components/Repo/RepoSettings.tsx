@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../store/auth-context'
-import { updateRepo } from '../../lib/repos'
+import { updateRepo, deleteRepo } from '../../lib/repos'
 import { listCollaborators, addCollaborator, updateCollaborator, removeCollaborator } from '../../lib/nodes'
 import { getUser } from '../../lib/auth'
 import type { Repo } from '../../lib/repos'
@@ -9,8 +9,10 @@ import type { UserInfo } from '../../lib/auth'
 
 interface RepoSettingsProps {
   repo: Repo
+  myRole: string
   onUpdate: () => void
   onClose: () => void
+  onDelete: () => void
 }
 
 interface CollaboratorWithUser {
@@ -18,7 +20,7 @@ interface CollaboratorWithUser {
   user: UserInfo | null
 }
 
-export default function RepoSettings({ repo, onUpdate, onClose }: RepoSettingsProps) {
+export default function RepoSettings({ repo, myRole, onUpdate, onClose, onDelete }: RepoSettingsProps) {
   const { user: self } = useAuth()
   const [collaborators, setCollaborators] = useState<CollaboratorWithUser[]>([])
   const [loadingCollabs, setLoadingCollabs] = useState(true)
@@ -31,6 +33,11 @@ export default function RepoSettings({ repo, onUpdate, onClose }: RepoSettingsPr
   const [editDesc, setEditDesc] = useState(repo.description || '')
   const [editVisibility, setEditVisibility] = useState(repo.visibility)
   const [saving, setSaving] = useState(false)
+
+  // 删除确认状态
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteConfirmInput, setDeleteConfirmInput] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     setEditName(repo.name)
@@ -114,6 +121,18 @@ export default function RepoSettings({ repo, onUpdate, onClose }: RepoSettingsPr
       loadCollabs()
     } catch (err: any) {
       alert('移除失败: ' + err.message)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (deleteConfirmInput !== repo.name || deleting) return
+    setDeleting(true)
+    try {
+      await deleteRepo(repo.id)
+      onDelete()
+    } catch (err: any) {
+      alert('删除失败: ' + err.message)
+      setDeleting(false)
     }
   }
 
@@ -260,6 +279,67 @@ export default function RepoSettings({ repo, onUpdate, onClose }: RepoSettingsPr
             </div>
           )}
         </div>
+
+        <div className="border-t border-gray-100" />
+
+        {/* 危险区域 —— 仅管理员可见 */}
+        {myRole === 'ADMIN' && (
+        <div>
+          <div className="text-xs text-gray-400 font-medium mb-3">危险区域</div>
+          <div className="p-3 border border-red-200 rounded-lg bg-red-50">
+            <div className="text-sm text-red-700 mb-1">删除知识库</div>
+            <div className="text-xs text-gray-500 mb-3">
+              删除后将无法恢复，包括数据库记录、文件系统和向量存储中的所有关联数据。
+            </div>
+            {!showDeleteConfirm ? (
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(true)
+                  setDeleteConfirmInput('')
+                }}
+                className="px-3 py-1.5 text-xs text-red-600 border border-red-300 rounded hover:bg-red-100"
+              >
+                删除知识库
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <div className="text-xs text-gray-600">
+                  请输入 <span className="font-medium text-red-600">{repo.name}</span> 以确认删除：
+                </div>
+                <input
+                  value={deleteConfirmInput}
+                  onChange={e => setDeleteConfirmInput(e.target.value)}
+                  placeholder={repo.name}
+                  className="w-full px-3 py-1.5 border border-red-300 rounded text-sm focus:outline-none focus:border-red-500"
+                  autoFocus
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleteConfirmInput !== repo.name || deleting}
+                    className={`px-3 py-1.5 text-xs text-white rounded ${
+                      deleteConfirmInput !== repo.name || deleting
+                        ? 'bg-red-300 cursor-not-allowed'
+                        : 'bg-red-500 hover:bg-red-600'
+                    }`}
+                  >
+                    {deleting ? '删除中...' : '确认删除'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDeleteConfirm(false)
+                      setDeleteConfirmInput('')
+                    }}
+                    className="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700"
+                  >
+                    取消
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        )}
       </div>
     </div>
   )

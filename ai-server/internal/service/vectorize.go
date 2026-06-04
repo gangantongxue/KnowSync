@@ -45,3 +45,8 @@ func (s *Service) VectorizeArticle(ctx context.Context, userID, repoID, filePath
 
 	return nil
 }
+
+// DeleteRepoVectors 删除指定知识库的所有向量数据
+func (s *Service) DeleteRepoVectors(_ context.Context, repoID string) error {
+	return s.VectorStore.DeleteRepoVectors(repoID)
+}

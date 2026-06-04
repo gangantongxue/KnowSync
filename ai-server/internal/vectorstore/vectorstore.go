@@ -135,6 +135,17 @@ func (s *Store) DeleteFileVectors(ctx context.Context, repoID, filePath string) 
 	return nil
 }
 
+// DeleteRepoVectors 删除指定 repo 的所有向量数据
+func (s *Store) DeleteRepoVectors(repoID string) error {
+	name := collectionName(repoID)
+	if err := s.db.DeleteCollection(name); err != nil {
+		slog.Error("删除向量 Collection 失败", "repo_id", repoID, "error", err)
+		return fmt.Errorf("删除向量 Collection 失败: %w", err)
+	}
+	slog.Info("删除向量 Collection 成功", "repo_id", repoID, "collection", name)
+	return nil
+}
+
 // Search 在指定 repo 中搜索相似内容
 func (s *Store) Search(ctx context.Context, repoID string, embedding []float32, limit int) ([]chromem.Result, error) {
 	col := s.db.GetCollection(collectionName(repoID), nil)

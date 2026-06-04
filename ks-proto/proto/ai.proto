@@ -147,6 +147,17 @@ message VectorizeArticleResponse {
   string msg = 2;
 }
 
+// DeleteRepoVectorsRequest 删除知识库向量请求
+message DeleteRepoVectorsRequest {
+  string repo_id = 1;
+}
+
+// DeleteRepoVectorsResponse 删除知识库向量响应
+message DeleteRepoVectorsResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
 // ========== Service ==========
 
 service AIService {
@@ -166,4 +177,7 @@ service AIService {
 
   // VectorizeArticle 向量化文章（异步）
   rpc VectorizeArticle(VectorizeArticleRequest) returns (VectorizeArticleResponse);
+
+  // DeleteRepoVectors 删除知识库向量数据
+  rpc DeleteRepoVectors(DeleteRepoVectorsRequest) returns (DeleteRepoVectorsResponse);
 }
