@@ -113,6 +113,31 @@ type VectorizeClient interface {
 	DeleteFileVectors(ctx context.Context, repoID, filePath string) error
 }
 
+// RepoDetail 仓库详情（包含角色和关注信息）
+type RepoDetail struct {
+	RepoInfo
+	FollowerCount int64
+	MyRole        string
+	IsFollowing   bool
+}
+
+// PublicRepoClient 公开仓库列表客户端接口
+type PublicRepoClient interface {
+	ListPublicReposDetail(ctx context.Context) ([]RepoInfo, error)
+}
+
+// RepoDetailGetter 仓库详情获取接口（含角色和关注状态）
+type RepoDetailGetter interface {
+	GetRepoDetail(ctx context.Context, repoID, userID string) (*RepoDetail, error)
+}
+
+// FollowClient 关注操作客户端接口
+type FollowClient interface {
+	FollowRepo(ctx context.Context, userID, repoID string) error
+	UnfollowRepo(ctx context.Context, userID, repoID string) error
+	ListFollowedRepos(ctx context.Context, userID string) ([]RepoInfo, error)
+}
+
 // UserInfo 用户信息
 type UserInfo struct {
 	ID   string `json:"id"`

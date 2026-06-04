@@ -64,6 +64,8 @@ func (s *Service) initAgent(ctx context.Context) error {
 		"update_collaborator_role": llmtool.ConfirmAlways,
 		"search_users":             llmtool.ConfirmNever,
 		"list_collaborators":       llmtool.ConfirmNever,
+		"follow_repo":              llmtool.ConfirmOptional,
+		"unfollow_repo":            llmtool.ConfirmOptional,
 	}
 
 	// onAskUser 回调
@@ -97,6 +99,13 @@ func (s *Service) initAgent(ctx context.Context) error {
 		llmtool.NewRemoveCollaborator(s.Client, s.Client),
 		llmtool.NewUpdateCollaboratorRole(s.Client, s.Client),
 		llmtool.NewListCollaborators(s.Client, s.Client),
+
+		// 新增知识库发现与社交工具
+		llmtool.NewGetRepoDetail(s.Client),
+		llmtool.NewListPublicRepos(s.Client),
+		llmtool.NewFollowRepo(s.Client),
+		llmtool.NewUnfollowRepo(s.Client),
+		llmtool.NewListFollowedRepos(s.Client),
 	}
 
 	if err := s.LLM.InitAgent(ctx, tools, writePolicies); err != nil {

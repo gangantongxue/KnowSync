@@ -102,21 +102,42 @@ func (h *Handler) InternalGetRepo() app.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(consts.StatusOK, map[string]any{
-			"repo": marshalInternalRepo(resp.Repo),
-		})
+		ctx.JSON(consts.StatusOK, marshalInternalRepoDetail(resp))
 	}
 }
 
 // marshalInternalRepo 将 pb.Repo 转为内部 HTTP 响应格式
 func marshalInternalRepo(r *pb.Repo) map[string]any {
 	return map[string]any{
-		"id":            r.Id,
-		"owner_id":      r.OwnerId,
-		"name":          r.Name,
-		"visibility":    r.Visibility.String(),
-		"description":   r.Description,
-		"article_count": r.ArticleCount,
+		"id":             r.Id,
+		"owner_id":       r.OwnerId,
+		"name":           r.Name,
+		"visibility":     r.Visibility.String(),
+		"description":    r.Description,
+		"article_count":  r.ArticleCount,
+		"follower_count": r.FollowerCount,
+	}
+}
+
+// marshalInternalRepoDetail 将 pb.GetRepoResponse 转为内部 HTTP 响应格式（含角色和关注状态）
+func marshalInternalRepoDetail(resp *pb.GetRepoResponse) map[string]any {
+	repo := map[string]any{
+		"id":             resp.Repo.Id,
+		"owner_id":       resp.Repo.OwnerId,
+		"name":           resp.Repo.Name,
+		"visibility":     resp.Repo.Visibility.String(),
+		"description":    resp.Repo.Description,
+		"article_count":  resp.Repo.ArticleCount,
+		"follower_count": resp.Repo.FollowerCount,
+	}
+	myRole := resp.MyRole.String()
+	if myRole == "COLLABORATOR_ROLE_UNSPECIFIED" {
+		myRole = ""
+	}
+	return map[string]any{
+		"repo":         repo,
+		"my_role":      myRole,
+		"is_following": resp.IsFollowing,
 	}
 }
 
@@ -511,6 +532,100 @@ func (h *Handler) InternalUpdateCollaboratorRole() app.HandlerFunc {
 			return
 		}
 		ctx.JSON(consts.StatusOK, map[string]any{"message": "updated"})
+	}
+}
+
+// InternalListFollowedRepos 获取用户关注的知识库列表（内部服务间调用）
+// GET /internal/repos/followed
+func (h *Handler) InternalListFollowedRepos() app.HandlerFunc {
+	return func(c context.Context, ctx *app.RequestContext) {
+		uid := ctx.GetString("user_id")
+		if uid == "" {
+			ctx.JSON(consts.StatusUnauthorized, map[string]string{"message": "missing user_id"})
+			return
+		}
+
+		conn := h.grpcClient.GetConn("repo_server")
+		if conn == nil {
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "repo server unavailable"})
+			return
+		}
+
+		client := pb.NewRepoServiceClient(conn)
+		resp, err := client.ListFollowedRepos(c, &pb.ListFollowedReposRequest{UserId: uid})
+		if err != nil || !resp.Success {
+			slog.Error("获取关注列表失败", "error", err)
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "获取关注列表失败"})
+			return
+		}
+
+		repos := make([]map[string]any, 0, len(resp.Repos))
+		for _, r := range resp.Repos {
+			repos = append(repos, marshalInternalRepo(r))
+		}
+
+		ctx.JSON(consts.StatusOK, map[string]any{
+			"repos": repos,
+			"total": len(repos),
+		})
+	}
+}
+
+// InternalFollowRepo 关注知识库（内部服务间调用）
+// POST /internal/repos/follow?repo_id=xxx
+func (h *Handler) InternalFollowRepo() app.HandlerFunc {
+	return func(c context.Context, ctx *app.RequestContext) {
+		uid := ctx.GetString("user_id")
+		repoID := ctx.Query("repo_id")
+		if repoID == "" {
+			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "repo_id is required"})
+			return
+		}
+
+		conn := h.grpcClient.GetConn("repo_server")
+		if conn == nil {
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "repo server unavailable"})
+			return
+		}
+
+		client := pb.NewRepoServiceClient(conn)
+		resp, err := client.FollowRepo(c, &pb.FollowRepoRequest{RepoId: repoID, UserId: uid})
+		if err != nil || !resp.Success {
+			slog.Error("关注知识库失败", "error", err, "repo_id", repoID)
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "关注知识库失败"})
+			return
+		}
+
+		ctx.JSON(consts.StatusOK, map[string]any{"message": "followed"})
+	}
+}
+
+// InternalUnfollowRepo 取消关注知识库（内部服务间调用）
+// DELETE /internal/repos/follow?repo_id=xxx
+func (h *Handler) InternalUnfollowRepo() app.HandlerFunc {
+	return func(c context.Context, ctx *app.RequestContext) {
+		uid := ctx.GetString("user_id")
+		repoID := ctx.Query("repo_id")
+		if repoID == "" {
+			ctx.JSON(consts.StatusBadRequest, map[string]string{"message": "repo_id is required"})
+			return
+		}
+
+		conn := h.grpcClient.GetConn("repo_server")
+		if conn == nil {
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "repo server unavailable"})
+			return
+		}
+
+		client := pb.NewRepoServiceClient(conn)
+		resp, err := client.UnfollowRepo(c, &pb.UnfollowRepoRequest{RepoId: repoID, UserId: uid})
+		if err != nil || !resp.Success {
+			slog.Error("取消关注知识库失败", "error", err, "repo_id", repoID)
+			ctx.JSON(consts.StatusInternalServerError, map[string]string{"message": "取消关注知识库失败"})
+			return
+		}
+
+		ctx.JSON(consts.StatusOK, map[string]any{"message": "unfollowed"})
 	}
 }
 

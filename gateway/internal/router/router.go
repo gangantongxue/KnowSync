@@ -147,5 +147,8 @@ func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client
 		internal.DELETE("/repos/collaborators", hdl.InternalRemoveCollaborator())
 		internal.PUT("/repos/collaborators/role", hdl.InternalUpdateCollaboratorRole())
 		internal.GET("/repos/collaborators", hdl.InternalListCollaborators())
+		internal.POST("/repos/follow", hdl.InternalFollowRepo())
+		internal.DELETE("/repos/follow", hdl.InternalUnfollowRepo())
+		internal.GET("/repos/followed", hdl.InternalListFollowedRepos())
 	}
 }

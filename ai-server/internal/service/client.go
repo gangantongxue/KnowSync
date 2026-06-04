@@ -231,6 +231,82 @@ func (c *Client) GetRepo(ctx context.Context, repoID, userID string) (*tool.Repo
 	}, nil
 }
 
+// ListPublicReposDetail 获取所有公开仓库列表（含完整信息）
+func (c *Client) ListPublicReposDetail(ctx context.Context) ([]tool.RepoInfo, error) {
+	body, err := c.doGet(ctx, "/internal/repos/public", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var result struct {
+		Repos []struct {
+			ID           string `json:"id"`
+			OwnerID      string `json:"owner_id"`
+			Name         string `json:"name"`
+			Visibility   string `json:"visibility"`
+			Description  string `json:"description"`
+			ArticleCount int64  `json:"article_count"`
+		} `json:"repos"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("解析响应失败: %w", err)
+	}
+
+	infos := make([]tool.RepoInfo, 0, len(result.Repos))
+	for _, r := range result.Repos {
+		infos = append(infos, tool.RepoInfo{
+			ID:           r.ID,
+			OwnerID:      r.OwnerID,
+			Name:         r.Name,
+			Visibility:   r.Visibility,
+			Description:  r.Description,
+			ArticleCount: r.ArticleCount,
+		})
+	}
+	return infos, nil
+}
+
+// GetRepoDetail 获取仓库详情（含角色和关注状态）
+func (c *Client) GetRepoDetail(ctx context.Context, repoID, userID string) (*tool.RepoDetail, error) {
+	q := url.Values{}
+	q.Set("repo_id", repoID)
+	body, err := c.doGet(ctx, "/internal/repos/detail", q)
+	if err != nil {
+		return nil, err
+	}
+
+	var result struct {
+		Repo struct {
+			ID            string `json:"id"`
+			OwnerID       string `json:"owner_id"`
+			Name          string `json:"name"`
+			Visibility    string `json:"visibility"`
+			Description   string `json:"description"`
+			ArticleCount  int64  `json:"article_count"`
+			FollowerCount int64  `json:"follower_count"`
+		} `json:"repo"`
+		MyRole      string `json:"my_role"`
+		IsFollowing bool   `json:"is_following"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("解析响应失败: %w", err)
+	}
+
+	return &tool.RepoDetail{
+		RepoInfo: tool.RepoInfo{
+			ID:           result.Repo.ID,
+			OwnerID:      result.Repo.OwnerID,
+			Name:         result.Repo.Name,
+			Visibility:   result.Repo.Visibility,
+			Description:  result.Repo.Description,
+			ArticleCount: result.Repo.ArticleCount,
+		},
+		FollowerCount: result.Repo.FollowerCount,
+		MyRole:        result.MyRole,
+		IsFollowing:   result.IsFollowing,
+	}, nil
+}
+
 // ==================== 文件相关 ====================
 
 // GetArticleContent 从 gateway 获取文章内容
@@ -393,6 +469,59 @@ func (c *Client) SearchUsers(ctx context.Context, keyword string) ([]tool.UserIn
 		users = append(users, tool.UserInfo{ID: u.ID, Name: u.Name})
 	}
 	return users, nil
+}
+
+// ==================== 关注操作 ====================
+
+// FollowRepo 关注知识库
+func (c *Client) FollowRepo(ctx context.Context, userID, repoID string) error {
+	q := url.Values{}
+	q.Set("repo_id", repoID)
+	_, err := c.doPost(ctx, "/internal/repos/follow", q, nil)
+	return err
+}
+
+// UnfollowRepo 取消关注知识库
+func (c *Client) UnfollowRepo(ctx context.Context, userID, repoID string) error {
+	q := url.Values{}
+	q.Set("repo_id", repoID)
+	_, err := c.doDelete(ctx, "/internal/repos/follow", q)
+	return err
+}
+
+// ListFollowedRepos 获取关注的知识库列表（含完整信息）
+func (c *Client) ListFollowedRepos(ctx context.Context, userID string) ([]tool.RepoInfo, error) {
+	body, err := c.doGet(ctx, "/internal/repos/followed", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var result struct {
+		Repos []struct {
+			ID           string `json:"id"`
+			OwnerID      string `json:"owner_id"`
+			Name         string `json:"name"`
+			Visibility   string `json:"visibility"`
+			Description  string `json:"description"`
+			ArticleCount int64  `json:"article_count"`
+		} `json:"repos"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("解析响应失败: %w", err)
+	}
+
+	infos := make([]tool.RepoInfo, 0, len(result.Repos))
+	for _, r := range result.Repos {
+		infos = append(infos, tool.RepoInfo{
+			ID:           r.ID,
+			OwnerID:      r.OwnerID,
+			Name:         r.Name,
+			Visibility:   r.Visibility,
+			Description:  r.Description,
+			ArticleCount: r.ArticleCount,
+		})
+	}
+	return infos, nil
 }
 
 // ==================== 协作者管理 ====================
