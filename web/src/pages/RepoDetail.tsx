@@ -1,9 +1,38 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { Outlet, useParams, useLocation, useNavigate } from 'react-router-dom'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { getRepo } from '../lib/repos'
 import type { Repo } from '../lib/repos'
 import RepoTree from '../components/Repo/RepoTree'
 import RepoSettings from '../components/Repo/RepoSettings'
+import { resolveImageUrls, markdownComponents } from '../lib/markdown'
+
+/** 仓库详情页向外暴露的上下文 */
+export interface RepoDetailContext {
+  refreshTree: () => void
+}
+
+/** 默认帮助信息（Markdown 格式） */
+const DEFAULT_HELP = `# 快速上手指南
+
+此知识库暂无 README.md 文件。
+
+## 创建文章
+
+- 点击左侧文件树上方的 **📄+** 按钮，或在文件夹上右键选择「新建文章」
+- 输入文件名称（含 \`.md\` 后缀）
+
+## 管理文件
+
+- 右键单击文件或文件夹进行**重命名**、**删除**等操作
+- 文件夹支持**展开/折叠**，可将文件拖拽到目标文件夹
+
+## 编辑文章
+
+- 点击文件树中的文件即可**查看**
+- 在查看页面点击「编辑」进入编辑模式，支持实时预览
+`
 
 export default function RepoDetail() {
   const { repoId } = useParams<{ repoId: string }>()
@@ -12,13 +41,44 @@ export default function RepoDetail() {
   const [repo, setRepo] = useState<Repo | null>(null)
   const [myRole, setMyRole] = useState('')
   const [showSettings, setShowSettings] = useState(false)
+  const [readmeContent, setReadmeContent] = useState('')
+  const [readmeLoading, setReadmeLoading] = useState(false)
+  const [readmeExists, setReadmeExists] = useState(false)
+  const [treeRefreshKey, setTreeRefreshKey] = useState(0)
 
-  const loadRepo = () => {
+  const refreshTree = useCallback(() => setTreeRefreshKey(k => k + 1), [])
+  const outletContext = useMemo<RepoDetailContext>(() => ({ refreshTree }), [refreshTree])
+
+  const loadReadme = useCallback(async (ownerId: string) => {
     if (!repoId) return
-    getRepo(repoId).then(r => { setRepo(r); setMyRole(r.my_role) }).catch(() => {})
-  }
+    setReadmeLoading(true)
+    try {
+      const res = await fetch(`/files/${ownerId}/${repoId}/README.md`)
+      if (res.ok) {
+        const text = await res.text()
+        const baseUrl = `/files/${ownerId}/${repoId}`
+        setReadmeContent(resolveImageUrls(text, '', baseUrl))
+        setReadmeExists(true)
+      } else {
+        setReadmeExists(false)
+      }
+    } catch {
+      setReadmeExists(false)
+    }
+    setReadmeLoading(false)
+  }, [repoId])
 
-  useEffect(() => { loadRepo() }, [repoId])
+  const loadRepo = useCallback(async () => {
+    if (!repoId) return
+    try {
+      const r = await getRepo(repoId)
+      setRepo(r)
+      setMyRole(r.my_role)
+      await loadReadme(r.owner_id)
+    } catch { /* ignore */ }
+  }, [repoId, loadReadme])
+
+  useEffect(() => { loadRepo() }, [loadRepo])
 
   if (!repoId) return null
 
@@ -42,24 +102,30 @@ export default function RepoDetail() {
           </div>
         )}
         <div className="flex-1 overflow-y-auto">
-          <RepoTree repoId={repoId} repo={repo} />
+          <RepoTree repoId={repoId} repo={repo} refreshKey={treeRefreshKey} />
         </div>
       </div>
 
       {/* 中间内容区 */}
       <div className="flex-1 overflow-y-auto min-w-0">
-        <Outlet />
+        <Outlet context={outletContext} />
         {!isChildRoute && (
-          <div className="p-6">
-            {repo && (
-              <div className="mb-6">
-                <h2 className="text-lg font-medium text-gray-800">{repo.name}</h2>
-                <p className="text-sm text-gray-500 mt-1">{repo.description || '暂无描述'}</p>
+          <div className="p-6 max-w-3xl mx-auto">
+            {readmeLoading ? (
+              <div className="text-gray-400 text-sm text-center py-12">加载中...</div>
+            ) : readmeExists ? (
+              <div>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  {readmeContent}
+                </ReactMarkdown>
+              </div>
+            ) : (
+              <div>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  {DEFAULT_HELP}
+                </ReactMarkdown>
               </div>
             )}
-            <div className="text-sm text-gray-400 text-center py-12">
-              选择一篇文章查看或编辑
-            </div>
           </div>
         )}
       </div>

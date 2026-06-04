@@ -4,17 +4,23 @@ import { getRepoTree, deleteFile, renameFile, makeDir, uploadFile } from '../../
 import type { FileEntry } from '../../lib/files'
 import type { Repo } from '../../lib/repos'
 
-const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico'])
+export const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.ico'])
 const BINARY_EXTENSIONS = new Set(['.pdf', '.zip', '.tar', '.gz', '.7z', '.rar', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'])
 
-function isDirectViewable(name: string): boolean {
+export function isImageFile(name: string): boolean {
   const ext = name.toLowerCase().slice(name.lastIndexOf('.'))
-  return IMAGE_EXTENSIONS.has(ext) || BINARY_EXTENSIONS.has(ext)
+  return IMAGE_EXTENSIONS.has(ext)
+}
+
+function isBinaryFile(name: string): boolean {
+  const ext = name.toLowerCase().slice(name.lastIndexOf('.'))
+  return BINARY_EXTENSIONS.has(ext)
 }
 
 interface RepoTreeProps {
   repoId: string
   repo: Repo | null
+  refreshKey?: number
 }
 
 interface TreeNode {
@@ -25,7 +31,7 @@ interface TreeNode {
   depth: number
 }
 
-export default function RepoTree({ repoId, repo }: RepoTreeProps) {
+export default function RepoTree({ repoId, repo, refreshKey }: RepoTreeProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const [rootEntries, setRootEntries] = useState<FileEntry[]>([])
@@ -54,7 +60,7 @@ export default function RepoTree({ repoId, repo }: RepoTreeProps) {
     setLoading(false)
   }, [repoId])
 
-  useEffect(() => { loadRoot() }, [loadRoot])
+  useEffect(() => { loadRoot() }, [loadRoot, refreshKey])
 
   const loadChildren = useCallback(async (dirPath: string) => {
     try {
@@ -264,7 +270,7 @@ export default function RepoTree({ repoId, repo }: RepoTreeProps) {
               expandedDirs={expandedDirs}
               onToggle={toggleDir}
               onNavigate={(filePath) => {
-                if (isDirectViewable(filePath) && repo?.owner_id) {
+                if (isBinaryFile(filePath) && repo?.owner_id) {
                   window.open(`/files/${repo.owner_id}/${repoId}/${filePath}`, '_blank')
                 } else {
                   navigate(`/repos/${repoId}/view/${filePath}`)

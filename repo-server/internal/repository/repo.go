@@ -32,7 +32,7 @@ func (r *Repository) UpdateRepo(ctx context.Context, repo *schema.Repo) error {
 
 // DeleteRepo 软删除知识库
 func (r *Repository) DeleteRepo(ctx context.Context, repoID string) error {
-	return r.Database.DB.WithContext(ctx).Delete(&schema.Repo{}, repoID).Error
+	return r.Database.DB.WithContext(ctx).Where("id = ?", repoID).Delete(&schema.Repo{}).Error
 }
 
 // ListReposByIDs 根据 ID 列表批量获取知识库（替代 INNER JOIN）

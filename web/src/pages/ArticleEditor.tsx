@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useOutletContext } from 'react-router-dom'
 import MDEditor from '@uiw/react-md-editor'
 import { useAuth } from '../store/auth-context'
 import { getRepo } from '../lib/repos'
 import { uploadFile } from '../lib/files'
+import type { RepoDetailContext } from './RepoDetail'
 
 export default function ArticleEditor() {
   const { repoId, '*': filePath } = useParams<{ repoId: string; '*': string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { refreshTree } = useOutletContext<RepoDetailContext>()
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -45,6 +47,8 @@ export default function ArticleEditor() {
       const file = new File([blob], path.split('/').pop() || 'article.md', { type: 'text/markdown' })
       await uploadFile(repoId, path, file)
       setDirty(false)
+      refreshTree()
+      navigate(`/repos/${repoId}/view/${path}`)
     } catch (err: any) {
       alert('保存失败: ' + err.message)
     }

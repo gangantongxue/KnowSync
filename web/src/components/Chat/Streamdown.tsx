@@ -34,6 +34,35 @@ const components: Components = {
   td({ children }) {
     return <td className="border border-gray-300 px-3 py-2">{children}</td>
   },
+  img({ src, alt }) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        className="max-w-full h-auto rounded-lg my-2"
+        loading="lazy"
+      />
+    )
+  },
+  a({ href, children }) {
+    if (!href) return <>{children}</>
+    const isImageOnly = (() => {
+      if (!children) return false
+      if (typeof children === 'object' && 'type' in children) {
+        const child = children as any
+        if (child.type === 'img') return true
+      }
+      return false
+    })()
+    if (isImageOnly) {
+      return <>{children}</>
+    }
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 underline">
+        {children}
+      </a>
+    )
+  },
 }
 
 function StreamdownInner({ content }: StreamdownProps) {

@@ -2,6 +2,7 @@ package embedder
 
 import (
 	"context"
+	"time"
 
 	"github.com/cloudwego/eino-ext/components/embedding/openai"
 	"github.com/cloudwego/eino/components/embedding"
@@ -22,7 +23,7 @@ func NewClient(cfg *model.EmbedderCfg) (*Client, error) {
 		BaseURL:    cfg.BaseURL,
 		Model:      cfg.Model,
 		Dimensions: &dim,
-		Timeout:    60,
+		Timeout:    60 * time.Second,
 	})
 	if err != nil {
 		return nil, err
