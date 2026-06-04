@@ -136,5 +136,16 @@ func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client
 		internal.GET("/repos/user", hdl.InternalListUserRepos())
 		internal.GET("/repos/public", hdl.InternalListPublicRepos())
 		internal.GET("/repos/detail", hdl.InternalGetRepo())
+		internal.POST("/repos/files", hdl.InternalCreateFile())
+		internal.PUT("/repos/files", hdl.InternalUpdateFile())
+		internal.DELETE("/repos/files", hdl.InternalDeleteFile())
+		internal.PUT("/repos/files/rename", hdl.InternalRenameFile())
+		internal.POST("/repos", hdl.InternalCreateRepo())
+		internal.PUT("/repos", hdl.InternalUpdateRepo())
+		internal.GET("/users/search", hdl.InternalSearchUsers())
+		internal.POST("/repos/collaborators", hdl.InternalAddCollaborator())
+		internal.DELETE("/repos/collaborators", hdl.InternalRemoveCollaborator())
+		internal.PUT("/repos/collaborators/role", hdl.InternalUpdateCollaboratorRole())
+		internal.GET("/repos/collaborators", hdl.InternalListCollaborators())
 	}
 }

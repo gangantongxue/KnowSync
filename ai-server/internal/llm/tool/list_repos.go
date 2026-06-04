@@ -23,7 +23,7 @@ func NewListRepos(rdc RepoDetailClient) *ListRepos {
 func (l *ListRepos) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name:        "list_user_repos",
-		Desc:        "查看当前用户拥有的全部知识库（仓库）列表，包括仓库名称、描述、可见性、文章数量等信息。在回答用户关于知识库的问题前，可以先调用此工具了解用户有哪些知识库。",
+		Desc:        "查看当前用户拥有的全部知识库（仓库）列表，包括仓库名称、描述、可见性、文章数量等信息。当用户询问知识库整体情况或需要了解有哪些知识库时调用此工具。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{}),
 	}, nil
 }

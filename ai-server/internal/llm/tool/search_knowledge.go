@@ -137,7 +137,7 @@ func (s *SearchKnowledge) execute(ctx context.Context, paramsJSON string) (strin
 	}
 
 	// 6. 按提升后的分数降序重新排序
-	for i := 0; i < len(results); i++ {
+	for i := range results {
 		for j := i + 1; j < len(results); j++ {
 			if results[j].Score > results[i].Score {
 				results[i], results[j] = results[j], results[i]

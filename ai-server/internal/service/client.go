@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -55,6 +56,60 @@ func (c *Client) doGet(ctx context.Context, path string, query url.Values) ([]by
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("gateway 返回错误状态 %d: %s", resp.StatusCode, string(body))
+	}
+
+	return io.ReadAll(resp.Body)
+}
+
+// doPost 向 gateway 的内部端点发送 POST 请求
+func (c *Client) doPost(ctx context.Context, path string, query url.Values, body []byte) ([]byte, error) {
+	return c.doBody(ctx, http.MethodPost, path, query, body)
+}
+
+// doPut 向 gateway 的内部端点发送 PUT 请求
+func (c *Client) doPut(ctx context.Context, path string, query url.Values, body []byte) ([]byte, error) {
+	return c.doBody(ctx, http.MethodPut, path, query, body)
+}
+
+// doDelete 向 gateway 的内部端点发送 DELETE 请求
+func (c *Client) doDelete(ctx context.Context, path string, query url.Values) ([]byte, error) {
+	return c.doBody(ctx, http.MethodDelete, path, query, nil)
+}
+
+// doBody 向 gateway 的内部端点发送带 body 的请求
+func (c *Client) doBody(ctx context.Context, method, path string, query url.Values, body []byte) ([]byte, error) {
+	serviceToken, _ := ctx.Value(tool.CtxKeyServiceToken).(string)
+
+	u, err := url.Parse(c.gatewayAddr + path)
+	if err != nil {
+		return nil, fmt.Errorf("解析 gateway 地址失败: %w", err)
+	}
+	u.RawQuery = query.Encode()
+
+	var reqBody io.Reader
+	if body != nil {
+		reqBody = bytes.NewReader(body)
+	}
+	req, err := http.NewRequestWithContext(ctx, method, u.String(), reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("创建请求失败: %w", err)
+	}
+	if serviceToken != "" {
+		req.Header.Set("Authorization", "Bearer "+serviceToken)
+	}
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("请求 gateway 失败: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("gateway 返回错误状态 %d: %s", resp.StatusCode, string(respBody))
 	}
 
 	return io.ReadAll(resp.Body)
@@ -232,6 +287,176 @@ func (c *Client) ListRepoFiles(ctx context.Context, ownerID, repoID, dirPath str
 		})
 	}
 	return entries, nil
+}
+
+// ==================== 文件写入 ====================
+
+// CreateFile 创建文件
+func (c *Client) CreateFile(ctx context.Context, ownerID, repoID, filePath, content string) error {
+	q := url.Values{}
+	q.Set("owner_id", ownerID)
+	q.Set("repo_id", repoID)
+	q.Set("path", filePath)
+	body, _ := json.Marshal(map[string]string{"content": content})
+	_, err := c.doPost(ctx, "/internal/repos/files", q, body)
+	return err
+}
+
+// UpdateFile 更新文件内容
+func (c *Client) UpdateFile(ctx context.Context, ownerID, repoID, filePath, content string) error {
+	q := url.Values{}
+	q.Set("owner_id", ownerID)
+	q.Set("repo_id", repoID)
+	q.Set("path", filePath)
+	body, _ := json.Marshal(map[string]string{"content": content})
+	_, err := c.doPut(ctx, "/internal/repos/files", q, body)
+	return err
+}
+
+// DeleteFile 删除文件
+func (c *Client) DeleteFile(ctx context.Context, ownerID, repoID, filePath string) error {
+	q := url.Values{}
+	q.Set("owner_id", ownerID)
+	q.Set("repo_id", repoID)
+	q.Set("path", filePath)
+	_, err := c.doDelete(ctx, "/internal/repos/files", q)
+	return err
+}
+
+// RenameFile 重命名/移动文件
+func (c *Client) RenameFile(ctx context.Context, ownerID, repoID, oldPath, newPath string) error {
+	q := url.Values{}
+	q.Set("owner_id", ownerID)
+	q.Set("repo_id", repoID)
+	q.Set("path", oldPath)
+	body, _ := json.Marshal(map[string]string{"new_path": newPath})
+	_, err := c.doPut(ctx, "/internal/repos/files/rename", q, body)
+	return err
+}
+
+// ==================== 知识库写入 ====================
+
+// CreateRepo 创建知识库
+func (c *Client) CreateRepo(ctx context.Context, userID, name, description, visibility string) (string, error) {
+	body, _ := json.Marshal(map[string]string{
+		"name":        name,
+		"description": description,
+		"visibility":  visibility,
+	})
+	resp, err := c.doPost(ctx, "/internal/repos", nil, body)
+	if err != nil {
+		return "", err
+	}
+	var result struct {
+		RepoID string `json:"repo_id"`
+	}
+	if err := json.Unmarshal(resp, &result); err != nil {
+		return "", fmt.Errorf("解析响应失败: %w", err)
+	}
+	return result.RepoID, nil
+}
+
+// UpdateRepo 更新知识库
+func (c *Client) UpdateRepo(ctx context.Context, repoID, userID, name, description, visibility string) error {
+	body, _ := json.Marshal(map[string]string{
+		"name":        name,
+		"description": description,
+		"visibility":  visibility,
+	})
+	q := url.Values{}
+	q.Set("repo_id", repoID)
+	_, err := c.doPut(ctx, "/internal/repos", q, body)
+	return err
+}
+
+// ==================== 用户搜索 ====================
+
+// SearchUsers 搜索用户
+func (c *Client) SearchUsers(ctx context.Context, keyword string) ([]tool.UserInfo, error) {
+	q := url.Values{}
+	q.Set("q", keyword)
+	body, err := c.doGet(ctx, "/internal/users/search", q)
+	if err != nil {
+		return nil, err
+	}
+	var result struct {
+		Users []struct {
+			ID   string `json:"id"`
+			Name string `json:"name"`
+		} `json:"users"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("解析响应失败: %w", err)
+	}
+	users := make([]tool.UserInfo, 0, len(result.Users))
+	for _, u := range result.Users {
+		users = append(users, tool.UserInfo{ID: u.ID, Name: u.Name})
+	}
+	return users, nil
+}
+
+// ==================== 协作者管理 ====================
+
+// AddCollaborator 添加协作者
+func (c *Client) AddCollaborator(ctx context.Context, repoID, userID, role string) error {
+	q := url.Values{}
+	q.Set("repo_id", repoID)
+	body, _ := json.Marshal(map[string]string{
+		"user_id": userID,
+		"role":    role,
+	})
+	_, err := c.doPost(ctx, "/internal/repos/collaborators", q, body)
+	return err
+}
+
+// RemoveCollaborator 移除协作者
+func (c *Client) RemoveCollaborator(ctx context.Context, repoID, userID string) error {
+	q := url.Values{}
+	q.Set("repo_id", repoID)
+	q.Set("user_id", userID)
+	_, err := c.doDelete(ctx, "/internal/repos/collaborators", q)
+	return err
+}
+
+// UpdateCollaboratorRole 更新协作者角色
+func (c *Client) UpdateCollaboratorRole(ctx context.Context, repoID, userID, role string) error {
+	q := url.Values{}
+	q.Set("repo_id", repoID)
+	body, _ := json.Marshal(map[string]string{
+		"user_id": userID,
+		"role":    role,
+	})
+	_, err := c.doPut(ctx, "/internal/repos/collaborators/role", q, body)
+	return err
+}
+
+// ListCollaborators 列出协作者
+func (c *Client) ListCollaborators(ctx context.Context, repoID string) ([]tool.CollaboratorInfo, error) {
+	q := url.Values{}
+	q.Set("repo_id", repoID)
+	body, err := c.doGet(ctx, "/internal/repos/collaborators", q)
+	if err != nil {
+		return nil, err
+	}
+	var result struct {
+		Collaborators []struct {
+			UserID   string `json:"user_id"`
+			UserName string `json:"user_name"`
+			Role     string `json:"role"`
+		} `json:"collaborators"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("解析响应失败: %w", err)
+	}
+	items := make([]tool.CollaboratorInfo, 0, len(result.Collaborators))
+	for _, c := range result.Collaborators {
+		items = append(items, tool.CollaboratorInfo{
+			UserID:   c.UserID,
+			UserName: c.UserName,
+			Role:     c.Role,
+		})
+	}
+	return items, nil
 }
 
 // Close 关闭外部服务连接

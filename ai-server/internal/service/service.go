@@ -51,19 +51,55 @@ func NewService(cfg *model.Config, rdb *redis.Client, client *Client, repo *repo
 
 // initAgent 用工具列表初始化 ReAct Agent（全局初始化一次）
 func (s *Service) initAgent(ctx context.Context) error {
+	// 确认策略配置
+	writePolicies := map[string]llmtool.ConfirmLevel{
+		"create_file":              llmtool.ConfirmOptional,
+		"update_file":              llmtool.ConfirmOptional,
+		"delete_file":              llmtool.ConfirmAlways,
+		"rename_file":              llmtool.ConfirmOptional,
+		"create_repo":              llmtool.ConfirmOptional,
+		"update_repo":              llmtool.ConfirmOptional,
+		"add_collaborator":         llmtool.ConfirmAlways,
+		"remove_collaborator":      llmtool.ConfirmAlways,
+		"update_collaborator_role": llmtool.ConfirmAlways,
+		"search_users":             llmtool.ConfirmNever,
+		"list_collaborators":       llmtool.ConfirmNever,
+	}
+
+	// onAskUser 回调
+	onAskUser := func(resultJSON string) {
+		s.AskedUser.Triggered.Store(true)
+		s.AskedUser.LastResult.Store(resultJSON)
+	}
+
 	tools := []einoTool.InvokableTool{
+		// 已有工具
 		llmtool.NewSearchKnowledge(s.Embedder, s.VectorStore, s.Client, 0),
 		llmtool.NewUpdateTitle(s.Repo),
-		llmtool.NewAskQuestion(func(resultJSON string) {
-			s.AskedUser.Triggered.Store(true)
-			s.AskedUser.LastResult.Store(resultJSON)
-		}),
+		llmtool.NewAskQuestion(onAskUser),
 		llmtool.NewListRepos(s.Client),
 		llmtool.NewListRepoFiles(s.Client, s.Client),
 		llmtool.NewGetFileContent(s.Client, s.Client),
+
+		// 新增文件操作工具
+		llmtool.NewCreateFile(s.Client, s.Client),
+		llmtool.NewUpdateFile(s.Client, s.Client),
+		llmtool.NewDeleteFile(s.Client, s.Client),
+		llmtool.NewRenameFile(s.Client, s.Client),
+
+		// 新增知识库管理工具
+		llmtool.NewCreateRepo(s.Client),
+		llmtool.NewUpdateRepo(s.Client, s.Client),
+
+		// 新增用户搜索和协作者管理工具
+		llmtool.NewSearchUsers(s.Client),
+		llmtool.NewAddCollaborator(s.Client, s.Client),
+		llmtool.NewRemoveCollaborator(s.Client, s.Client),
+		llmtool.NewUpdateCollaboratorRole(s.Client, s.Client),
+		llmtool.NewListCollaborators(s.Client, s.Client),
 	}
 
-	if err := s.LLM.InitAgent(ctx, tools); err != nil {
+	if err := s.LLM.InitAgent(ctx, tools, writePolicies); err != nil {
 		slog.Error("初始化 Agent 失败", "error", err)
 		return err
 	}

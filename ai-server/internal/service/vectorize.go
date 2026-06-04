@@ -50,3 +50,8 @@ func (s *Service) VectorizeArticle(ctx context.Context, userID string, repoID, f
 func (s *Service) DeleteRepoVectors(_ context.Context, repoID string) error {
 	return s.VectorStore.DeleteRepoVectors(repoID)
 }
+
+// DeleteFileVectors 删除指定文件的向量数据
+func (s *Service) DeleteFileVectors(_ context.Context, repoID, filePath string) error {
+	return s.VectorStore.DeleteFileVectors(context.Background(), repoID, filePath)
+}

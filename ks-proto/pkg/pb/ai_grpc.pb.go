@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             v7.34.0
-// source: ai.proto
+// source: proto/ai.proto
 
 package pb
 
@@ -27,6 +27,7 @@ const (
 	AIService_UpdateRepoVisibility_FullMethodName = "/proto.AIService/UpdateRepoVisibility"
 	AIService_VectorizeArticle_FullMethodName     = "/proto.AIService/VectorizeArticle"
 	AIService_DeleteRepoVectors_FullMethodName    = "/proto.AIService/DeleteRepoVectors"
+	AIService_DeleteFileVectors_FullMethodName    = "/proto.AIService/DeleteFileVectors"
 )
 
 // AIServiceClient is the client API for AIService service.
@@ -47,6 +48,8 @@ type AIServiceClient interface {
 	VectorizeArticle(ctx context.Context, in *VectorizeArticleRequest, opts ...grpc.CallOption) (*VectorizeArticleResponse, error)
 	// DeleteRepoVectors 删除知识库向量数据
 	DeleteRepoVectors(ctx context.Context, in *DeleteRepoVectorsRequest, opts ...grpc.CallOption) (*DeleteRepoVectorsResponse, error)
+	// DeleteFileVectors 删除文件向量数据
+	DeleteFileVectors(ctx context.Context, in *DeleteFileVectorsRequest, opts ...grpc.CallOption) (*DeleteFileVectorsResponse, error)
 }
 
 type aIServiceClient struct {
@@ -146,6 +149,16 @@ func (c *aIServiceClient) DeleteRepoVectors(ctx context.Context, in *DeleteRepoV
 	return out, nil
 }
 
+func (c *aIServiceClient) DeleteFileVectors(ctx context.Context, in *DeleteFileVectorsRequest, opts ...grpc.CallOption) (*DeleteFileVectorsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteFileVectorsResponse)
+	err := c.cc.Invoke(ctx, AIService_DeleteFileVectors_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AIServiceServer is the server API for AIService service.
 // All implementations must embed UnimplementedAIServiceServer
 // for forward compatibility.
@@ -164,6 +177,8 @@ type AIServiceServer interface {
 	VectorizeArticle(context.Context, *VectorizeArticleRequest) (*VectorizeArticleResponse, error)
 	// DeleteRepoVectors 删除知识库向量数据
 	DeleteRepoVectors(context.Context, *DeleteRepoVectorsRequest) (*DeleteRepoVectorsResponse, error)
+	// DeleteFileVectors 删除文件向量数据
+	DeleteFileVectors(context.Context, *DeleteFileVectorsRequest) (*DeleteFileVectorsResponse, error)
 	mustEmbedUnimplementedAIServiceServer()
 }
 
@@ -197,6 +212,9 @@ func (UnimplementedAIServiceServer) VectorizeArticle(context.Context, *Vectorize
 }
 func (UnimplementedAIServiceServer) DeleteRepoVectors(context.Context, *DeleteRepoVectorsRequest) (*DeleteRepoVectorsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteRepoVectors not implemented")
+}
+func (UnimplementedAIServiceServer) DeleteFileVectors(context.Context, *DeleteFileVectorsRequest) (*DeleteFileVectorsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteFileVectors not implemented")
 }
 func (UnimplementedAIServiceServer) mustEmbedUnimplementedAIServiceServer() {}
 func (UnimplementedAIServiceServer) testEmbeddedByValue()                   {}
@@ -356,6 +374,24 @@ func _AIService_DeleteRepoVectors_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AIService_DeleteFileVectors_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteFileVectorsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AIServiceServer).DeleteFileVectors(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AIService_DeleteFileVectors_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AIServiceServer).DeleteFileVectors(ctx, req.(*DeleteFileVectorsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AIService_ServiceDesc is the grpc.ServiceDesc for AIService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -391,6 +427,10 @@ var AIService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "DeleteRepoVectors",
 			Handler:    _AIService_DeleteRepoVectors_Handler,
 		},
+		{
+			MethodName: "DeleteFileVectors",
+			Handler:    _AIService_DeleteFileVectors_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -399,5 +439,5 @@ var AIService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "ai.proto",
+	Metadata: "proto/ai.proto",
 }

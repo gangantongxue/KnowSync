@@ -27,7 +27,7 @@ func NewAskQuestion(onAskUser OnAskUser) *AskQuestion {
 func (a *AskQuestion) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "ask_user",
-		Desc: "当你需要更多信息才能回答用户问题时，使用此工具向用户提问。支持单选和多选，始终包含自由输入选项。请尽量提供完整的选项供用户选择。",
+		Desc: "当你需要更多信息才能回答用户问题时，使用此工具向用户提问。支持单选（single）和多选（multiple）。options 中应提供完整选项供用户选择，系统会自动在选项中追加自由输入选项。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
 			"question": {
 				Type:     "string",
@@ -65,6 +65,8 @@ type AskQuestionParams struct {
 }
 
 func executeAskQuestion(ctx context.Context, paramsJSON string) (string, error) {
+	_ = ctx
+
 	var params AskQuestionParams
 	if err := json.Unmarshal([]byte(paramsJSON), &params); err != nil {
 		return "", err

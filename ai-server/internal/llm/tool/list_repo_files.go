@@ -85,12 +85,7 @@ func (l *ListRepoFiles) execute(ctx context.Context, paramsJSON string) (string,
 	}
 	items := make([]fileItem, 0, len(entries))
 	for _, e := range entries {
-		items = append(items, fileItem{
-			Name: e.Name,
-			Type: e.Type,
-			Size: e.Size,
-			Path: e.Path,
-		})
+		items = append(items, fileItem(e))
 	}
 
 	data, _ := json.Marshal(map[string]any{

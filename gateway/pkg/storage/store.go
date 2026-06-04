@@ -58,6 +58,18 @@ func (s *Store) WriteFile(subpath string, reader io.Reader) (int64, error) {
 	return io.Copy(f, reader)
 }
 
+// WriteFileFromBytes 写入文件内容（字节数组形式），自动创建父目录
+func (s *Store) WriteFileFromBytes(subpath string, data []byte) error {
+	fullPath, err := s.Resolve(subpath)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(fullPath), 0755); err != nil {
+		return err
+	}
+	return os.WriteFile(fullPath, data, 0644)
+}
+
 // ReadFile 打开文件用于读取
 func (s *Store) ReadFile(subpath string) (io.ReadCloser, error) {
 	fullPath, err := s.Resolve(subpath)

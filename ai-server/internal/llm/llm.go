@@ -14,18 +14,38 @@ import (
 	"github.com/cloudwego/eino/flow/agent/react"
 	"github.com/cloudwego/eino/schema"
 
+	llmtool "github.com/gangantongxue/knowsync/ai-server/internal/llm/tool"
 	configModel "github.com/gangantongxue/knowsync/ai-server/pkg/config/model"
 )
 
-const systemPrompt = `你是一个知识库助手，帮助用户回答基于其个人知识库中的文章内容的问题。
+const systemPrompt = `你是一个知识库助手 KK，帮助用户回答基于其个人知识库中的文章内容的问题。
 
-## 核心原则
-1. 始终使用 search_knowledge 工具搜索用户知识库中相关的文章内容，会同时搜索用户的私有知识库和公开知识库，用户自己知识库的匹配结果会优先展示
-2. 基于搜索到的文章内容回答，并在回答中引用相关文章
-3. 如果 search_knowledge 没有搜索到相关文章，明确告知用户"未在您的知识库中找到相关文章"，然后根据自身知识回答
-4. 对于第一轮对话，使用 update_session_title 工具更新会话标题，使其贴近对话主题
-5. 使用 list_user_repos 工具查看用户有哪些知识库，使用 list_repo_files 查看知识库的文件结构，使用 get_file_content 读取文件内容
-6. 保持回答简洁、准确、有条理`
+## 回答流程
+
+收到用户问题后，按以下流程处理：
+1. 调用 search_knowledge 在用户的知识库中搜索相关内容（会同时搜索用户的私有知识库和公开知识库）
+2. 如果搜索结果中匹配了文章，调用 get_file_content 读取原文的完整内容以获得更充分的信息
+3. 基于文章内容组织回答，回答时必须引用文章来源（包含知识库名称和文件路径）
+4. 如果 search_knowledge 未找到匹配结果，明确告知用户"未在您的知识库中找到相关文章"，然后根据自身知识回答
+5. 保持回答简洁、准确、有条理，在回答末尾列出本次引用的文件路径列表
+
+## 探索知识库结构
+
+当用户询问知识库整体情况（如"我有哪些知识库"、"某个知识库里有什么文件"）时，使用以下工具：
+- list_user_repos — 查看用户拥有的全部知识库，包括名称、描述、文章数量等
+- list_repo_files — 查看指定知识库的文件目录结构
+- get_file_content — 读取具体文件的完整内容
+
+## 会话管理
+
+每轮对话的第一条消息回复时，调用 update_session_title 为会话生成一个简洁标题（不超过 20 字），概括本轮对话主题。
+
+## 写操作与确认机制
+
+你可以创建、修改、删除文件和知识库，以及管理协作者。所有写操作受确认机制保护：
+- 删除操作和协作者管理操作（add/remove/update collaborator）必须先调用 ask_user 获得用户确认
+- 创建和修改操作：如果用户已提供完整信息，可传 _skip_confirm: true 跳过确认直接执行；信息不完整则先调用 ask_user 询问
+- 各工具的具体使用方法请参阅对应的工具描述`
 
 // AskedUser 标识 ask_user 工具是否被调用，并记录工具返回结果
 type AskedUser struct {
@@ -46,7 +66,7 @@ func NewChatModel(cfg *configModel.LLMCfg) (*ChatModel, error) {
 }
 
 // InitAgent 用指定的工具列表初始化 ReAct Agent
-func (c *ChatModel) InitAgent(ctx context.Context, tools []tool.InvokableTool) error {
+func (c *ChatModel) InitAgent(ctx context.Context, tools []tool.InvokableTool, writePolicies map[string]llmtool.ConfirmLevel) error {
 	baseModel, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
 		BaseURL: c.config.BaseURL,
 		APIKey:  c.config.APIKey,
@@ -63,10 +83,18 @@ func (c *ChatModel) InitAgent(ctx context.Context, tools []tool.InvokableTool) e
 		return fmt.Errorf("创建 ChatModel 失败: %w", err)
 	}
 
+	middlewares := []compose.ToolMiddleware{}
+	if len(writePolicies) > 0 {
+		middlewares = append(middlewares, compose.ToolMiddleware{
+			Invokable: llmtool.NewConfirmationMiddleware(writePolicies),
+		})
+	}
+
 	agent, err := react.NewAgent(ctx, &react.AgentConfig{
 		ToolCallingModel: baseModel,
 		ToolsConfig: compose.ToolsNodeConfig{
-			Tools: toBaseTools(tools),
+			Tools:               toBaseTools(tools),
+			ToolCallMiddlewares: middlewares,
 		},
 		MessageModifier: func(ctx context.Context, input []*schema.Message) []*schema.Message {
 			out := make([]*schema.Message, 0, len(input)+1)

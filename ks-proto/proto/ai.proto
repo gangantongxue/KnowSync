@@ -158,6 +158,18 @@ message DeleteRepoVectorsResponse {
   string msg = 2;
 }
 
+// DeleteFileVectorsRequest 删除文件向量请求
+message DeleteFileVectorsRequest {
+  string repo_id = 1;
+  string file_path = 2;
+}
+
+// DeleteFileVectorsResponse 删除文件向量响应
+message DeleteFileVectorsResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
 // ========== Service ==========
 
 service AIService {
@@ -180,4 +192,7 @@ service AIService {
 
   // DeleteRepoVectors 删除知识库向量数据
   rpc DeleteRepoVectors(DeleteRepoVectorsRequest) returns (DeleteRepoVectorsResponse);
+
+  // DeleteFileVectors 删除文件向量数据
+  rpc DeleteFileVectors(DeleteFileVectorsRequest) returns (DeleteFileVectorsResponse);
 }

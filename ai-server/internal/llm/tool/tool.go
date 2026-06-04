@@ -77,3 +77,68 @@ type FileClient interface {
 type SessionTitleUpdater interface {
 	UpdateSessionTitle(sessionID, title string) error
 }
+
+// ========== 写入操作相关接口 ==========
+
+// FileWriteClient 文件写入操作客户端接口
+type FileWriteClient interface {
+	CreateFile(ctx context.Context, ownerID, repoID, filePath, content string) error
+	UpdateFile(ctx context.Context, ownerID, repoID, filePath, content string) error
+	DeleteFile(ctx context.Context, ownerID, repoID, filePath string) error
+	RenameFile(ctx context.Context, ownerID, repoID, oldPath, newPath string) error
+}
+
+// RepoWriteClient 知识库写入操作客户端接口
+type RepoWriteClient interface {
+	CreateRepo(ctx context.Context, userID, name, description, visibility string) (string, error)
+	UpdateRepo(ctx context.Context, repoID, userID, name, description, visibility string) error
+}
+
+// UserSearchClient 用户搜索客户端接口
+type UserSearchClient interface {
+	SearchUsers(ctx context.Context, keyword string) ([]UserInfo, error)
+}
+
+// CollaboratorClient 协作者管理客户端接口
+type CollaboratorClient interface {
+	AddCollaborator(ctx context.Context, repoID, userID, role string) error
+	RemoveCollaborator(ctx context.Context, repoID, userID string) error
+	UpdateCollaboratorRole(ctx context.Context, repoID, userID, role string) error
+	ListCollaborators(ctx context.Context, repoID string) ([]CollaboratorInfo, error)
+}
+
+// VectorizeClient 向量化触发接口
+type VectorizeClient interface {
+	VectorizeArticle(ctx context.Context, userID, repoID, filePath string) error
+	DeleteFileVectors(ctx context.Context, repoID, filePath string) error
+}
+
+// UserInfo 用户信息
+type UserInfo struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// CollaboratorInfo 协作者信息
+type CollaboratorInfo struct {
+	UserID   string `json:"user_id"`
+	UserName string `json:"user_name"`
+	Role     string `json:"role"`
+}
+
+// ========== 确认机制相关 ==========
+
+// ConfirmLevel 确认级别
+type ConfirmLevel int
+
+const (
+	ConfirmNever    ConfirmLevel = iota // 无需确认
+	ConfirmOptional                     // 按需确认（可传 _skip_confirm 跳过）
+	ConfirmAlways                       // 强制确认
+)
+
+// ToolPolicy 工具确认策略
+type ToolPolicy struct {
+	ToolName     string
+	ConfirmLevel ConfirmLevel
+}

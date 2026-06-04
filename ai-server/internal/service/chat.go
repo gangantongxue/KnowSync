@@ -29,6 +29,13 @@ type AskUserEvent struct {
 	HasOther bool // 是否包含"其他"自由输入选项
 }
 
+// ConfirmWriteEvent 写操作确认事件
+type ConfirmWriteEvent struct {
+	Tool     string `json:"tool"`
+	Params   string `json:"params"`
+	Question string `json:"question"`
+}
+
 // ChatEvent 流式聊天事件
 type ChatEvent struct {
 	SessionID        string
@@ -40,7 +47,8 @@ type ChatEvent struct {
 	Title            string
 	TitleUpdated     bool
 	Error            error
-	AskUser          *AskUserEvent // 非空时表示反问用户
+	AskUser          *AskUserEvent      // 非空时表示反问用户
+	ConfirmWrite     *ConfirmWriteEvent // 非空时表示需要确认写操作
 }
 
 // ChatCallback 流式事件回调
@@ -175,6 +183,17 @@ func (s *Service) Chat(ctx context.Context, reqUserID string, reqSessionID, mess
 		}
 	}
 
+	// 9.5 检测 confirm_write 事件（写操作确认）
+	confirmWriteEvent := parseConfirmWrite(finalContent.String())
+	if confirmWriteEvent != nil {
+		question := buildConfirmQuestion(confirmWriteEvent.Tool, confirmWriteEvent.Params)
+		confirmWriteEvent.Question = question
+		slog.Info("工具触发写操作确认", "tool", confirmWriteEvent.Tool, "question", question)
+		_ = cb(&ChatEvent{
+			ConfirmWrite: confirmWriteEvent,
+		})
+	}
+
 	// 10. 保存助手消息
 	assistantMsg := &repository.ChatMessage{
 		SessionID: session.ID,
@@ -184,6 +203,8 @@ func (s *Service) Chat(ctx context.Context, reqUserID string, reqSessionID, mess
 	}
 	if askedUser {
 		assistantMsg.Content = "[系统消息] 已向用户提问，等待回答"
+	} else if confirmWriteEvent != nil {
+		assistantMsg.Content = "[系统消息] 等待用户确认操作"
 	}
 	if err = s.Repo.CreateMessage(assistantMsg); err != nil {
 		slog.Error("保存助手消息失败", "error", err)
@@ -252,6 +273,95 @@ func (s *Service) buildMessages(ctx context.Context, sessionID string) ([]*schem
 		}
 	}
 	return messages, nil
+}
+
+// parseConfirmWrite 从助手消息内容中解析 confirm_write 事件
+func parseConfirmWrite(content string) *ConfirmWriteEvent {
+	idx := strings.Index(content, `"action":"confirm_write"`)
+	if idx < 0 {
+		idx = strings.Index(content, `"action": "confirm_write"`)
+	}
+	if idx < 0 {
+		return nil
+	}
+
+	// 从找到的位置往前找 {
+	start := strings.LastIndex(content[:idx], "{")
+	if start < 0 {
+		return nil
+	}
+
+	// 找匹配的 }
+	depth := 0
+	end := -1
+	for i := start; i < len(content); i++ {
+		switch content[i] {
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				end = i + 1
+				goto found
+			}
+		}
+	}
+	return nil
+
+found:
+	var raw struct {
+		Action string `json:"action"`
+		Tool   string `json:"tool"`
+		Params string `json:"params"`
+	}
+	if err := json.Unmarshal([]byte(content[start:end]), &raw); err != nil {
+		return nil
+	}
+	if raw.Action != "confirm_write" {
+		return nil
+	}
+	return &ConfirmWriteEvent{
+		Tool:   raw.Tool,
+		Params: raw.Params,
+	}
+}
+
+// buildConfirmQuestion 根据工具类型和参数生成确认问题
+func buildConfirmQuestion(toolName, paramsJSON string) string {
+	var params map[string]any
+	json.Unmarshal([]byte(paramsJSON), &params)
+
+	switch toolName {
+	case "create_file":
+		path, _ := params["file_path"].(string)
+		return fmt.Sprintf("确认要在知识库中创建文件 `%s` 吗？", path)
+	case "update_file":
+		path, _ := params["file_path"].(string)
+		return fmt.Sprintf("确认要更新文件 `%s` 的内容吗？", path)
+	case "delete_file":
+		path, _ := params["file_path"].(string)
+		return fmt.Sprintf("⚠️ 确认要永久删除文件 `%s` 吗？此操作不可撤销。", path)
+	case "rename_file":
+		oldPath, _ := params["old_path"].(string)
+		newPath, _ := params["new_path"].(string)
+		return fmt.Sprintf("确认要将文件从 `%s` 重命名为 `%s` 吗？", oldPath, newPath)
+	case "create_repo":
+		name, _ := params["name"].(string)
+		return fmt.Sprintf("确认要创建知识库「%s」吗？", name)
+	case "update_repo":
+		if vis, ok := params["visibility"].(string); ok && vis != "" {
+			return fmt.Sprintf("⚠️ 确认要将知识库可见性变更为「%s」吗？", vis)
+		}
+		return "确认要更新知识库设置吗？"
+	case "add_collaborator":
+		return "确认要将协作者添加到知识库吗？"
+	case "remove_collaborator":
+		return "⚠️ 确认要移除该协作者吗？"
+	case "update_collaborator_role":
+		return "⚠️ 确认要变更协作者角色吗？"
+	default:
+		return "确认要执行此操作吗？"
+	}
 }
 
 // truncateTitle 截取消息前 n 个字作为标题
