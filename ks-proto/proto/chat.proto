@@ -1,0 +1,572 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "ks-proto/pkg/pb";
+
+// FriendRequest 好友申请消息
+message FriendRequest {
+  string id = 1;
+  string sender_id = 2;
+  string receiver_id = 3;
+  string status = 4;
+  string remark = 5;
+  int64 created_at = 6;
+  int64 updated_at = 7;
+}
+
+// Friend 好友关系消息
+message Friend {
+  string id = 1;
+  string user_id = 2;
+  string friend_id = 3;
+  string remark = 4;
+  int64 last_message_at = 5;
+  int64 created_at = 6;
+}
+
+// SendFriendRequestReq 发送好友申请请求
+message SendFriendRequestReq {
+  string sender_id = 1;
+  string receiver_id = 2;
+  string remark = 3;
+}
+
+// SendFriendRequestResp 发送好友申请响应
+message SendFriendRequestResp {
+  bool success = 1;
+  string msg = 2;
+  FriendRequest friend_request = 3;
+}
+
+// GetFriendRequestsByReceiverReq 获取收到的好友申请请求
+message GetFriendRequestsByReceiverReq {
+  string receiver_id = 1;
+}
+
+// GetFriendRequestsBySenderReq 获取发送的好友申请请求
+message GetFriendRequestsBySenderReq {
+  string sender_id = 1;
+}
+
+// GetFriendRequestsResp 获取好友申请列表响应
+message GetFriendRequestsResp {
+  bool success = 1;
+  string msg = 2;
+  repeated FriendRequest friend_requests = 3;
+}
+
+// AcceptFriendRequestReq 接受好友申请请求
+message AcceptFriendRequestReq {
+  string request_id = 1;
+  string receiver_id = 2;
+}
+
+// AcceptFriendRequestResp 接受好友申请响应
+message AcceptFriendRequestResp {
+  bool success = 1;
+  string msg = 2;
+}
+
+// RejectFriendRequestReq 拒绝好友申请请求
+message RejectFriendRequestReq {
+  string request_id = 1;
+  string receiver_id = 2;
+}
+
+// RejectFriendRequestResp 拒绝好友申请响应
+message RejectFriendRequestResp {
+  bool success = 1;
+  string msg = 2;
+}
+
+// GetFriendListReq 获取好友列表请求
+message GetFriendListReq {
+  string user_id = 1;
+  string query = 2;
+}
+
+// GetFriendListResp 获取好友列表响应
+message GetFriendListResp {
+  bool success = 1;
+  string msg = 2;
+  repeated Friend friends = 3;
+}
+
+// DeleteFriendReq 删除好友请求
+message DeleteFriendReq {
+  string user_id = 1;
+  string friend_id = 2;
+}
+
+// DeleteFriendResp 删除好友响应
+message DeleteFriendResp {
+  bool success = 1;
+  string msg = 2;
+}
+
+// UpdateFriendRemarkReq 更新好友备注请求
+message UpdateFriendRemarkReq {
+  string user_id = 1;
+  string friend_id = 2;
+  string remark = 3;
+}
+
+// UpdateFriendRemarkResp 更新好友备注响应
+message UpdateFriendRemarkResp {
+  bool success = 1;
+  string msg = 2;
+}
+
+// SearchUsersReq 搜索用户请求
+message SearchUsersReq {
+  string query = 1;
+}
+
+// SearchUsersResp 搜索用户响应
+message SearchUsersResp {
+  bool success = 1;
+  string msg = 2;
+  repeated SearchUserInfo users = 3;
+}
+
+// SearchUserInfo 搜索用户信息
+message SearchUserInfo {
+  string id = 1;
+  string name = 2;
+  string avatar = 3;
+}
+
+// Message 消息
+message Message {
+  string id = 1;
+  string conversation_type = 2;
+  string conversation_id = 3;
+  uint64 seq_id = 4;
+  string sender_id = 5;
+  string content_type = 6;
+  string content = 7;
+  string extra = 8;
+  string reply_to_id = 9;
+  string status = 10;
+  int64 created_at = 11;
+}
+
+// SendPrivateMessageReq 发送私聊消息请求
+message SendPrivateMessageReq {
+  string sender_id = 1;
+  string receiver_id = 2;
+  string content_type = 3;
+  string content = 4;
+  string extra = 5;
+  string reply_to_id = 6;
+}
+
+// SendPrivateMessageResp 发送私聊消息响应
+message SendPrivateMessageResp {
+  bool success = 1;
+  string msg = 2;
+  Message message = 3;
+}
+
+// SendGroupMessageReq 发送群聊消息请求
+message SendGroupMessageReq {
+  string sender_id = 1;
+  string group_id = 2;
+  string content_type = 3;
+  string content = 4;
+  string extra = 5;
+  repeated string mentions = 6;
+  string reply_to_id = 7;
+}
+
+// SendGroupMessageResp 发送群聊消息响应
+message SendGroupMessageResp {
+  bool success = 1;
+  string msg = 2;
+  Message message = 3;
+}
+
+// GetMessagesReq 获取消息列表请求
+message GetMessagesReq {
+  string conversation_type = 1;
+  string conversation_id = 2;
+  uint64 before_seq_id = 3;
+  int32 limit = 4;
+}
+
+// GetMessagesResp 获取消息列表响应
+message GetMessagesResp {
+  bool success = 1;
+  string msg = 2;
+  repeated Message messages = 3;
+}
+
+// RecallMessageReq 撤回消息请求
+message RecallMessageReq {
+  string message_id = 1;
+  string sender_id = 2;
+}
+
+// RecallMessageResp 撤回消息响应
+message RecallMessageResp {
+  bool success = 1;
+  string msg = 2;
+}
+
+// ForwardMessageReq 转发消息请求
+message ForwardMessageReq {
+  string sender_id = 1;
+  string target_conversation_type = 2;
+  string target_conversation_id = 3;
+  repeated string message_ids = 4;
+}
+
+// ForwardMessageResp 转发消息响应
+message ForwardMessageResp {
+  bool success = 1;
+  string msg = 2;
+  Message message = 3;
+}
+
+// GetUnreadCountReq 获取未读数请求
+message GetUnreadCountReq {
+  string user_id = 1;
+  repeated Conversation conversation = 2;
+}
+
+// Conversation 会话信息
+message Conversation {
+  string conversation_type = 1;
+  string conversation_id = 2;
+  uint64 last_read_seq_id = 3;
+}
+
+// GetUnreadCountResp 获取未读数响应
+message GetUnreadCountResp {
+  bool success = 1;
+  string msg = 2;
+  map<string, int32> counts = 3;
+}
+
+// Group 群组信息
+message Group {
+  string id = 1;
+  string name = 2;
+  string avatar = 3;
+  string owner_id = 4;
+  int64 created_at = 5;
+  int64 updated_at = 6;
+  int32 member_count = 7;
+}
+
+// GroupMember 群组成员
+message GroupMember {
+  string id = 1;
+  string group_id = 2;
+  string user_id = 3;
+  string role = 4;
+  int64 joined_at = 5;
+}
+
+// CreateGroupReq 创建群组请求
+message CreateGroupReq {
+  string user_id = 1;
+  string name = 2;
+  string avatar = 3;
+  repeated string member_ids = 4;
+}
+
+// CreateGroupResp 创建群组响应
+message CreateGroupResp {
+  bool success = 1;
+  string msg = 2;
+  Group group = 3;
+}
+
+// GetGroupInfoReq 获取群信息请求
+message GetGroupInfoReq {
+  string group_id = 1;
+  string user_id = 2;
+}
+
+// GetGroupInfoResp 获取群信息响应
+message GetGroupInfoResp {
+  bool success = 1;
+  string msg = 2;
+  Group group = 3;
+  bool is_member = 4;
+}
+
+// UpdateGroupReq 更新群信息请求
+message UpdateGroupReq {
+  string group_id = 1;
+  string user_id = 2;
+  string name = 3;
+  string avatar = 4;
+}
+
+// UpdateGroupResp 更新群信息响应
+message UpdateGroupResp {
+  bool success = 1;
+  string msg = 2;
+}
+
+// AddMembersReq 添加成员请求
+message AddMembersReq {
+  string group_id = 1;
+  string operator_id = 2;
+  repeated string member_ids = 3;
+}
+
+// AddMembersResp 添加成员响应
+message AddMembersResp {
+  bool success = 1;
+  string msg = 2;
+}
+
+// RemoveMemberReq 移除成员请求
+message RemoveMemberReq {
+  string group_id = 1;
+  string operator_id = 2;
+  string user_id = 3;
+}
+
+// RemoveMemberResp 移除成员响应
+message RemoveMemberResp {
+  bool success = 1;
+  string msg = 2;
+}
+
+// LeaveGroupReq 退出群组请求
+message LeaveGroupReq {
+  string group_id = 1;
+  string user_id = 2;
+}
+
+// LeaveGroupResp 退出群组响应
+message LeaveGroupResp {
+  bool success = 1;
+  string msg = 2;
+}
+
+// TransferOwnershipReq 转让群主请求
+message TransferOwnershipReq {
+  string group_id = 1;
+  string current_owner_id = 2;
+  string new_owner_id = 3;
+}
+
+// TransferOwnershipResp 转让群主响应
+message TransferOwnershipResp {
+  bool success = 1;
+  string msg = 2;
+}
+
+// SetAdminReq 设置管理员请求
+message SetAdminReq {
+  string group_id = 1;
+  string operator_id = 2;
+  string user_id = 3;
+}
+
+// SetAdminResp 设置管理员响应
+message SetAdminResp {
+  bool success = 1;
+  string msg = 2;
+}
+
+// RemoveAdminReq 移除管理员请求
+message RemoveAdminReq {
+  string group_id = 1;
+  string operator_id = 2;
+  string user_id = 3;
+}
+
+// RemoveAdminResp 移除管理员响应
+message RemoveAdminResp {
+  bool success = 1;
+  string msg = 2;
+}
+
+// GetGroupMembersReq 获取群成员请求
+message GetGroupMembersReq {
+  string group_id = 1;
+  string user_id = 2;
+}
+
+// GetGroupMembersResp 获取群成员响应
+message GetGroupMembersResp {
+  bool success = 1;
+  string msg = 2;
+  repeated GroupMember members = 3;
+}
+
+// GetUserGroupsReq 获取用户群列表请求
+message GetUserGroupsReq {
+  string user_id = 1;
+}
+
+// GetUserGroupsResp 获取用户群列表响应
+message GetUserGroupsResp {
+  bool success = 1;
+  string msg = 2;
+  repeated Group groups = 3;
+}
+
+// ConversationInfo 会话信息
+message ConversationInfo {
+  string conversation_type = 1;
+  string conversation_id = 2;
+  string name = 3;
+  string avatar = 4;
+  Message last_message = 5;
+  int32 unread_count = 6;
+  int64 last_message_at = 7;
+  bool pinned = 8;
+  bool mentioned = 9;
+}
+
+// GetConversationListReq 获取会话列表请求
+message GetConversationListReq {
+  string user_id = 1;
+}
+
+// GetConversationListResp 获取会话列表响应
+message GetConversationListResp {
+  bool success = 1;
+  string msg = 2;
+  repeated ConversationInfo conversations = 3;
+}
+
+// MarkConversationReadReq 标记会话已读请求
+message MarkConversationReadReq {
+  string user_id = 1;
+  string conversation_type = 2;
+  string conversation_id = 3;
+}
+
+// MarkConversationReadResp 标记会话已读响应
+message MarkConversationReadResp {
+  bool success = 1;
+  string msg = 2;
+}
+
+// TogglePinReq 切换置顶请求
+message TogglePinReq {
+  string user_id = 1;
+  string conversation_type = 2;
+  string conversation_id = 3;
+}
+
+// TogglePinResp 切换置顶响应
+message TogglePinResp {
+  bool success = 1;
+  string msg = 2;
+  bool pinned = 3;
+}
+
+// DeleteConversationReq 删除会话请求
+message DeleteConversationReq {
+  string user_id = 1;
+  string conversation_type = 2;
+  string conversation_id = 3;
+}
+
+// DeleteConversationResp 删除会话响应
+message DeleteConversationResp {
+  bool success = 1;
+  string msg = 2;
+}
+
+// GetOnlineStatusReq 获取在线状态请求
+message GetOnlineStatusReq {
+  repeated string user_ids = 1;
+}
+
+// GetOnlineStatusResp 获取在线状态响应
+message GetOnlineStatusResp {
+  bool success = 1;
+  string msg = 2;
+  map<string, bool> online_status = 3;
+}
+
+// GetMessageByIDReq 根据ID获取消息请求
+message GetMessageByIDReq {
+  string message_id = 1;
+}
+
+// GetMessageByIDResp 根据ID获取消息响应
+message GetMessageByIDResp {
+  bool success = 1;
+  string msg = 2;
+  Message message = 3;
+}
+
+// ChatService 聊天服务
+service ChatService {
+  // SendFriendRequest 发送好友申请
+  rpc SendFriendRequest(SendFriendRequestReq) returns (SendFriendRequestResp);
+  // GetFriendRequestsByReceiver 获取收到的好友申请
+  rpc GetFriendRequestsByReceiver(GetFriendRequestsByReceiverReq) returns (GetFriendRequestsResp);
+  // GetFriendRequestsBySender 获取发送的好友申请
+  rpc GetFriendRequestsBySender(GetFriendRequestsBySenderReq) returns (GetFriendRequestsResp);
+  // AcceptFriendRequest 接受好友申请
+  rpc AcceptFriendRequest(AcceptFriendRequestReq) returns (AcceptFriendRequestResp);
+  // RejectFriendRequest 拒绝好友申请
+  rpc RejectFriendRequest(RejectFriendRequestReq) returns (RejectFriendRequestResp);
+  // GetFriendList 获取好友列表
+  rpc GetFriendList(GetFriendListReq) returns (GetFriendListResp);
+  // DeleteFriend 删除好友
+  rpc DeleteFriend(DeleteFriendReq) returns (DeleteFriendResp);
+  // UpdateFriendRemark 更新好友备注
+  rpc UpdateFriendRemark(UpdateFriendRemarkReq) returns (UpdateFriendRemarkResp);
+  // SearchUsers 搜索用户
+  rpc SearchUsers(SearchUsersReq) returns (SearchUsersResp);
+  // SendPrivateMessage 发送私聊消息
+  rpc SendPrivateMessage(SendPrivateMessageReq) returns (SendPrivateMessageResp);
+  // SendGroupMessage 发送群聊消息
+  rpc SendGroupMessage(SendGroupMessageReq) returns (SendGroupMessageResp);
+  // GetMessages 获取消息列表
+  rpc GetMessages(GetMessagesReq) returns (GetMessagesResp);
+  // GetMessageByID 根据ID获取消息
+  rpc GetMessageByID(GetMessageByIDReq) returns (GetMessageByIDResp);
+  // RecallMessage 撤回消息
+  rpc RecallMessage(RecallMessageReq) returns (RecallMessageResp);
+  // ForwardMessage 转发消息
+  rpc ForwardMessage(ForwardMessageReq) returns (ForwardMessageResp);
+  // GetUnreadCount 获取未读数
+  rpc GetUnreadCount(GetUnreadCountReq) returns (GetUnreadCountResp);
+  // CreateGroup 创建群组
+  rpc CreateGroup(CreateGroupReq) returns (CreateGroupResp);
+  // GetGroupInfo 获取群信息
+  rpc GetGroupInfo(GetGroupInfoReq) returns (GetGroupInfoResp);
+  // UpdateGroup 更新群信息
+  rpc UpdateGroup(UpdateGroupReq) returns (UpdateGroupResp);
+  // AddMembers 添加成员
+  rpc AddMembers(AddMembersReq) returns (AddMembersResp);
+  // RemoveMember 移除成员
+  rpc RemoveMember(RemoveMemberReq) returns (RemoveMemberResp);
+  // LeaveGroup 退出群组
+  rpc LeaveGroup(LeaveGroupReq) returns (LeaveGroupResp);
+  // TransferOwnership 转让群主
+  rpc TransferOwnership(TransferOwnershipReq) returns (TransferOwnershipResp);
+  // SetAdmin 设置管理员
+  rpc SetAdmin(SetAdminReq) returns (SetAdminResp);
+  // RemoveAdmin 移除管理员
+  rpc RemoveAdmin(RemoveAdminReq) returns (RemoveAdminResp);
+  // GetGroupMembers 获取群成员
+  rpc GetGroupMembers(GetGroupMembersReq) returns (GetGroupMembersResp);
+  // GetUserGroups 获取用户群列表
+  rpc GetUserGroups(GetUserGroupsReq) returns (GetUserGroupsResp);
+  // GetConversationList 获取会话列表
+  rpc GetConversationList(GetConversationListReq) returns (GetConversationListResp);
+  // MarkConversationRead 标记会话已读
+  rpc MarkConversationRead(MarkConversationReadReq) returns (MarkConversationReadResp);
+  // TogglePin 切换置顶
+  rpc TogglePin(TogglePinReq) returns (TogglePinResp);
+  // DeleteConversation 删除会话
+  rpc DeleteConversation(DeleteConversationReq) returns (DeleteConversationResp);
+  // GetOnlineStatus 获取在线状态
+  rpc GetOnlineStatus(GetOnlineStatusReq) returns (GetOnlineStatusResp);
+}

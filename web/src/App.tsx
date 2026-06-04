@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './store/auth-context'
 import { ChatProvider } from './store/chat-context'
+import { MessageProvider } from './store/message-store'
 import { RepoProvider } from './store/repo-context'
 import PublicLayout from './components/Layout/PublicLayout'
 import AppLayout from './components/Layout/AppLayout'
@@ -12,13 +13,16 @@ import RepoDetail from './pages/RepoDetail'
 import ArticleView from './pages/ArticleView'
 import ArticleEditor from './pages/ArticleEditor'
 import SearchResult from './pages/SearchResult'
+import Messages from './pages/Messages'
+import UserProfile from './pages/UserProfile'
 import NotFound from './pages/NotFound'
 
 export default function App() {
   return (
     <AuthProvider>
       <ChatProvider>
-        <RepoProvider>
+        <MessageProvider>
+          <RepoProvider>
           <Routes>
             {/* 公开页面 — PublicLayout */}
             <Route element={<PublicLayout />}>
@@ -40,11 +44,15 @@ export default function App() {
               <Route path="/chat" element={<Chat />} />
               <Route path="/chat/:sessionId" element={<Chat />} />
               <Route path="/search" element={<SearchResult />} />
+              <Route path="/messages" element={<Messages />} />
+              <Route path="/messages/:conversationType/:conversationId" element={<Messages />} />
+              <Route path="/users/:userId" element={<UserProfile />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
           </Routes>
         </RepoProvider>
+        </MessageProvider>
       </ChatProvider>
     </AuthProvider>
   )

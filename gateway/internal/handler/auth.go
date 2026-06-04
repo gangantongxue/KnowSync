@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"strconv"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -54,50 +53,50 @@ func (h *Handler) Register() app.HandlerFunc {
 			return
 		}
 
-	// --- 处理可选的头像文件 ---
-	var avatarReader io.Reader
-	var avatarExt string
+		// --- 处理可选的头像文件 ---
+		var avatarReader io.Reader
+		var avatarExt string
 
-	mf, _ := ctx.MultipartForm()
-	if mf != nil && mf.File != nil {
-		fhs := mf.File["avatar"]
-		if len(fhs) > 0 {
-			fileHeader := fhs[0]
-			f, err := fileHeader.Open()
-			if err != nil {
-				response.Error(c, ctx, 500, errcode.ErrBadReq, "头像文件读取失败")
-				return
+		mf, _ := ctx.MultipartForm()
+		if mf != nil && mf.File != nil {
+			fhs := mf.File["avatar"]
+			if len(fhs) > 0 {
+				fileHeader := fhs[0]
+				f, err := fileHeader.Open()
+				if err != nil {
+					response.Error(c, ctx, 500, errcode.ErrBadReq, "头像文件读取失败")
+					return
+				}
+				defer f.Close()
+
+				// 读取文件头魔数，校验图片格式
+				head := make([]byte, 12)
+				n, readErr := io.ReadFull(f, head)
+				if readErr != nil && readErr != io.ErrUnexpectedEOF {
+					response.Error(c, ctx, 500, errcode.ErrBadReq, "头像文件读取失败")
+					return
+				}
+
+				// 通过文件头魔数判断真实类型，防止伪造扩展名
+				switch {
+				case n >= 3 && head[0] == 0xFF && head[1] == 0xD8 && head[2] == 0xFF:
+					avatarExt = ".jpg"
+				case n >= 4 && head[0] == 0x89 && head[1] == 0x50 && head[2] == 0x4E && head[3] == 0x47:
+					avatarExt = ".png"
+				case n >= 4 && head[0] == 0x47 && head[1] == 0x49 && head[2] == 0x46 && head[3] == 0x38:
+					avatarExt = ".gif"
+				case n >= 12 && head[0] == 0x52 && head[1] == 0x49 && head[2] == 0x46 && head[3] == 0x46 &&
+					head[8] == 0x57 && head[9] == 0x45 && head[10] == 0x42 && head[11] == 0x50:
+					avatarExt = ".webp"
+				default:
+					response.Error(c, ctx, 400, errcode.ErrBadReq, "不支持的头像文件格式，仅支持 JPG/PNG/GIF/WebP")
+					return
+				}
+
+				// 将已读取的魔数头部与剩余文件拼回完整流
+				avatarReader = io.MultiReader(bytes.NewReader(head[:n]), f)
 			}
-			defer f.Close()
-
-			// 读取文件头魔数，校验图片格式
-			head := make([]byte, 12)
-			n, readErr := io.ReadFull(f, head)
-			if readErr != nil && readErr != io.ErrUnexpectedEOF {
-				response.Error(c, ctx, 500, errcode.ErrBadReq, "头像文件读取失败")
-				return
-			}
-
-			// 通过文件头魔数判断真实类型，防止伪造扩展名
-			switch {
-			case n >= 3 && head[0] == 0xFF && head[1] == 0xD8 && head[2] == 0xFF:
-				avatarExt = ".jpg"
-			case n >= 4 && head[0] == 0x89 && head[1] == 0x50 && head[2] == 0x4E && head[3] == 0x47:
-				avatarExt = ".png"
-			case n >= 4 && head[0] == 0x47 && head[1] == 0x49 && head[2] == 0x46 && head[3] == 0x38:
-				avatarExt = ".gif"
-			case n >= 12 && head[0] == 0x52 && head[1] == 0x49 && head[2] == 0x46 && head[3] == 0x46 &&
-				head[8] == 0x57 && head[9] == 0x45 && head[10] == 0x42 && head[11] == 0x50:
-				avatarExt = ".webp"
-			default:
-				response.Error(c, ctx, 400, errcode.ErrBadReq, "不支持的头像文件格式，仅支持 JPG/PNG/GIF/WebP")
-				return
-			}
-
-			// 将已读取的魔数头部与剩余文件拼回完整流
-			avatarReader = io.MultiReader(bytes.NewReader(head[:n]), f)
 		}
-	}
 
 		// --- 调用 Register gRPC ---
 		conn := h.grpcClient.GetConn("user_server")
@@ -127,7 +126,7 @@ func (h *Handler) Register() app.HandlerFunc {
 		avatarURL := ""
 
 		if avatarReader != nil {
-			ts := strconv.FormatInt(time.Now().UnixMilli(), 10)
+			ts := fmt.Sprintf("%d", time.Now().UnixMilli())
 			key := fmt.Sprintf("%s/avatar/%s%s", userID, ts, avatarExt)
 			if _, err := h.store.WriteFile(key, avatarReader); err != nil {
 				slog.Warn("头像文件保存失败，注册已完成但未设置头像", "user_id", userID, "error", err)

@@ -1,31 +1,50 @@
 import { useState, useEffect } from 'react'
-import { listCollaborators, addCollaborator, updateCollaborator, removeCollaborator } from '../../lib/nodes'
+import { useNavigate } from 'react-router-dom'
+import { listCollaborators, updateCollaborator, removeCollaborator } from '../../lib/nodes'
+import { getUser } from '../../lib/auth'
+import { friendApi } from '../../lib/chat-api'
 import type { Collaborator } from '../../lib/nodes'
+import type { UserInfo } from '../../lib/auth'
+import type { Friend } from '../../lib/chat-api'
 
 interface CollabListProps {
   repoId: string
 }
 
+interface CollabWithUser {
+  collab: Collaborator
+  user: UserInfo | null
+  remark: string
+}
+
 export default function CollabList({ repoId }: CollabListProps) {
-  const [collabs, setCollabs] = useState<Collaborator[]>([])
-  const [showAdd, setShowAdd] = useState(false)
-  const [newUserId, setNewUserId] = useState('')
-  const [newRole, setNewRole] = useState('DEVELOPER')
+  const navigate = useNavigate()
+  const [items, setItems] = useState<CollabWithUser[]>([])
 
   const load = async () => {
-    const list = await listCollaborators(repoId)
-    setCollabs(list)
+    const [list, friendRes] = await Promise.all([
+      listCollaborators(repoId),
+      friendApi.getList().catch(() => ({ data: { friends: [] as Friend[] } })),
+    ])
+    const friendMap = new Map<string, string>()
+    for (const f of friendRes.data.friends) {
+      friendMap.set(f.friend_id, f.remark)
+    }
+    const withUsers = await Promise.all(
+      list.map(async (c) => {
+        const remark = friendMap.get(c.user_id) || ''
+        try {
+          const u = await getUser(c.user_id)
+          return { collab: c, user: u, remark }
+        } catch {
+          return { collab: c, user: null, remark }
+        }
+      })
+    )
+    setItems(withUsers)
   }
 
   useEffect(() => { load() }, [repoId])
-
-  const handleAdd = async () => {
-    if (!newUserId.trim()) return
-    await addCollaborator(repoId, newUserId.trim(), newRole)
-    setShowAdd(false)
-    setNewUserId('')
-    load()
-  }
 
   const handleUpdateRole = async (userId: string, role: string) => {
     await updateCollaborator(repoId, userId, role)
@@ -39,46 +58,47 @@ export default function CollabList({ repoId }: CollabListProps) {
     }
   }
 
+  const getDisplayName = (item: CollabWithUser) => item.remark || item.user?.name || item.collab.user_id.slice(0, 8)
+
   return (
     <div className="mt-6">
       <div className="flex items-center justify-between mb-2">
         <h4 className="text-sm font-medium text-gray-700">协作者</h4>
-        <button onClick={() => setShowAdd(true)} className="text-xs text-emerald-600 hover:underline">+ 添加</button>
       </div>
 
-      {collabs.map(c => (
-        <div key={c.user_id} className="flex items-center justify-between py-1.5 text-sm">
-          <span className="text-gray-600 text-xs">{c.user_id.slice(0, 8)}...</span>
+      {items.map(item => (
+        <div key={item.collab.user_id} className="flex items-center gap-2 py-1.5 border-b border-gray-100 last:border-0">
+          <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 text-xs flex items-center justify-center shrink-0 overflow-hidden">
+            {item.user?.avatar ? (
+              <img src={item.user.avatar} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            ) : (
+              getDisplayName(item).charAt(0)
+            )}
+          </div>
+
+          <button
+            onClick={() => navigate(`/users/${item.collab.user_id}`)}
+            className="flex-1 min-w-0 text-left text-sm text-gray-700 truncate hover:text-emerald-600"
+          >
+            {getDisplayName(item)}
+          </button>
+
           <div className="flex items-center gap-1">
             <select
-              value={c.role}
-              onChange={e => handleUpdateRole(c.user_id, e.target.value)}
-              className="text-xs border border-gray-200 rounded px-1 py-0.5"
+              value={item.collab.role}
+              onChange={e => handleUpdateRole(item.collab.user_id, e.target.value)}
+              className="text-xs border border-gray-200 rounded px-1 py-0.5 bg-white"
             >
               <option value="ADMIN">管理员</option>
               <option value="DEVELOPER">开发者</option>
               <option value="VIEWER">浏览者</option>
             </select>
-            <button onClick={() => handleRemove(c.user_id)} className="text-gray-400 hover:text-red-500 text-xs">✕</button>
+            <button onClick={() => handleRemove(item.collab.user_id)} className="text-gray-400 hover:text-red-500 text-xs">✕</button>
           </div>
         </div>
       ))}
 
-      {collabs.length === 0 && <p className="text-xs text-gray-400">暂无协作者</p>}
-
-      {showAdd && (
-        <div className="mt-2 space-y-2">
-          <input value={newUserId} onChange={e => setNewUserId(e.target.value)} placeholder="用户 ID" className="w-full px-2 py-1 border border-gray-300 rounded text-xs" />
-          <select value={newRole} onChange={e => setNewRole(e.target.value)} className="w-full px-2 py-1 border border-gray-300 rounded text-xs">
-            <option value="DEVELOPER">开发者</option>
-            <option value="VIEWER">浏览者</option>
-          </select>
-          <div className="flex gap-2">
-            <button onClick={handleAdd} className="px-2 py-1 bg-emerald-500 text-white rounded text-xs">添加</button>
-            <button onClick={() => setShowAdd(false)} className="px-2 py-1 text-gray-500 text-xs">取消</button>
-          </div>
-        </div>
-      )}
+      {items.length === 0 && <p className="text-xs text-gray-400">暂无协作者</p>}
     </div>
   )
 }

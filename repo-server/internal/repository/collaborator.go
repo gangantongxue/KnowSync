@@ -12,7 +12,7 @@ func (r *Repository) AddCollaborator(ctx context.Context, c *schema.Collaborator
 }
 
 // UpdateCollaborator 更新协作者角色
-func (r *Repository) UpdateCollaborator(ctx context.Context, repoID, userID, role string) error {
+func (r *Repository) UpdateCollaborator(ctx context.Context, repoID string, userID string, role string) error {
 	return r.Database.DB.WithContext(ctx).
 		Model(&schema.Collaborator{}).
 		Where("repo_id = ? AND user_id = ?", repoID, userID).
@@ -20,7 +20,7 @@ func (r *Repository) UpdateCollaborator(ctx context.Context, repoID, userID, rol
 }
 
 // RemoveCollaborator 移除协作者
-func (r *Repository) RemoveCollaborator(ctx context.Context, repoID, userID string) error {
+func (r *Repository) RemoveCollaborator(ctx context.Context, repoID string, userID string) error {
 	return r.Database.DB.WithContext(ctx).
 		Where("repo_id = ? AND user_id = ?", repoID, userID).
 		Delete(&schema.Collaborator{}).Error
@@ -36,7 +36,7 @@ func (r *Repository) ListCollaborators(ctx context.Context, repoID string) ([]sc
 }
 
 // GetUserRole 获取用户在知识库中的角色
-func (r *Repository) GetUserRole(ctx context.Context, repoID, userID string) (string, error) {
+func (r *Repository) GetUserRole(ctx context.Context, repoID string, userID string) (string, error) {
 	var c schema.Collaborator
 	err := r.Database.DB.WithContext(ctx).
 		Where("repo_id = ? AND user_id = ?", repoID, userID).

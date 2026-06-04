@@ -25,3 +25,4 @@ grpc_clients:
     user_server: "user-server:50051"
     repo_server: "repo-server:50052"
     ai_server: "ai-server:50053"
+    chat_server: "chat-server:50054"

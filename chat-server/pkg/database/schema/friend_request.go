@@ -1,10 +1,15 @@
 package schema
 
+import (
+	"github.com/rs/xid"
+	"gorm.io/gorm"
+)
+
 // FriendRequest 好友申请表
 type FriendRequest struct {
-	ID         uint64 `gorm:"primaryKey;autoIncrement;type:bigint unsigned" json:"id"`
-	SenderID   uint64 `gorm:"column:sender_id;type:bigint unsigned;not null;index:idx_sender" json:"sender_id"`
-	ReceiverID uint64 `gorm:"column:receiver_id;type:bigint unsigned;not null;index:idx_receiver_status,priority:1" json:"receiver_id"`
+	ID         string `gorm:"primaryKey;type:char(20)" json:"id"`
+	SenderID   string `gorm:"column:sender_id;type:varchar(20);not null;index:idx_sender" json:"sender_id"`
+	ReceiverID string `gorm:"column:receiver_id;type:varchar(20);not null;index:idx_receiver_status,priority:1" json:"receiver_id"`
 	Status     string `gorm:"column:status;type:enum('pending','accepted','rejected');not null;default:pending;index:idx_receiver_status,priority:2" json:"status"`
 	Remark     string `gorm:"column:remark;type:varchar(100);default:''" json:"remark"`
 	CreatedAt  int64  `gorm:"column:created_at;type:bigint;not null" json:"created_at"`
@@ -13,4 +18,11 @@ type FriendRequest struct {
 
 func (f *FriendRequest) TableName() string {
 	return "friend_requests"
+}
+
+func (f *FriendRequest) BeforeCreate(tx *gorm.DB) error {
+	if f.ID == "" {
+		f.ID = xid.New().String()
+	}
+	return nil
 }

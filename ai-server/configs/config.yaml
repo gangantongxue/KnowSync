@@ -1,5 +1,5 @@
 grpc:
-  port: 8082
+  port: 5053
 
 log:
   level: info

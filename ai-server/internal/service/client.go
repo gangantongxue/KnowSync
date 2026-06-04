@@ -44,7 +44,7 @@ func NewClient(cfg *model.Config) (*Client, error) {
 }
 
 // GetArticleContent 从 gateway 获取文章内容，传入 user_id/repo_id/filePath 构成的完整子路径
-func (c *Client) GetArticleContent(ctx context.Context, userID, repoID, filePath string) (string, error) {
+func (c *Client) GetArticleContent(ctx context.Context, userID string, repoID, filePath string) (string, error) {
 	u, err := url.Parse(c.gatewayAddr + "/internal/file")
 	if err != nil {
 		return "", fmt.Errorf("解析 gateway 地址失败: %w", err)

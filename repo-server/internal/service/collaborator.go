@@ -9,7 +9,7 @@ import (
 )
 
 // AddCollaborator 添加协作者，仅 ADMIN 可操作
-func (s *Service) AddCollaborator(ctx context.Context, repoID, operatorID, userID, role string) error {
+func (s *Service) AddCollaborator(ctx context.Context, repoID string, operatorID string, userID string, role string) error {
 	if err := s.CheckRepoPermission(ctx, repoID, operatorID, "ADMIN"); err != nil {
 		return err
 	}
@@ -28,7 +28,7 @@ func (s *Service) AddCollaborator(ctx context.Context, repoID, operatorID, userI
 }
 
 // UpdateCollaborator 更新协作者角色，仅 ADMIN 可操作
-func (s *Service) UpdateCollaborator(ctx context.Context, repoID, operatorID, userID, role string) error {
+func (s *Service) UpdateCollaborator(ctx context.Context, repoID string, operatorID string, userID string, role string) error {
 	if err := s.CheckRepoPermission(ctx, repoID, operatorID, "ADMIN"); err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func (s *Service) UpdateCollaborator(ctx context.Context, repoID, operatorID, us
 }
 
 // RemoveCollaborator 移除协作者，仅 ADMIN 可操作
-func (s *Service) RemoveCollaborator(ctx context.Context, repoID, operatorID, userID string) error {
+func (s *Service) RemoveCollaborator(ctx context.Context, repoID string, operatorID string, userID string) error {
 	if err := s.CheckRepoPermission(ctx, repoID, operatorID, "ADMIN"); err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func (s *Service) RemoveCollaborator(ctx context.Context, repoID, operatorID, us
 }
 
 // ListCollaborators 列出协作者列表，需要 ADMIN 或 DEVELOPER 权限
-func (s *Service) ListCollaborators(ctx context.Context, repoID, userID string) ([]schema.Collaborator, error) {
+func (s *Service) ListCollaborators(ctx context.Context, repoID string, userID string) ([]schema.Collaborator, error) {
 	if err := s.CheckRepoPermission(ctx, repoID, userID, "ADMIN", "DEVELOPER"); err != nil {
 		return nil, err
 	}

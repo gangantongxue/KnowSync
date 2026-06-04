@@ -70,7 +70,7 @@ export default function SearchResult() {
               <p className="text-xs text-gray-500 mt-1">{repo.description || '暂无描述'}</p>
               <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
                 {author && (
-                  <div className="flex items-center gap-1.5">
+                  <div onClick={(e) => { e.stopPropagation(); navigate(`/users/${repo.owner_id}`) }} className="flex items-center gap-1.5 cursor-pointer hover:underline">
                     <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 text-xs flex items-center justify-center shrink-0 overflow-hidden">
                       {author.avatar ? (
                         <img src={author.avatar} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />

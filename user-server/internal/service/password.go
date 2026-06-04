@@ -97,7 +97,7 @@ func (s *Service) ForgetPassword(ctx context.Context, email, password, verifyCod
 }
 
 // ResetPassword 重置密码（通过旧密码验证）
-func (s *Service) ResetPassword(ctx context.Context, userID, oldPassword, newPassword string) error {
+func (s *Service) ResetPassword(ctx context.Context, userID string, oldPassword, newPassword string) error {
 	// 1. 查找用户
 	user, err := s.Repository.GetUser(ctx, userID)
 	if err != nil {

@@ -57,6 +57,11 @@ tasks:
         cd ai-server && task image
       - |
         echo "=================================================="
+        echo "构建 chat-server 镜像..."
+        echo "=================================================="
+        cd chat-server && task image
+      - |
+        echo "=================================================="
         echo "构建 web 镜像..."
         echo "=================================================="
         cd web && task image
@@ -91,5 +96,6 @@ tasks:
       - cd repo-server && task clean
       - cd gateway && task clean
       - cd ai-server && task clean
+      - cd chat-server && task clean
       - cd web && task clean
       - echo "已清除所有编译产物"

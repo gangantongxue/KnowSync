@@ -10,7 +10,7 @@ import (
 // ChatSession 会话表
 type ChatSession struct {
 	ID        string    `gorm:"primaryKey;type:char(20)" json:"id"`
-	UserID    string    `gorm:"column:user_id;type:char(20);not null;index:idx_user_id" json:"user_id"`
+	UserID    string    `gorm:"column:user_id;type:varchar(20);not null;index:idx_user_id" json:"user_id"`
 	Title     string    `gorm:"column:title;type:varchar(255);not null;default:'新对话'" json:"title"`
 	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at;autoUpdateTime" json:"updated_at"`
@@ -74,7 +74,7 @@ func (r *Repository) UpdateSessionTitle(sessionID, title string) error {
 }
 
 // DeleteSession 删除会话及其所有消息
-func (r *Repository) DeleteSession(sessionID, userID string) error {
+func (r *Repository) DeleteSession(sessionID string, userID string) error {
 	return r.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("session_id = ?", sessionID).Delete(&ChatMessage{}).Error; err != nil {
 			return err

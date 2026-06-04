@@ -10,7 +10,7 @@ import (
 // Repo 知识库表
 type Repo struct {
 	ID           string         `gorm:"primaryKey;type:char(20)" json:"id"`
-	OwnerID      string         `gorm:"column:owner_id;type:char(20);not null;index" json:"owner_id"`
+	OwnerID      string         `gorm:"column:owner_id;type:varchar(20);not null;index" json:"owner_id"`
 	Name         string         `gorm:"column:name;type:varchar(128);not null" json:"name"`
 	Visibility   string         `gorm:"column:visibility;type:varchar(20);not null;default:PRIVATE" json:"visibility"`
 	Description  string         `gorm:"column:description;type:varchar(500)" json:"description"`

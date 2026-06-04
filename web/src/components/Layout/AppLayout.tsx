@@ -23,6 +23,7 @@ export default function AppLayout() {
 
   const isInsideRepo = /^\/repos\/[^/]/.test(location.pathname)
   const isSearchRoute = location.pathname.startsWith('/search')
+  const isMessagesRoute = location.pathname.startsWith('/messages')
 
   if (isLoading) {
     return (
@@ -34,8 +35,8 @@ export default function AppLayout() {
 
   if (!isAuthenticated) return null
 
-  // 搜索页 — 全屏，无侧边栏
-  if (isSearchRoute) {
+  // 全屏页面 — 无侧边栏
+  if (isSearchRoute || isMessagesRoute) {
     return (
       <div className="h-screen flex flex-col">
         <TopBar />

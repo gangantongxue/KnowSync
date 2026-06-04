@@ -7,7 +7,7 @@ import (
 )
 
 // FollowRepo 关注知识库
-func (r *Repository) FollowRepo(ctx context.Context, userID, repoID string) error {
+func (r *Repository) FollowRepo(ctx context.Context, userID string, repoID string) error {
 	f := &schema.Follow{
 		UserID: userID,
 		RepoID: repoID,
@@ -17,14 +17,14 @@ func (r *Repository) FollowRepo(ctx context.Context, userID, repoID string) erro
 }
 
 // UnfollowRepo 取消关注知识库
-func (r *Repository) UnfollowRepo(ctx context.Context, userID, repoID string) error {
+func (r *Repository) UnfollowRepo(ctx context.Context, userID string, repoID string) error {
 	return r.Database.DB.WithContext(ctx).
 		Where("user_id = ? AND repo_id = ?", userID, repoID).
 		Delete(&schema.Follow{}).Error
 }
 
 // IsFollowing 检查用户是否已关注知识库
-func (r *Repository) IsFollowing(ctx context.Context, userID, repoID string) (bool, error) {
+func (r *Repository) IsFollowing(ctx context.Context, userID string, repoID string) (bool, error) {
 	var count int64
 	err := r.Database.DB.WithContext(ctx).
 		Model(&schema.Follow{}).

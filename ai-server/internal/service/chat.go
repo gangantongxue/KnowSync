@@ -11,8 +11,8 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/gangantongxue/knowsync/ai-server/internal/repository"
 	"github.com/gangantongxue/knowsync/ai-server/internal/llm/tool"
+	"github.com/gangantongxue/knowsync/ai-server/internal/repository"
 )
 
 // AskUserOption 用户问题选项
@@ -47,7 +47,7 @@ type ChatEvent struct {
 type ChatCallback func(event *ChatEvent) error
 
 // Chat 流式对话主逻辑
-func (s *Service) Chat(ctx context.Context, reqUserID, reqSessionID, message string, cb ChatCallback) {
+func (s *Service) Chat(ctx context.Context, reqUserID string, reqSessionID, message string, cb ChatCallback) {
 	// 1. 获取或创建会话
 	session, err := s.getOrCreateSession(ctx, reqUserID, reqSessionID)
 	if err != nil {
@@ -211,7 +211,7 @@ func (s *Service) Chat(ctx context.Context, reqUserID, reqSessionID, message str
 }
 
 // getOrCreateSession 获取或创建会话
-func (s *Service) getOrCreateSession(ctx context.Context, userID, sessionID string) (*repository.ChatSession, error) {
+func (s *Service) getOrCreateSession(ctx context.Context, userID string, sessionID string) (*repository.ChatSession, error) {
 	if sessionID != "" {
 		session, err := s.Repo.GetSession(sessionID)
 		if err == nil && session.UserID == userID {

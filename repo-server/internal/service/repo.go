@@ -9,7 +9,7 @@ import (
 )
 
 // CreateRepo 创建知识库，同时将创建者添加为 ADMIN 角色协作者
-func (s *Service) CreateRepo(ctx context.Context, ownerID, name, visibility, desc string) (*schema.Repo, error) {
+func (s *Service) CreateRepo(ctx context.Context, ownerID string, name, visibility, desc string) (*schema.Repo, error) {
 	repo := &schema.Repo{
 		OwnerID:     ownerID,
 		Name:        name,
@@ -34,7 +34,7 @@ func (s *Service) CreateRepo(ctx context.Context, ownerID, name, visibility, des
 }
 
 // GetRepo 获取知识库详情
-func (s *Service) GetRepo(ctx context.Context, repoID, userID string) (*schema.Repo, string, error) {
+func (s *Service) GetRepo(ctx context.Context, repoID string, userID string) (*schema.Repo, string, error) {
 	if err := s.CheckRepoPermission(ctx, repoID, userID, "VIEWER"); err != nil {
 		return nil, "", err
 	}
@@ -54,7 +54,7 @@ func (s *Service) GetRepo(ctx context.Context, repoID, userID string) (*schema.R
 }
 
 // UpdateRepo 更新知识库信息，仅 ADMIN 可操作
-func (s *Service) UpdateRepo(ctx context.Context, repoID, userID, name, desc, visibility string) (*schema.Repo, error) {
+func (s *Service) UpdateRepo(ctx context.Context, repoID string, userID string, name, desc, visibility string) (*schema.Repo, error) {
 	if err := s.CheckRepoPermission(ctx, repoID, userID, "ADMIN"); err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (s *Service) UpdateRepo(ctx context.Context, repoID, userID, name, desc, vi
 }
 
 // DeleteRepo 软删除知识库，仅 ADMIN 可操作
-func (s *Service) DeleteRepo(ctx context.Context, repoID, userID string) error {
+func (s *Service) DeleteRepo(ctx context.Context, repoID string, userID string) error {
 	if err := s.CheckRepoPermission(ctx, repoID, userID, "ADMIN"); err != nil {
 		return err
 	}

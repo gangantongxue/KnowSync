@@ -9,7 +9,7 @@ import (
 )
 
 // FollowRepo 关注知识库，仅支持公开知识库，且不能关注自己的知识库
-func (s *Service) FollowRepo(ctx context.Context, repoID, userID string) error {
+func (s *Service) FollowRepo(ctx context.Context, repoID string, userID string) error {
 	repo, err := s.Repository.GetRepo(ctx, repoID)
 	if err != nil {
 		slog.Error("查询知识库失败", "error", err)
@@ -33,7 +33,7 @@ func (s *Service) FollowRepo(ctx context.Context, repoID, userID string) error {
 }
 
 // UnfollowRepo 取消关注知识库
-func (s *Service) UnfollowRepo(ctx context.Context, repoID, userID string) error {
+func (s *Service) UnfollowRepo(ctx context.Context, repoID string, userID string) error {
 	if err := s.Repository.UnfollowRepo(ctx, userID, repoID); err != nil {
 		slog.Error("取消关注失败", "error", err)
 		return fmt.Errorf("取消关注失败")

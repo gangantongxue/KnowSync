@@ -27,8 +27,8 @@ type UpdateRepoReq struct {
 // CreateRepo 创建知识库
 func (h *Handler) CreateRepo() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
-		uid := ctx.GetString("user_id")
-		if uid == "" {
+		uid, ok := getAuthUserID(ctx)
+		if !ok {
 			response.Error(c, ctx, 401, errcode.ErrUnauth, "未授权")
 			return
 		}

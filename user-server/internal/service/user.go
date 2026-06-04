@@ -24,7 +24,7 @@ func (s *Service) GetUser(ctx context.Context, userID string) (*schema.User, err
 }
 
 // UpdateUserInfo 更新用户信息
-func (s *Service) UpdateUserInfo(ctx context.Context, userID, name, email, avatar string) (*schema.User, error) {
+func (s *Service) UpdateUserInfo(ctx context.Context, userID string, name, email, avatar string) (*schema.User, error) {
 	user, err := s.Repository.GetUser(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("用户不存在")
@@ -50,7 +50,7 @@ func (s *Service) UpdateUserInfo(ctx context.Context, userID, name, email, avata
 }
 
 // SetAvatar 设置用户头像
-func (s *Service) SetAvatar(ctx context.Context, userID, avatar string) error {
+func (s *Service) SetAvatar(ctx context.Context, userID string, avatar string) error {
 	user, err := s.Repository.GetUser(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("用户不存在")
@@ -67,7 +67,7 @@ func (s *Service) SetAvatar(ctx context.Context, userID, avatar string) error {
 }
 
 // Unregister 注销用户
-func (s *Service) Unregister(ctx context.Context, userID, email, password, verifyCode string) error {
+func (s *Service) Unregister(ctx context.Context, userID string, email, password, verifyCode string) error {
 	// 1. 验证码校验
 	storedCode, err := s.Repository.GetVerifyCode(ctx, email)
 	if err != nil {

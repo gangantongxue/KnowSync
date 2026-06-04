@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/gangantongxue/knowsync/gateway/pkg/grpcclient"
 	"github.com/gangantongxue/knowsync/gateway/pkg/storage"
 )
@@ -17,4 +18,15 @@ func NewHandler(grpcClient *grpcclient.Client, store *storage.Store) *Handler {
 		grpcClient: grpcClient,
 		store:      store,
 	}
+}
+
+// getAuthUserID 从请求上下文中获取已认证的用户 ID（string）
+func getAuthUserID(ctx *app.RequestContext) (string, bool) {
+	uid := ctx.GetString("user_id")
+	return uid, uid != ""
+}
+
+// parseUserIDParam 从 URL 中获取 user_id 参数
+func parseUserIDParam(ctx *app.RequestContext) (string, error) {
+	return ctx.Param("user_id"), nil
 }

@@ -103,6 +103,21 @@ services:
     networks:
       - knowsync-net
 
+  chat-server:
+    image: knowsync/chat-server:latest
+    container_name: knowsync-chat-server
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./chat-server/logs:/app/logs
+    networks:
+      - knowsync-net
+
 networks:
   knowsync-net:
     driver: bridge

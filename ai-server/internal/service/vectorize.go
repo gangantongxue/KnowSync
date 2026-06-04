@@ -20,7 +20,7 @@ type VectorizeTask struct {
 }
 
 // VectorizeArticle 将向量化任务推入队列后立即返回
-func (s *Service) VectorizeArticle(ctx context.Context, userID, repoID, filePath string) error {
+func (s *Service) VectorizeArticle(ctx context.Context, userID string, repoID, filePath string) error {
 	task := VectorizeTask{
 		UserID:    userID,
 		RepoID:    repoID,

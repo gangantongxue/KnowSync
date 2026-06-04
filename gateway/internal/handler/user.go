@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"strconv"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -39,7 +38,11 @@ type ResetPasswordRequest struct {
 // GetUser 获取用户信息
 func (h *Handler) GetUser() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
-		userID := ctx.Param("user_id")
+		userID, err := parseUserIDParam(ctx)
+		if err != nil {
+			response.Error(c, ctx, 400, errcode.ErrBadReq, "用户 ID 格式错误")
+			return
+		}
 
 		conn := h.grpcClient.GetConn("user_server")
 		if conn == nil {
@@ -76,7 +79,11 @@ func (h *Handler) UpdateUser() app.HandlerFunc {
 			return
 		}
 
-		userID := ctx.Param("user_id")
+		userID, err := parseUserIDParam(ctx)
+		if err != nil {
+			response.Error(c, ctx, 400, errcode.ErrBadReq, "用户 ID 格式错误")
+			return
+		}
 
 		conn := h.grpcClient.GetConn("user_server")
 		if conn == nil {
@@ -117,8 +124,8 @@ func (h *Handler) UpdateUser() app.HandlerFunc {
 func (h *Handler) SetAvatar() app.HandlerFunc {
 	return func(c context.Context, ctx *app.RequestContext) {
 		// 从 JWT 上下文中获取当前登录用户 ID
-		uid := ctx.GetString("user_id")
-		if uid == "" {
+		uid, ok := getAuthUserID(ctx)
+		if !ok {
 			response.Error(c, ctx, 401, errcode.ErrUnauth, "未授权")
 			return
 		}
@@ -175,7 +182,7 @@ func (h *Handler) SetAvatar() app.HandlerFunc {
 		}
 
 		// --- 保存新头像（时间戳文件名，保留历史头像）---
-		ts := strconv.FormatInt(time.Now().UnixMilli(), 10)
+		ts := fmt.Sprintf("%d", time.Now().UnixMilli())
 		key := fmt.Sprintf("%s/avatar/%s%s", uid, ts, ext)
 		if _, err := h.store.WriteFile(key, avatarReader); err != nil {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "头像文件保存失败")
@@ -209,7 +216,11 @@ func (h *Handler) DeleteUser() app.HandlerFunc {
 			return
 		}
 
-		userID := ctx.Param("user_id")
+		userID, err := parseUserIDParam(ctx)
+		if err != nil {
+			response.Error(c, ctx, 400, errcode.ErrBadReq, "用户 ID 格式错误")
+			return
+		}
 
 		conn := h.grpcClient.GetConn("user_server")
 		if conn == nil {
@@ -246,7 +257,11 @@ func (h *Handler) ResetPassword() app.HandlerFunc {
 			return
 		}
 
-		userID := ctx.Param("user_id")
+		userID, err := parseUserIDParam(ctx)
+		if err != nil {
+			response.Error(c, ctx, 400, errcode.ErrBadReq, "用户 ID 格式错误")
+			return
+		}
 
 		conn := h.grpcClient.GetConn("user_server")
 		if conn == nil {

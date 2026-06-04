@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../store/auth-context'
 import { updateRepo, deleteRepo } from '../../lib/repos'
-import { listCollaborators, addCollaborator, updateCollaborator, removeCollaborator } from '../../lib/nodes'
+import { listCollaborators, updateCollaborator, removeCollaborator } from '../../lib/nodes'
+import FriendPickerModal from '../Messages/FriendPickerModal'
 import { getUser } from '../../lib/auth'
 import type { Repo } from '../../lib/repos'
 import type { Collaborator } from '../../lib/nodes'
@@ -24,9 +25,7 @@ export default function RepoSettings({ repo, myRole, onUpdate, onClose, onDelete
   const { user: self } = useAuth()
   const [collaborators, setCollaborators] = useState<CollaboratorWithUser[]>([])
   const [loadingCollabs, setLoadingCollabs] = useState(true)
-  const [showAdd, setShowAdd] = useState(false)
-  const [newUserId, setNewUserId] = useState('')
-  const [newRole, setNewRole] = useState('DEVELOPER')
+  const [showFriendPicker, setShowFriendPicker] = useState(false)
 
   // 编辑状态
   const [editName, setEditName] = useState(repo.name)
@@ -88,19 +87,6 @@ export default function RepoSettings({ repo, myRole, onUpdate, onClose, onDelete
       alert('保存失败: ' + err.message)
     }
     setSaving(false)
-  }
-
-  const handleAdd = async () => {
-    if (!newUserId.trim()) return
-    try {
-      await addCollaborator(repo.id, newUserId.trim(), newRole)
-      setShowAdd(false)
-      setNewUserId('')
-      setNewRole('DEVELOPER')
-      loadCollabs()
-    } catch (err: any) {
-      alert('添加失败: ' + err.message)
-    }
   }
 
   const handleUpdateRole = async (userId: string, role: string) => {
@@ -223,7 +209,7 @@ export default function RepoSettings({ repo, myRole, onUpdate, onClose, onDelete
         <div>
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-gray-400 font-medium">协作者</span>
-            <button onClick={() => setShowAdd(true)} className="text-xs text-emerald-500 hover:text-emerald-600">+ 添加</button>
+            <button onClick={() => setShowFriendPicker(true)} className="text-xs text-emerald-500 hover:text-emerald-600">+ 添加协作者</button>
           </div>
 
           {loadingCollabs ? (
@@ -265,18 +251,12 @@ export default function RepoSettings({ repo, myRole, onUpdate, onClose, onDelete
             })
           )}
 
-          {showAdd && (
-            <div className="mt-2 space-y-2 p-2 bg-gray-100 rounded-lg">
-              <input value={newUserId} onChange={e => setNewUserId(e.target.value)} placeholder="用户 ID" className="w-full px-2 py-1 border border-gray-300 rounded text-xs" autoFocus />
-              <select value={newRole} onChange={e => setNewRole(e.target.value)} className="w-full px-2 py-1 border border-gray-300 rounded text-xs">
-                <option value="DEVELOPER">开发者</option>
-                <option value="VIEWER">浏览者</option>
-              </select>
-              <div className="flex gap-2">
-                <button onClick={handleAdd} className="px-2 py-1 bg-emerald-500 text-white rounded text-xs hover:bg-emerald-600">添加</button>
-                <button onClick={() => setShowAdd(false)} className="px-2 py-1 text-gray-500 text-xs hover:text-gray-700">取消</button>
-              </div>
-            </div>
+          {showFriendPicker && (
+            <FriendPickerModal
+              repoId={repo.id}
+              repoName={repo.name}
+              onClose={() => { setShowFriendPicker(false); loadCollabs() }}
+            />
           )}
         </div>
 

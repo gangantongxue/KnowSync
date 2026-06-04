@@ -9,7 +9,7 @@ import (
 // requiredRoles 为允许的角色列表，满足任一角色即通过
 // 公开知识库的 VIEWER 级别操作对非协作者也开放
 // 关注者拥有 VIEWER 权限
-func (s *Service) CheckRepoPermission(ctx context.Context, repoID, userID string, requiredRoles ...string) error {
+func (s *Service) CheckRepoPermission(ctx context.Context, repoID string, userID string, requiredRoles ...string) error {
 	role, err := s.Repository.GetUserRole(ctx, repoID, userID)
 	if err != nil {
 		if err.Error() == "record not found" {
