@@ -2,16 +2,16 @@ package model
 
 // Config 应用配置
 type Config struct {
-	GRPC       GRPCCfg       `yaml:"grpc"`
-	Log        LogCfg        `yaml:"log"`
-	Redis      RedisCfg      `yaml:"redis"`
-	Database   DatabaseCfg   `yaml:"database"`
-	RepoServer RepoServerCfg `yaml:"repo_server"`
-	Gateway    GatewayCfg    `yaml:"gateway"`
-	Embedder   EmbedderCfg   `yaml:"embedder"`
-	LLM        LLMCfg        `yaml:"llm"`
-	Chromem    ChromemCfg    `yaml:"chromem"`
-	Worker     WorkerCfg     `yaml:"worker"`
+	GRPC         GRPCCfg         `yaml:"grpc"`
+	Log          LogCfg          `yaml:"log"`
+	Redis        RedisCfg        `yaml:"redis"`
+	Database     DatabaseCfg     `yaml:"database"`
+	Gateway      GatewayCfg      `yaml:"gateway"`
+	Embedder     EmbedderCfg     `yaml:"embedder"`
+	LLM          LLMCfg          `yaml:"llm"`
+	Chromem      ChromemCfg      `yaml:"chromem"`
+	Worker       WorkerCfg       `yaml:"worker"`
+	ServiceToken ServiceTokenCfg `yaml:"service_token"`
 }
 
 // GRPCCfg gRPC 服务器配置
@@ -41,9 +41,9 @@ type DatabaseCfg struct {
 	DBName   string `yaml:"dbname"`
 }
 
-// RepoServerCfg repo-server gRPC 客户端配置
-type RepoServerCfg struct {
-	Addr string `yaml:"addr"`
+// ServiceTokenCfg service token 配置
+type ServiceTokenCfg struct {
+	Secret string `yaml:"secret"`
 }
 
 // GatewayCfg gateway HTTP 客户端配置

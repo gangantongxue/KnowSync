@@ -26,3 +26,12 @@ grpc_clients:
     repo_server: "repo-server:50052"
     ai_server: "ai-server:50053"
     chat_server: "chat-server:50054"
+
+redis:
+  addrs:
+    - localhost:6379
+  password: ""
+  db: 0
+
+service_token:
+  secret: "change-me-to-a-random-secret"

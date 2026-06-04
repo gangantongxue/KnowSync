@@ -9,12 +9,14 @@ import (
 
 // Config 网关全局配置
 type Config struct {
-	Project     model.ProjectCfg     `yaml:"project" mapstructure:"project"`
-	Logger      model.LoggerCfg      `yaml:"logger" mapstructure:"logger"`
-	HTTP        model.HTTPCfg        `yaml:"http" mapstructure:"http"`
-	Auth        model.AuthCfg        `yaml:"auth" mapstructure:"auth"`
-	GRPCClients model.GRPCClientsCfg `yaml:"grpc_clients" mapstructure:"grpc_clients"`
-	Storage     model.StorageCfg     `yaml:"storage" mapstructure:"storage"`
+	Project      model.ProjectCfg      `yaml:"project" mapstructure:"project"`
+	Logger       model.LoggerCfg       `yaml:"logger" mapstructure:"logger"`
+	HTTP         model.HTTPCfg         `yaml:"http" mapstructure:"http"`
+	Auth         model.AuthCfg         `yaml:"auth" mapstructure:"auth"`
+	GRPCClients  model.GRPCClientsCfg  `yaml:"grpc_clients" mapstructure:"grpc_clients"`
+	Storage      model.StorageCfg      `yaml:"storage" mapstructure:"storage"`
+	Redis        model.RedisCfg        `yaml:"redis" mapstructure:"redis"`
+	ServiceToken model.ServiceTokenCfg `yaml:"service_token" mapstructure:"service_token"`
 }
 
 // NewConfig 读取 configs/config.yaml 并返回解析后的配置

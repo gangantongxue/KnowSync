@@ -20,6 +20,9 @@ tasks:
           task down         - 停止所有服务
           task logs         - 查看所有服务日志
           task clean        - 清除所有编译产物
+          task fmt          - 格式化所有 Go 代码
+          task mod          - 整理所有 Go 模块依赖
+          task modup        - 更新所有 Go 包到最新版本
           task help         - 显示此帮助信息
 
         使用方法:
@@ -29,6 +32,9 @@ tasks:
           task up -- -d           - 后台启动
           task down               - 停止所有服务
           task logs               - 查看日志
+          task fmt                - 格式化所有 Go 代码
+          task mod                - 整理所有 Go 模块依赖
+          task modup              - 更新所有 Go 包到最新版本
         EOF
 
   image:
@@ -99,3 +105,39 @@ tasks:
       - cd chat-server && task clean
       - cd web && task clean
       - echo "已清除所有编译产物"
+
+  fmt:
+    desc: 格式化所有 Go 代码
+    silent: true
+    cmds:
+      - cd user-server && task fmt
+      - cd repo-server && task fmt
+      - cd gateway && task fmt
+      - cd ai-server && task fmt
+      - cd chat-server && task fmt
+      - cd ks-proto && task fmt
+      - echo "所有 Go 代码格式化完成"
+
+  mod:
+    desc: 整理所有 Go 模块依赖
+    silent: true
+    cmds:
+      - cd user-server && task mod
+      - cd repo-server && task mod
+      - cd gateway && task mod
+      - cd ai-server && task mod
+      - cd chat-server && task mod
+      - cd ks-proto && task mod
+      - echo "所有 Go 模块依赖整理完成"
+
+  modup:
+    desc: 更新所有 Go 包到最新版本
+    silent: true
+    cmds:
+      - cd user-server && task modup
+      - cd repo-server && task modup
+      - cd gateway && task modup
+      - cd ai-server && task modup
+      - cd chat-server && task modup
+      - cd ks-proto && task modup
+      - echo "所有 Go 包已更新到最新版本"

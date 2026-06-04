@@ -16,7 +16,9 @@ import (
 	"github.com/gangantongxue/knowsync/gateway/pkg/config"
 	"github.com/gangantongxue/knowsync/gateway/pkg/grpcclient"
 	"github.com/gangantongxue/knowsync/gateway/pkg/logger"
+	"github.com/gangantongxue/knowsync/gateway/pkg/serviceauth"
 	"github.com/gangantongxue/knowsync/gateway/pkg/storage"
+	"github.com/redis/go-redis/v9"
 )
 
 // NewApp 初始化并启动网关服务
@@ -59,10 +61,28 @@ func NewApp() error {
 		}
 	}
 
+	// 初始化 Redis
+	var rdb *redis.Client
+	if len(cfg.Redis.Addrs) > 0 {
+		rdb = redis.NewClient(&redis.Options{
+			Addr:     cfg.Redis.Addrs[0],
+			Password: cfg.Redis.Password,
+			DB:       cfg.Redis.DB,
+		})
+		if err := rdb.Ping(context.Background()).Err(); err != nil {
+			slog.Error("连接 Redis 失败", "error", err)
+			return err
+		}
+		slog.Info("Redis 连接成功")
+	}
+
+	// 初始化 service token 管理器
+	authManager := serviceauth.NewManager(rdb, cfg.ServiceToken.Secret)
+
 	addr := fmt.Sprintf(":%d", cfg.HTTP.Port)
 	h := server.New(server.WithHostPorts(addr))
 
-	router.Register(h, cfg, grpcClient, store, publicKey)
+	router.Register(h, cfg, grpcClient, store, publicKey, authManager)
 
 	slog.Info("=====应用初始化完成=====")
 

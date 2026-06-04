@@ -12,9 +12,11 @@ import (
 )
 
 const (
-	searchCacheTTL  = 5 * time.Minute
-	searchCacheKey  = "search:query:%s"
-	defaultPageSize = 20
+	searchCacheTTL   = 5 * time.Minute
+	searchCacheKey   = "search:query:%s"
+	defaultPageSize  = 20
+	searchThreshold  = 0.5 // 余弦相似度阈值，低于该值的视为无关
+	maxSearchResults = 200 // 搜索结果总数上限（20条/页 × 10页）
 )
 
 // cachedSearchResult 缓存的搜索结果
@@ -142,10 +144,13 @@ func (s *Service) searchAndCache(ctx context.Context, query string, page, pageSi
 		}, nil
 	}
 
-	// 4. 去重提取匹配的 repo_id（按相似度降序排列）
+	// 4. 按阈值过滤，去重提取匹配的 repo_id（按相似度降序排列）
 	seen := make(map[string]bool)
 	var matchedIDs []string
 	for _, r := range results {
+		if r.Score < searchThreshold {
+			continue
+		}
 		if seen[r.RepoID] {
 			continue
 		}
@@ -154,6 +159,10 @@ func (s *Service) searchAndCache(ctx context.Context, query string, page, pageSi
 	}
 
 	totalCount := len(matchedIDs)
+	if totalCount > maxSearchResults {
+		totalCount = maxSearchResults
+		matchedIDs = matchedIDs[:maxSearchResults]
+	}
 
 	// 5. 缓存完整结果到 Redis（按 query 哈希，不同用户共享）
 	cacheData, _ := json.Marshal(cachedSearchResult{

@@ -12,6 +12,7 @@ import (
 	"github.com/gangantongxue/knowsync/gateway/pkg/errcode"
 	"github.com/gangantongxue/knowsync/gateway/pkg/response"
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
+	"google.golang.org/grpc/metadata"
 )
 
 // ChatReq 流式对话请求体
@@ -52,17 +53,33 @@ func (h *Handler) Chat() app.HandlerFunc {
 			return
 		}
 
+		// 生成 service token，限制在本次请求链路中生效
+		tokenString, jti, err := h.authManager.Generate(c, uid, req.SessionID)
+		if err != nil {
+			slog.Error("生成 service token 失败", "error", err)
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "服务内部错误")
+			return
+		}
+
+		// 通过 gRPC metadata 传递 service token
+		md := metadata.Pairs("x-service-token", tokenString)
+		grpcCtx := metadata.NewOutgoingContext(c, md)
+
 		client := pb.NewAIServiceClient(conn)
-		stream, err := client.Chat(c, &pb.ChatRequest{
+		stream, err := client.Chat(grpcCtx, &pb.ChatRequest{
 			UserId:    uid,
 			SessionId: req.SessionID,
 			Message:   req.Message,
 		})
 		if err != nil {
 			slog.Error("gRPC Chat 调用失败", "error", err)
+			h.authManager.RevokeByJTI(c, jti)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "对话请求失败")
 			return
 		}
+
+		// 流结束后吊销 token
+		defer h.authManager.RevokeByJTI(c, jti)
 
 		ctx.Header("Content-Type", "text/event-stream")
 		ctx.Header("Cache-Control", "no-cache")

@@ -8,14 +8,15 @@ import (
 	"github.com/gangantongxue/knowsync/gateway/pkg/config"
 	"github.com/gangantongxue/knowsync/gateway/pkg/grpcclient"
 	"github.com/gangantongxue/knowsync/gateway/pkg/middleware"
+	"github.com/gangantongxue/knowsync/gateway/pkg/serviceauth"
 	"github.com/gangantongxue/knowsync/gateway/pkg/storage"
 )
 
-func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client, store *storage.Store, publicKey *rsa.PublicKey) {
+func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client, store *storage.Store, publicKey *rsa.PublicKey, authManager *serviceauth.Manager) {
 	h.Use(middleware.Logging())
 	h.Use(middleware.CORS())
 
-	hdl := handler.NewHandler(grpcClient, store)
+	hdl := handler.NewHandler(grpcClient, store, authManager)
 
 	v1 := h.Group("/api/v1")
 	{
@@ -128,5 +129,12 @@ func Register(h *server.Hertz, cfg *config.Config, grpcClient *grpcclient.Client
 	h.GET("/files/*filepath", handler.FileHandler(store))
 
 	internal := h.Group("/internal")
-	internal.GET("/file", handler.InternalFileHandler(store))
+	internal.Use(middleware.ServiceAuth(authManager))
+	{
+		internal.GET("/file", handler.InternalFileHandler(store))
+		internal.GET("/repos/tree", handler.InternalRepoTree(store))
+		internal.GET("/repos/user", hdl.InternalListUserRepos())
+		internal.GET("/repos/public", hdl.InternalListPublicRepos())
+		internal.GET("/repos/detail", hdl.InternalGetRepo())
+	}
 }

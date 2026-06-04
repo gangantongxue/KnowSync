@@ -4,9 +4,32 @@ import (
 	"context"
 
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
+	"google.golang.org/grpc/metadata"
 
+	"github.com/gangantongxue/knowsync/ai-server/internal/llm/tool"
 	"github.com/gangantongxue/knowsync/ai-server/internal/service"
 )
+
+// extractServiceToken 从 gRPC metadata 中提取 service token
+func extractServiceToken(ctx context.Context) string {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return ""
+	}
+	tokens := md.Get("x-service-token")
+	if len(tokens) == 0 {
+		return ""
+	}
+	return tokens[0]
+}
+
+// withServiceToken 将 service token 注入 context
+func withServiceToken(ctx context.Context, token string) context.Context {
+	if token == "" {
+		return ctx
+	}
+	return context.WithValue(ctx, tool.CtxKeyServiceToken, token)
+}
 
 // Chat 流式对话
 func (h *Handler) Chat(req *pb.ChatRequest, stream pb.AIService_ChatServer) error {
@@ -42,7 +65,10 @@ func (h *Handler) Chat(req *pb.ChatRequest, stream pb.AIService_ChatServer) erro
 		return stream.Send(resp)
 	}
 
-	h.Service.Chat(stream.Context(), req.GetUserId(), req.GetSessionId(), req.GetMessage(), cb)
+	// 从 gRPC metadata 提取 service token，注入 context 供工具调用使用
+	token := extractServiceToken(stream.Context())
+	ctx := withServiceToken(stream.Context(), token)
+	h.Service.Chat(ctx, req.GetUserId(), req.GetSessionId(), req.GetMessage(), cb)
 	return nil
 }
 

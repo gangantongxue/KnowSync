@@ -18,11 +18,11 @@ database:
   password: password
   dbname: knowsync
 
-repo_server:
-  addr: localhost:8081
-
 gateway:
   addr: http://localhost:8080
+
+service_token:
+  secret: "change-me-to-a-random-secret"
 
 embedder:
   base_url: https://api.siliconflow.cn/v1

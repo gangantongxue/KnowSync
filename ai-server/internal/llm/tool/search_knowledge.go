@@ -39,7 +39,7 @@ func NewSearchKnowledge(embedd Embedder, vs VectorStore, rc RepoClient, threshol
 func (s *SearchKnowledge) Info(ctx context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "search_knowledge",
-		Desc: "在用户知识库中搜索与问题相关的文章内容。通过语义理解匹配用户的文章，返回最相关的内容片段。仅搜索用户自己的文章或公开文章。",
+		Desc: "在用户自己的知识库和公开知识库中搜索与问题相关的文章内容。通过语义理解匹配文章，返回最相关的内容片段。用户自己知识库的匹配结果会优先展示。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
 			"query": {
 				Type:     "string",
@@ -54,6 +54,8 @@ func (s *SearchKnowledge) Info(ctx context.Context) (*schema.ToolInfo, error) {
 func (s *SearchKnowledge) InvokableRun(ctx context.Context, arguments string, opts ...tool.Option) (string, error) {
 	return s.execute(ctx, arguments)
 }
+
+const ownRepoBoost = float32(1.5)
 
 func (s *SearchKnowledge) execute(ctx context.Context, paramsJSON string) (string, error) {
 	var params struct {
@@ -70,19 +72,45 @@ func (s *SearchKnowledge) execute(ctx context.Context, paramsJSON string) (strin
 	userID, _ := ctx.Value(CtxKeyUserID).(string)
 	slog.Info("搜索知识库", "query", params.Query, "user_id", userID, "threshold", s.threshold)
 
-	// 1. 获取用户可访问的仓库
-	repoIDs, err := s.repoClient.ListUserRepos(ctx, userID)
+	// 1. 获取用户可访问的仓库和公开仓库
+	userRepoIDs, err := s.repoClient.ListUserRepos(ctx, userID)
 	if err != nil {
 		slog.Error("获取用户仓库列表失败", "error", err)
 		return noResultsJSON("获取仓库列表失败"), nil
 	}
 
-	if len(repoIDs) == 0 {
-		slog.Info("用户没有可搜索的仓库", "user_id", userID)
+	publicRepoIDs, err := s.repoClient.ListPublicRepos(ctx)
+	if err != nil {
+		slog.Error("获取公开仓库列表失败", "error", err)
+		return noResultsJSON("获取仓库列表失败"), nil
+	}
+
+	// 2. 合并仓库列表，标记用户自己的仓库用于权重提升
+	ownSet := make(map[string]bool, len(userRepoIDs))
+	for _, id := range userRepoIDs {
+		ownSet[id] = true
+	}
+
+	// 去重：公开仓库中用户已有的不重复加入
+	allRepoIDs := make([]string, 0, len(userRepoIDs)+len(publicRepoIDs))
+	allRepoIDs = append(allRepoIDs, userRepoIDs...)
+	seen := make(map[string]bool, len(allRepoIDs))
+	for _, id := range allRepoIDs {
+		seen[id] = true
+	}
+	for _, id := range publicRepoIDs {
+		if !seen[id] {
+			allRepoIDs = append(allRepoIDs, id)
+			seen[id] = true
+		}
+	}
+
+	if len(allRepoIDs) == 0 {
+		slog.Info("没有可搜索的仓库", "user_id", userID)
 		return noResultsJSON("未在您的知识库中找到相关文章，将根据自身知识回答"), nil
 	}
 
-	// 2. 向量化搜索关键词
+	// 3. 向量化搜索关键词
 	vec64, err := s.embedder.EmbedStrings(ctx, []string{params.Query})
 	if err != nil || len(vec64) == 0 {
 		slog.Error("向量化查询失败", "error", err)
@@ -94,14 +122,30 @@ func (s *SearchKnowledge) execute(ctx context.Context, paramsJSON string) (strin
 		queryEmbedding[i] = float32(v)
 	}
 
-	// 3. 跨仓库搜索
-	results, err := s.vectorStore.SearchCrossRepos(ctx, repoIDs, queryEmbedding, 20)
+	// 4. 跨仓库搜索（取足够数量以便后续加权排序）
+	results, err := s.vectorStore.SearchCrossRepos(ctx, allRepoIDs, queryEmbedding, 20)
 	if err != nil {
 		slog.Error("搜索向量库失败", "error", err)
 		return noResultsJSON("搜索失败"), nil
 	}
 
-	// 4. 按阈值过滤
+	// 5. 应用权重：用户自己的仓库分数 × 1.5
+	for i, r := range results {
+		if ownSet[r.RepoID] {
+			results[i].Score = r.Score * ownRepoBoost
+		}
+	}
+
+	// 6. 按提升后的分数降序重新排序
+	for i := 0; i < len(results); i++ {
+		for j := i + 1; j < len(results); j++ {
+			if results[j].Score > results[i].Score {
+				results[i], results[j] = results[j], results[i]
+			}
+		}
+	}
+
+	// 7. 按阈值过滤
 	var matched []vectorstore.SearchResult
 	for _, r := range results {
 		if r.Score >= s.threshold {

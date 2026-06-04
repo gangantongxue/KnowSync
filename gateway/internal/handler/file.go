@@ -8,8 +8,10 @@ import (
 	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/gangantongxue/knowsync/gateway/pkg/errcode"
 	"github.com/gangantongxue/knowsync/gateway/pkg/response"
+	"github.com/gangantongxue/knowsync/gateway/pkg/storage"
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
@@ -34,9 +36,9 @@ func (h *Handler) GetRepoTree() app.HandlerFunc {
 		}
 
 		type treeEntry struct {
-			Name  string `json:"name"`
-			Type  string `json:"type"`
-			Size  int64  `json:"size"`
+			Name string `json:"name"`
+			Type string `json:"type"`
+			Size int64  `json:"size"`
 		}
 		result := make([]treeEntry, 0, len(entries))
 		for _, e := range entries {
@@ -227,6 +229,53 @@ func (h *Handler) MakeDir() app.HandlerFunc {
 
 		response.Success(c, ctx, map[string]any{
 			"path": dirPath,
+		})
+	}
+}
+
+// InternalRepoTree 内部服务间获取仓库文件树（无鉴权，用于 ai-server 的 LLM 工具）
+// GET /internal/repos/tree?owner_id=&repo_id=&path=
+func InternalRepoTree(store *storage.Store) app.HandlerFunc {
+	return func(c context.Context, ctx *app.RequestContext) {
+		ownerID := ctx.Query("owner_id")
+		repoID := ctx.Query("repo_id")
+		dirPath := ctx.Query("path")
+
+		if ownerID == "" || repoID == "" {
+			ctx.JSON(consts.StatusBadRequest, map[string]string{
+				"code":    "MISSING_PARAM",
+				"message": "owner_id and repo_id are required",
+			})
+			return
+		}
+
+		subpath := filepath.Join(ownerID, repoID, dirPath)
+		entries, err := store.ListDir(subpath)
+		if err != nil {
+			ctx.JSON(consts.StatusNotFound, map[string]string{
+				"code":    "DIR_NOT_FOUND",
+				"message": "directory not found",
+			})
+			return
+		}
+
+		type treeEntry struct {
+			Name string `json:"name"`
+			Type string `json:"type"`
+			Size int64  `json:"size"`
+		}
+		result := make([]treeEntry, 0, len(entries))
+		for _, e := range entries {
+			t := "file"
+			if e.IsDir {
+				t = "dir"
+			}
+			result = append(result, treeEntry{Name: e.Name, Type: t, Size: e.Size})
+		}
+
+		ctx.JSON(consts.StatusOK, map[string]any{
+			"entries": result,
+			"path":    dirPath,
 		})
 	}
 }

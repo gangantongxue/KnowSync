@@ -3,20 +3,23 @@ package handler
 import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/gangantongxue/knowsync/gateway/pkg/grpcclient"
+	"github.com/gangantongxue/knowsync/gateway/pkg/serviceauth"
 	"github.com/gangantongxue/knowsync/gateway/pkg/storage"
 )
 
 // Handler HTTP 处理器容器，聚合所有依赖以便 Handler 方法使用
 type Handler struct {
-	grpcClient *grpcclient.Client // gRPC 客户端，用于调用后端服务
-	store      *storage.Store     // 本地文件存储，用于保存头像等文件
+	grpcClient  *grpcclient.Client   // gRPC 客户端，用于调用后端服务
+	store       *storage.Store       // 本地文件存储，用于保存头像等文件
+	authManager *serviceauth.Manager // service token 管理器
 }
 
 // NewHandler 创建 Handler 实例
-func NewHandler(grpcClient *grpcclient.Client, store *storage.Store) *Handler {
+func NewHandler(grpcClient *grpcclient.Client, store *storage.Store, authManager *serviceauth.Manager) *Handler {
 	return &Handler{
-		grpcClient: grpcClient,
-		store:      store,
+		grpcClient:  grpcClient,
+		store:       store,
+		authManager: authManager,
 	}
 }
 

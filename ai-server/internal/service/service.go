@@ -58,6 +58,9 @@ func (s *Service) initAgent(ctx context.Context) error {
 			s.AskedUser.Triggered.Store(true)
 			s.AskedUser.LastResult.Store(resultJSON)
 		}),
+		llmtool.NewListRepos(s.Client),
+		llmtool.NewListRepoFiles(s.Client, s.Client),
+		llmtool.NewGetFileContent(s.Client, s.Client),
 	}
 
 	if err := s.LLM.InitAgent(ctx, tools); err != nil {

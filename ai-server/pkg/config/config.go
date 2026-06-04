@@ -50,11 +50,11 @@ func NewConfig() (*model.Config, error) {
 			Password: v.GetString("database.password"),
 			DBName:   v.GetString("database.dbname"),
 		},
-		RepoServer: model.RepoServerCfg{
-			Addr: v.GetString("repo_server.addr"),
-		},
 		Gateway: model.GatewayCfg{
 			Addr: v.GetString("gateway.addr"),
+		},
+		ServiceToken: model.ServiceTokenCfg{
+			Secret: v.GetString("service_token.secret"),
 		},
 		Embedder: model.EmbedderCfg{
 			BaseURL:    v.GetString("embedder.base_url"),
