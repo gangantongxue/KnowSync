@@ -5,7 +5,7 @@ export interface WsEvent {
 
 type WsEventHandler = (event: WsEvent) => void
 
-const WS_URL = 'ws://localhost:50055/ws'
+const WS_URL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`
 const MAX_RECONNECT_DELAY = 30000
 const INITIAL_RECONNECT_DELAY = 1000
 

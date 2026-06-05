@@ -79,9 +79,13 @@ export default function SearchUserModal({ onClose }: SearchUserModalProps) {
             results.map(user => (
               <div key={user.id} className="flex items-center justify-between py-3 border-b border-gray-50">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-sm font-medium shrink-0">
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
+                  {user.avatar ? (
+                    <img src={user.avatar} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-sm font-medium shrink-0">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                   <div className="min-w-0">
                     <div className="text-sm text-gray-800 truncate">{user.name}</div>
                   </div>

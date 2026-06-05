@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useMessageStore } from '../store/message-store'
 import { useAuth } from '../store/auth-context'
@@ -16,6 +16,10 @@ export default function Messages() {
     recallMessage, markConversationRead,
   } = useMessageStore()
   const [replyTo, setReplyTo] = useState<Message | null>(null)
+  const [mentionTrigger, setMentionTrigger] = useState(0)
+  const [mentionUserId, setMentionUserId] = useState('')
+  const handleWsMessageRef = useRef(handleWsMessage)
+  handleWsMessageRef.current = handleWsMessage
 
   useEffect(() => {
     if (!user) return
@@ -23,7 +27,7 @@ export default function Messages() {
     if (!token) return
 
     wsClient.connect(token, (event) => {
-      handleWsMessage(event)
+      handleWsMessageRef.current(event)
     })
     setWsConnected(true)
 
@@ -31,7 +35,7 @@ export default function Messages() {
       wsClient.disconnect()
       setWsConnected(false)
     }
-  }, [user, handleWsMessage, setWsConnected])
+  }, [user, setWsConnected])
 
   useEffect(() => {
     loadConversations()
@@ -54,7 +58,7 @@ export default function Messages() {
   return (
     <div className="h-full flex">
       <ConversationList />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {hasConversation ? (
           <>
             <MessageArea
@@ -63,12 +67,20 @@ export default function Messages() {
               currentUserId={currentUserId}
               onReply={setReplyTo}
               onRecall={recallMessage}
+              onMention={(userId) => {
+                setMentionUserId(userId)
+                setMentionTrigger(t => t + 1)
+              }}
             />
             <MessageInput
               conversationType={conversationType!}
               conversationId={conversationId!}
+              currentUserId={currentUserId}
               replyTo={replyTo}
               onCancelReply={() => setReplyTo(null)}
+              onMention={mentionUserId}
+              mentionTrigger={mentionTrigger}
+              groupId={conversationType === 'group' ? conversationId : undefined}
             />
           </>
         ) : (

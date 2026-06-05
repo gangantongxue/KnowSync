@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { message } from 'antd'
+import { useAuth } from '../../store/auth-context'
 import { useMessageStore } from '../../store/message-store'
 import { messageApi } from '../../lib/chat-api'
 import type { Message, ConversationInfo } from '../../lib/chat-api'
@@ -10,9 +11,40 @@ interface ForwardModalProps {
 }
 
 export default function ForwardModal({ message: msg, onClose }: ForwardModalProps) {
-  const { conversations } = useMessageStore()
+  const { user } = useAuth()
+  const { conversations, loadUserProfiles, getUserDisplayName, getUserAvatar } = useMessageStore()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [sending, setSending] = useState(false)
+
+  const currentUserId = user?.id || ''
+
+  useEffect(() => {
+    const ids = new Set<string>()
+    for (const c of conversations) {
+      if (c.conversation_type !== 'private') continue
+      const parts = c.conversation_id.split('_')
+      if (parts.length !== 2) continue
+      const otherId = parts[0] === currentUserId ? parts[1] : parts[0]
+      ids.add(otherId)
+    }
+    if (ids.size > 0) loadUserProfiles([...ids])
+  }, [conversations, currentUserId, loadUserProfiles])
+
+  const getConvDisplayName = (conv: ConversationInfo): string => {
+    if (conv.conversation_type !== 'private') return conv.name
+    const parts = conv.conversation_id.split('_')
+    if (parts.length !== 2) return conv.name
+    const otherId = parts[0] === currentUserId ? parts[1] : parts[0]
+    return getUserDisplayName(otherId)
+  }
+
+  const getConvAvatar = (conv: ConversationInfo): string => {
+    if (conv.conversation_type !== 'private') return ''
+    const parts = conv.conversation_id.split('_')
+    if (parts.length !== 2) return ''
+    const otherId = parts[0] === currentUserId ? parts[1] : parts[0]
+    return getUserAvatar(otherId)
+  }
 
   const isSelected = (conv: ConversationInfo) =>
     selectedIds.has(`${conv.conversation_type}_${conv.conversation_id}`)
@@ -62,6 +94,8 @@ export default function ForwardModal({ message: msg, onClose }: ForwardModalProp
           ) : (
             conversations.map(conv => {
               const sel = isSelected(conv)
+              const displayName = getConvDisplayName(conv)
+              const avatar = getConvAvatar(conv)
               return (
                 <label
                   key={`${conv.conversation_type}_${conv.conversation_id}`}
@@ -73,11 +107,15 @@ export default function ForwardModal({ message: msg, onClose }: ForwardModalProp
                     onChange={() => toggleConversation(conv)}
                     className="rounded border-gray-300 text-blue-500"
                   />
-                  <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-sm font-medium shrink-0">
-                    {conv.name.charAt(0).toUpperCase()}
-                  </div>
+                  {avatar ? (
+                    <img src={avatar} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-medium shrink-0">
+                      {displayName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm text-gray-800 truncate">{conv.name}</div>
+                    <div className="text-sm text-gray-800 truncate">{displayName}</div>
                     <div className="text-xs text-gray-400">
                       {conv.conversation_type === 'group' ? '群聊' : '好友'}
                     </div>

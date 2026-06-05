@@ -184,6 +184,35 @@ func (s *Service) RecallMessage(ctx context.Context, messageID, senderID string)
 	return nil
 }
 
+// GetUserUnreadCounts 获取用户所有会话的未读数（内部查找用户会话列表）.
+func (s *Service) GetUserUnreadCounts(ctx context.Context, userID string) (map[string]int32, error) {
+	friends, err := s.Repo.Conversation.GetFriendConversations(ctx, userID)
+	if err != nil {
+		slog.Error("获取好友会话失败", "error", err)
+		return nil, err
+	}
+	groups, err := s.Repo.Conversation.GetGroupConversations(ctx, userID)
+	if err != nil {
+		slog.Error("获取群组会话失败", "error", err)
+	}
+
+	var conversations []ConversationInfo
+	for _, f := range friends {
+		conversations = append(conversations, ConversationInfo{
+			ConversationType: ConvTypePrivate,
+			ConversationID:   GetPrivateConversationID(userID, f.FriendID),
+		})
+	}
+	for _, g := range groups {
+		conversations = append(conversations, ConversationInfo{
+			ConversationType: ConvTypeGroup,
+			ConversationID:   g.ID,
+		})
+	}
+
+	return s.GetUnreadCounts(ctx, userID, conversations)
+}
+
 // GetUnreadCounts 批量获取会话未读数.
 func (s *Service) GetUnreadCounts(ctx context.Context, userID string, conversations []ConversationInfo) (map[string]int32, error) {
 	result := make(map[string]int32)

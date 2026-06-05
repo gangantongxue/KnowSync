@@ -1,12 +1,37 @@
-import { createContext, useContext, useReducer, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useReducer, useCallback, useRef, type ReactNode } from 'react'
 import { conversationApi, messageApi, friendApi, groupApi } from '../lib/chat-api'
+import { userApi } from '../lib/user-api'
 import type {
   ConversationInfo, Message, FriendRequest, Friend, SearchUserInfo,
 } from '../lib/chat-api'
 
+interface UserInfo {
+  name: string
+  avatar: string
+}
+
 // ===== Helper =====
 function getKey(convType: string, convId: string): string {
   return `${convType}_${convId}`
+}
+
+function getReceiverID(conversationID: string, currentUserID: string): string {
+  const parts = conversationID.split('_')
+  if (parts.length !== 2) return conversationID
+  if (parts[0] === currentUserID) return parts[1]
+  return parts[0]
+}
+
+function extractMentions(content: string): string[] {
+  const regex = /@(\S+)/g
+  const ids: string[] = []
+  let match: RegExpExecArray | null
+  while ((match = regex.exec(content)) !== null) {
+    if (!ids.includes(match[1])) {
+      ids.push(match[1])
+    }
+  }
+  return ids
 }
 
 // ===== State =====
@@ -25,6 +50,7 @@ interface ChatState {
   wsConnected: boolean
   unreadCounts: Record<string, number>
   totalUnread: number
+  userCache: Record<string, UserInfo>
   error: string | null
 }
 
@@ -44,6 +70,7 @@ type ChatAction =
   | { type: 'SET_WS_CONNECTED'; connected: boolean }
   | { type: 'SET_UNREAD_COUNTS'; counts: Record<string, number> }
   | { type: 'SET_TOTAL_UNREAD'; total: number }
+  | { type: 'SET_USER_CACHE'; cache: Record<string, UserInfo> }
   | { type: 'SET_ERROR'; error: string }
   | { type: 'CLEAR_ERROR' }
 
@@ -97,6 +124,8 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
       return { ...state, unreadCounts: action.counts }
     case 'SET_TOTAL_UNREAD':
       return { ...state, totalUnread: action.total }
+    case 'SET_USER_CACHE':
+      return { ...state, userCache: { ...state.userCache, ...action.cache } }
     case 'SET_ERROR':
       return { ...state, error: action.error }
     case 'CLEAR_ERROR':
@@ -109,7 +138,7 @@ interface ChatContextValue extends ChatState {
   loadConversations: () => Promise<void>
   loadMessages: (convType: string, convId: string) => Promise<void>
   loadMoreMessages: (convType: string, convId: string) => Promise<boolean>
-  sendMessage: (convType: string, convId: string, content: string, contentType: string) => Promise<void>
+  sendMessage: (convType: string, convId: string, content: string, contentType: string, currentUserId: string) => Promise<void>
   recallMessage: (messageId: string) => Promise<void>
   sendFriendRequest: (receiverId: string, remark: string) => Promise<void>
   acceptFriendRequest: (requestId: string) => Promise<void>
@@ -125,6 +154,9 @@ interface ChatContextValue extends ChatState {
   togglePin: (convType: string, convId: string) => Promise<void>
   handleWsMessage: (event: { type: string; data: any }) => void
   setWsConnected: (connected: boolean) => void
+  loadUserProfiles: (userIds: string[]) => Promise<void>
+  getUserDisplayName: (userId: string) => string
+  getUserAvatar: (userId: string) => string
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null)
@@ -145,8 +177,14 @@ export function MessageProvider({ children }: { children: ReactNode }) {
     wsConnected: false,
     unreadCounts: {},
     totalUnread: 0,
+    userCache: {},
     error: null,
   })
+
+  const conversationsRef = useRef(state.conversations)
+  conversationsRef.current = state.conversations
+  const messagesRef = useRef(state.messages)
+  messagesRef.current = state.messages
 
   const loadConversations = useCallback(async () => {
     try {
@@ -194,17 +232,24 @@ export function MessageProvider({ children }: { children: ReactNode }) {
     }
   }, [state.hasMore, state.messages])
 
-  const sendMessage = useCallback(async (convType: string, convId: string, content: string, contentType: string) => {
+  const sendMessage = useCallback(async (convType: string, convId: string, content: string, contentType: string, currentUserId: string) => {
     dispatch({ type: 'SET_SENDING_MESSAGE', sending: true })
     try {
       let res: { data: { message: Message } }
       if (convType === 'private') {
-        res = await messageApi.sendPrivate({ receiver_id: convId, content_type: contentType, content })
+        res = await messageApi.sendPrivate({ receiver_id: getReceiverID(convId, currentUserId), content_type: contentType, content })
       } else {
-        res = await messageApi.sendGroup({ group_id: convId, content_type: contentType, content })
+        const mentions = extractMentions(content)
+        res = await messageApi.sendGroup({ group_id: convId, content_type: contentType, content, mentions })
       }
       const key = getKey(convType, convId)
       dispatch({ type: 'APPEND_MESSAGE', key, message: res.data.message })
+      const conversations = conversationsRef.current.map(c =>
+        c.conversation_type === convType && c.conversation_id === convId
+          ? { ...c, last_message: res.data.message, last_message_at: res.data.message.created_at }
+          : c
+      )
+      dispatch({ type: 'SET_CONVERSATIONS', conversations })
     } catch (err) {
       dispatch({ type: 'SET_ERROR', error: (err as Error).message })
     } finally {
@@ -308,7 +353,7 @@ export function MessageProvider({ children }: { children: ReactNode }) {
   const markConversationRead = useCallback(async (convType: string, convId: string) => {
     try {
       await conversationApi.markRead(convType, convId)
-      const conversations = state.conversations.map(c =>
+      const conversations = conversationsRef.current.map(c =>
         c.conversation_type === convType && c.conversation_id === convId ? { ...c, unread_count: 0 } : c
       )
       dispatch({ type: 'SET_CONVERSATIONS', conversations })
@@ -317,29 +362,29 @@ export function MessageProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       dispatch({ type: 'SET_ERROR', error: (err as Error).message })
     }
-  }, [state.conversations])
+  }, [])
 
   const togglePinFn = useCallback(async (convType: string, convId: string) => {
     try {
       const res = await conversationApi.togglePin(convType, convId)
-      const conversations = state.conversations.map(c =>
+      const conversations = conversationsRef.current.map(c =>
         c.conversation_type === convType && c.conversation_id === convId ? { ...c, pinned: res.data.pinned } : c
       )
       dispatch({ type: 'SET_CONVERSATIONS', conversations })
     } catch (err) {
       dispatch({ type: 'SET_ERROR', error: (err as Error).message })
     }
-  }, [state.conversations])
+  }, [])
 
   const handleWsMessage = useCallback((event: { type: string; data: any }) => {
     switch (event.type) {
       case 'new_message': {
         const msg = event.data as Message
         const key = getKey(msg.conversation_type, msg.conversation_id)
-        if (state.messages[key]) {
+        if (messagesRef.current[key]) {
           dispatch({ type: 'APPEND_MESSAGE', key, message: msg })
         }
-        const conversations = state.conversations.map(c =>
+        const conversations = conversationsRef.current.map(c =>
           c.conversation_type === msg.conversation_type && c.conversation_id === msg.conversation_id
             ? { ...c, last_message: msg, last_message_at: msg.created_at, unread_count: c.unread_count + 1 }
             : c
@@ -362,11 +407,36 @@ export function MessageProvider({ children }: { children: ReactNode }) {
         loadFriends()
         break
     }
-  }, [state.messages, state.conversations, loadFriendRequests, loadFriends])
+  }, [loadFriendRequests, loadFriends])
 
   const setWsConnected = useCallback((connected: boolean) => {
     dispatch({ type: 'SET_WS_CONNECTED', connected })
   }, [])
+
+  const loadUserProfiles = useCallback(async (userIds: string[]) => {
+    const unknown = userIds.filter(id => id && !state.userCache[id])
+    if (unknown.length === 0) return
+    const results = await Promise.allSettled(unknown.map(id => userApi.getProfile(id)))
+    const newCache: Record<string, UserInfo> = {}
+    results.forEach((r, i) => {
+      if (r.status === 'fulfilled') {
+        newCache[unknown[i]] = { name: r.value.data.user.name, avatar: r.value.data.user.avatar || '' }
+      }
+    })
+    if (Object.keys(newCache).length > 0) {
+      dispatch({ type: 'SET_USER_CACHE', cache: newCache })
+    }
+  }, [state.userCache])
+
+  const getUserDisplayName = useCallback((userId: string): string => {
+    const friend = state.friends.find(f => f.friend_id === userId)
+    if (friend?.remark) return friend.remark
+    return state.userCache[userId]?.name || userId
+  }, [state.friends, state.userCache])
+
+  const getUserAvatar = useCallback((userId: string): string => {
+    return state.userCache[userId]?.avatar || ''
+  }, [state.userCache])
 
   return (
     <ChatContext.Provider value={{
@@ -390,6 +460,9 @@ export function MessageProvider({ children }: { children: ReactNode }) {
       togglePin: togglePinFn,
       handleWsMessage,
       setWsConnected,
+      loadUserProfiles,
+      getUserDisplayName,
+      getUserAvatar,
     }}>
       {children}
     </ChatContext.Provider>

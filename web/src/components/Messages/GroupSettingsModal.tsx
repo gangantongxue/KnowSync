@@ -24,7 +24,7 @@ const ROLE_COLOR: Record<string, string> = {
 
 export default function GroupSettingsModal({ groupId, onClose }: GroupSettingsModalProps) {
   const { user } = useAuth()
-  const { friends, loadFriends } = useMessageStore()
+  const { friends, loadFriends, loadUserProfiles, getUserDisplayName, getUserAvatar } = useMessageStore()
   const [group, setGroup] = useState<Group | null>(null)
   const [members, setMembers] = useState<GroupMember[]>([])
   const [loading, setLoading] = useState(true)
@@ -45,6 +45,16 @@ export default function GroupSettingsModal({ groupId, onClose }: GroupSettingsMo
     loadGroupData()
     loadFriends()
   }, [])
+
+  useEffect(() => {
+    if (members.length > 0) {
+      loadUserProfiles(members.map(m => m.user_id))
+    }
+  }, [members, loadUserProfiles])
+
+  const getMemberName = (userId: string): string => getUserDisplayName(userId)
+
+  const getMemberAvatar = (userId: string): string => getUserAvatar(userId)
 
   const loadGroupData = async () => {
     setLoading(true)
@@ -134,15 +144,7 @@ export default function GroupSettingsModal({ groupId, onClose }: GroupSettingsMo
     }
   }
 
-  const getFriendDisplayName = (friendId: string): string => {
-    const friend = friends.find(f => f.friend_id === friendId)
-    return friend?.remark || friendId
-  }
-
-  const getMemberDisplayName = (userId: string): string => {
-    const friend = friends.find(f => f.friend_id === userId)
-    return friend?.remark || userId
-  }
+  const getFriendDisplayName = (friendId: string): string => getUserDisplayName(friendId)
 
   const notInGroupFriends = friends.filter(
     f => !members.some(m => m.user_id === f.friend_id)
@@ -254,16 +256,21 @@ export default function GroupSettingsModal({ groupId, onClose }: GroupSettingsMo
                 return (
                   <div key={member.user_id} className="flex items-center justify-between py-2 px-2 rounded hover:bg-gray-50">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs font-medium shrink-0">
-                        {getMemberDisplayName(member.user_id).charAt(0).toUpperCase()}
-                      </div>
+                      {getMemberAvatar(member.user_id) ? (
+                        <img src={getMemberAvatar(member.user_id)} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs font-medium shrink-0">
+                          {getMemberName(member.user_id).charAt(0).toUpperCase()}
+                        </div>
+                      )}
                       <div className="min-w-0">
                         <span className="text-sm text-gray-800 truncate block">
-                          {getMemberDisplayName(member.user_id)}
+                          {getMemberName(member.user_id)}
                           {isSelf && <span className="text-xs text-gray-400 ml-1">（我）</span>}
                         </span>
+                        <span className="text-xs text-gray-400 truncate block">ID: {member.user_id}</span>
                       </div>
-                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${ROLE_COLOR[member.role] || ''}`}>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 ${ROLE_COLOR[member.role] || ''}`}>
                         {ROLE_LABEL[member.role] || member.role}
                       </span>
                     </div>
@@ -346,6 +353,8 @@ export default function GroupSettingsModal({ groupId, onClose }: GroupSettingsMo
               ) : (
                 notInGroupFriends.map(friend => {
                   const isSelected = selectedMemberIds.includes(friend.friend_id)
+                  const displayName = getFriendDisplayName(friend.friend_id)
+                  const avatar = getUserAvatar(friend.friend_id)
                   return (
                     <label
                       key={friend.friend_id}
@@ -361,10 +370,16 @@ export default function GroupSettingsModal({ groupId, onClose }: GroupSettingsMo
                         }}
                         className="rounded border-gray-300 text-blue-500"
                       />
-                      <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs font-medium shrink-0">
-                        {getFriendDisplayName(friend.friend_id).charAt(0).toUpperCase()}
+                      {avatar ? (
+                        <img src={avatar} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs font-medium shrink-0">
+                          {displayName.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <span className="text-sm text-gray-800 truncate block">{displayName}</span>
                       </div>
-                      <span className="text-sm text-gray-800">{getFriendDisplayName(friend.friend_id)}</span>
                     </label>
                   )
                 })

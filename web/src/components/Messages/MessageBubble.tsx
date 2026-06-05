@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Popover, Button, message as antMessage } from 'antd'
 import type { Message } from '../../lib/chat-api'
 import InvitationCard from './InvitationCard'
@@ -8,10 +9,15 @@ interface MessageBubbleProps {
   message: Message
   isOwn: boolean
   senderName: string
+  senderAvatar: string
   repliedMessage: Message | null
   currentUserId: string
   onReply: (msg: Message) => void
   onRecall: (msgId: string) => void
+  onMention?: (userId: string) => void
+  onJumpToMessage?: (messageId: string) => void
+  highlight?: boolean
+  mentionNames?: Record<string, string>
 }
 
 function formatTime(ts: number): string {
@@ -32,9 +38,57 @@ function getAvatarColor(id: string): string {
   return PASTEL_BG[Math.abs(hash) % PASTEL_BG.length]
 }
 
-export default function MessageBubble({ message, isOwn, senderName, repliedMessage, currentUserId, onReply, onRecall }: MessageBubbleProps) {
+function parseMentions(extra: string | null): string[] {
+  if (!extra) return []
+  try {
+    const data = JSON.parse(extra)
+    return Array.isArray(data.mentions) ? data.mentions : []
+  } catch {
+    return []
+  }
+}
+
+function renderTextWithMentions(content: string, mentions: string[], currentUserId: string, mentionNames: Record<string, string>, onMention?: (userId: string) => void): React.ReactNode[] {
+  const parts: React.ReactNode[] = []
+  const regex = /@(\S+)/g
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = regex.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(<span key={`t${lastIndex}`}>{content.slice(lastIndex, match.index)}</span>)
+    }
+    const userId = match[1]
+    const displayName = mentionNames[userId] || userId
+    if (mentions.includes(userId)) {
+      const isSelf = userId === currentUserId
+      parts.push(
+        <span
+          key={`m${match.index}`}
+          className={`cursor-pointer ${isSelf ? 'bg-yellow-200 text-blue-600 px-0.5 rounded' : 'text-blue-500'}`}
+          onClick={() => onMention?.(userId)}
+        >
+          @{displayName}
+        </span>
+      )
+    } else {
+      parts.push(<span key={`p${match.index}`}>@{displayName}</span>)
+    }
+    lastIndex = match.index + match[0].length
+  }
+  if (lastIndex < content.length) {
+    parts.push(<span key={`t${lastIndex}`}>{content.slice(lastIndex)}</span>)
+  }
+  return parts.length > 0 ? parts : [<span key="all">{content}</span>]
+}
+
+export default function MessageBubble({ message, isOwn, senderName, senderAvatar, repliedMessage, currentUserId, onReply, onRecall, onMention, onJumpToMessage, highlight, mentionNames }: MessageBubbleProps) {
+  const navigate = useNavigate()
   const [imgError, setImgError] = useState(false)
   const [showForward, setShowForward] = useState(false)
+
+  const mentions = parseMentions(message.extra)
+  const isMentionedSelf = mentions.includes(currentUserId)
 
   if (message.status === 'recalled') {
     return (
@@ -46,23 +100,12 @@ export default function MessageBubble({ message, isOwn, senderName, repliedMessa
     )
   }
 
-  const isMentioned = message.extra && currentUserId
-    ? (() => {
-        try {
-          const extra = JSON.parse(message.extra)
-          return Array.isArray(extra.mentions) && extra.mentions.includes(currentUserId)
-        } catch {
-          return false
-        }
-      })()
-    : false
-
   const renderContent = () => {
     switch (message.content_type) {
       case 'text':
         return (
           <p className="whitespace-pre-wrap break-words">
-            {message.content}
+            {renderTextWithMentions(message.content, mentions, currentUserId, mentionNames || {}, onMention)}
           </p>
         )
       case 'image':
@@ -143,30 +186,53 @@ export default function MessageBubble({ message, isOwn, senderName, repliedMessa
     </div>
   )
 
+  const bubbleBg = isOwn
+    ? 'bg-blue-500 text-white rounded-tr-sm'
+    : isMentionedSelf
+      ? 'bg-yellow-100 text-gray-800 rounded-tl-sm'
+      : 'bg-gray-100 text-gray-800 rounded-tl-sm'
+
   return (
     <>
-      <div className={`flex mb-3 gap-2 ${isOwn ? 'flex-row-reverse' : ''}`}>
+      <div id={`msg-${message.id}`} className={`flex mb-3 gap-2 ${isOwn ? 'flex-row-reverse' : ''} ${highlight ? 'animate-message-flash' : ''}`}>
         {!isOwn && (
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm text-white shrink-0 ${getAvatarColor(message.sender_id)}`}>
-            {senderName.charAt(0).toUpperCase()}
+          <div
+            className="cursor-pointer shrink-0"
+            onClick={() => navigate(`/friends/${message.sender_id}`)}
+          >
+            {senderAvatar ? (
+              <img src={senderAvatar} alt="" className="w-8 h-8 rounded-full object-cover" />
+            ) : (
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm text-white ${getAvatarColor(message.sender_id)}`}>
+                {senderName.charAt(0).toUpperCase()}
+              </div>
+            )}
           </div>
         )}
 
         <div className={`max-w-[70%] ${isOwn ? 'items-end' : 'items-start'}`}>
           {!isOwn && (
-            <div className="text-xs text-gray-500 mb-1 ml-1">{senderName}</div>
+            <div
+              className={`text-xs text-gray-500 mb-1 ml-1 ${onMention ? 'cursor-pointer hover:text-blue-500' : ''}`}
+              onClick={() => onMention?.(message.sender_id)}
+            >
+              {senderName}
+            </div>
           )}
 
           {repliedMessage && (
-            <div className={`text-xs px-3 py-1 rounded-t-lg truncate max-w-full ${isOwn ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-500'}`}>
+            <div
+              className={`text-xs px-3 py-1 rounded-t-lg truncate max-w-full cursor-pointer hover:opacity-80 ${isOwn ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-500'}`}
+              onClick={() => onJumpToMessage?.(repliedMessage.id)}
+            >
               回复: {repliedMessage.content}
             </div>
           )}
 
           <Popover content={toolbar} trigger="hover" placement={isOwn ? 'left' : 'right'}>
-            <div className={`px-3 py-2 text-sm leading-relaxed rounded-lg ${isOwn ? 'bg-blue-500 text-white rounded-tr-sm' : 'bg-gray-100 text-gray-800 rounded-tl-sm'} ${isMentioned ? '!bg-yellow-100 !text-gray-800' : ''}`}>
+            <div className={`px-3 py-2 text-sm leading-relaxed rounded-lg ${bubbleBg}`}>
               {renderContent()}
-              <div className={`text-xs mt-1 ${isOwn ? 'text-blue-200' : 'text-gray-400'}`}>
+              <div className={`text-xs mt-1 ${isOwn ? 'text-blue-200' : isMentionedSelf ? 'text-gray-500' : 'text-gray-400'}`}>
                 {formatTime(message.created_at)}
               </div>
             </div>

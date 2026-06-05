@@ -6,7 +6,6 @@ import (
 
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 
-	"github.com/gangantongxue/knowsync/chat-server/internal/service"
 	"github.com/gangantongxue/knowsync/chat-server/pkg/database/schema"
 )
 
@@ -116,15 +115,7 @@ func (h *Handler) ForwardMessage(ctx context.Context, req *pb.ForwardMessageReq)
 
 // GetUnreadCount 获取未读数.
 func (h *Handler) GetUnreadCount(ctx context.Context, req *pb.GetUnreadCountReq) (*pb.GetUnreadCountResp, error) {
-	convs := req.GetConversation()
-	infos := make([]service.ConversationInfo, len(convs))
-	for i, c := range convs {
-		infos[i] = service.ConversationInfo{
-			ConversationType: c.GetConversationType(),
-			ConversationID:   c.GetConversationId(),
-		}
-	}
-	counts, err := h.Service.GetUnreadCounts(ctx, req.GetUserId(), infos)
+	counts, err := h.Service.GetUserUnreadCounts(ctx, req.GetUserId())
 	if err != nil {
 		return nil, err
 	}

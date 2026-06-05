@@ -7,7 +7,7 @@ interface CreateGroupModalProps {
 }
 
 export default function CreateGroupModal({ onClose }: CreateGroupModalProps) {
-  const { friends, loadFriends, createGroup, loadConversations } = useMessageStore()
+  const { friends, loadFriends, createGroup, loadConversations, loadUserProfiles, getUserDisplayName, getUserAvatar } = useMessageStore()
   const [name, setName] = useState('')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
@@ -16,10 +16,10 @@ export default function CreateGroupModal({ onClose }: CreateGroupModalProps) {
     loadFriends()
   }, [])
 
-  const getFriendName = (friendId: string): string => {
-    const friend = friends.find(f => f.friend_id === friendId)
-    return friend?.remark || friendId
-  }
+  useEffect(() => {
+    const ids = friends.map(f => f.friend_id)
+    if (ids.length > 0) loadUserProfiles(ids)
+  }, [friends, loadUserProfiles])
 
   const handleCreate = async () => {
     if (!name.trim()) {
@@ -69,7 +69,8 @@ export default function CreateGroupModal({ onClose }: CreateGroupModalProps) {
           ) : (
             <div className="space-y-1">
               {friends.map(friend => {
-                const displayName = getFriendName(friend.friend_id)
+                const displayName = getUserDisplayName(friend.friend_id)
+                const avatar = getUserAvatar(friend.friend_id)
                 const isSelected = selectedIds.includes(friend.friend_id)
                 return (
                   <label
@@ -82,9 +83,13 @@ export default function CreateGroupModal({ onClose }: CreateGroupModalProps) {
                       onChange={() => toggleMember(friend.friend_id)}
                       className="rounded border-gray-300 text-blue-500"
                     />
-                    <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs font-medium shrink-0">
-                      {displayName.charAt(0).toUpperCase()}
-                    </div>
+                    {avatar ? (
+                      <img src={avatar} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-xs font-medium shrink-0">
+                        {displayName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                     <div className="min-w-0">
                       <span className="text-sm text-gray-800 truncate block">{displayName}</span>
                     </div>

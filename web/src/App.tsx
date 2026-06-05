@@ -15,6 +15,7 @@ import ArticleEditor from './pages/ArticleEditor'
 import SearchResult from './pages/SearchResult'
 import Messages from './pages/Messages'
 import UserProfile from './pages/UserProfile'
+import FriendDetail from './pages/FriendDetail'
 import NotFound from './pages/NotFound'
 
 export default function App() {
@@ -47,6 +48,7 @@ export default function App() {
               <Route path="/messages" element={<Messages />} />
               <Route path="/messages/:conversationType/:conversationId" element={<Messages />} />
               <Route path="/users/:userId" element={<UserProfile />} />
+              <Route path="/friends/:friendId" element={<FriendDetail />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

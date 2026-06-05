@@ -2,16 +2,10 @@ import { useState, useEffect } from 'react'
 import { message } from 'antd'
 import { useMessageStore } from '../../store/message-store'
 import { friendApi } from '../../lib/chat-api'
-import { userApi } from '../../lib/user-api'
 import type { FriendRequest } from '../../lib/chat-api'
 
 interface FriendRequestsModalProps {
   onClose: () => void
-}
-
-interface UserInfo {
-  name: string
-  avatar: string
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -27,14 +21,10 @@ const STATUS_COLOR: Record<string, string> = {
 }
 
 const PASTEL_BG = [
-  'bg-red-100 text-red-600',
-  'bg-blue-100 text-blue-600',
-  'bg-green-100 text-green-600',
-  'bg-yellow-100 text-yellow-700',
-  'bg-purple-100 text-purple-700',
-  'bg-pink-100 text-pink-600',
-  'bg-indigo-100 text-indigo-600',
-  'bg-teal-100 text-teal-600',
+  'bg-red-100 text-red-600', 'bg-blue-100 text-blue-600',
+  'bg-green-100 text-green-600', 'bg-yellow-100 text-yellow-700',
+  'bg-purple-100 text-purple-700', 'bg-pink-100 text-pink-600',
+  'bg-indigo-100 text-indigo-600', 'bg-teal-100 text-teal-600',
 ]
 
 function getAvatarColor(name: string): string {
@@ -46,12 +36,11 @@ function getAvatarColor(name: string): string {
 }
 
 export default function FriendRequestsModal({ onClose }: FriendRequestsModalProps) {
-  const { acceptFriendRequest, rejectFriendRequest } = useMessageStore()
+  const { acceptFriendRequest, rejectFriendRequest, loadUserProfiles, getUserDisplayName, getUserAvatar } = useMessageStore()
   const [tab, setTab] = useState<'received' | 'sent'>('received')
   const [receivedRequests, setReceivedRequests] = useState<FriendRequest[]>([])
   const [sentRequests, setSentRequests] = useState<FriendRequest[]>([])
   const [loading, setLoading] = useState(false)
-  const [userCache, setUserCache] = useState<Record<string, UserInfo>>({})
 
   useEffect(() => {
     loadRequests()
@@ -72,22 +61,8 @@ export default function FriendRequestsModal({ onClose }: FriendRequestsModalProp
       const allIds = new Set<string>()
       received.forEach(r => allIds.add(r.sender_id))
       sent.forEach(r => allIds.add(r.receiver_id))
-      const unknownIds = [...allIds].filter(id => !userCache[id])
-
-      if (unknownIds.length > 0) {
-        const profiles = await Promise.allSettled(
-          unknownIds.map(id => userApi.getProfile(id))
-        )
-        const newCache = { ...userCache }
-        profiles.forEach((result, i) => {
-          if (result.status === 'fulfilled') {
-            newCache[unknownIds[i]] = {
-              name: result.value.data.user.name,
-              avatar: result.value.data.user.avatar,
-            }
-          }
-        })
-        setUserCache(newCache)
+      if (allIds.size > 0) {
+        await loadUserProfiles([...allIds])
       }
     } catch {
       message.error('加载好友请求失败')
@@ -118,9 +93,8 @@ export default function FriendRequestsModal({ onClose }: FriendRequestsModalProp
 
   const renderRequest = (req: FriendRequest, isReceived: boolean) => {
     const targetId = isReceived ? req.sender_id : req.receiver_id
-    const info = userCache[targetId]
-    const displayName = info?.name || targetId
-    const avatarUrl = info?.avatar
+    const displayName = getUserDisplayName(targetId)
+    const avatarUrl = getUserAvatar(targetId)
 
     return (
       <div key={req.id} className="flex items-center justify-between py-3 border-b border-gray-50">

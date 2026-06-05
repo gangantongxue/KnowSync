@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Input, Badge, Dropdown, message } from 'antd'
 import { UserAddOutlined, TeamOutlined, SearchOutlined } from '@ant-design/icons'
+import { useAuth } from '../../store/auth-context'
 import { useMessageStore } from '../../store/message-store'
 import { conversationApi } from '../../lib/chat-api'
-import { userApi } from '../../lib/user-api'
 import type { ConversationInfo } from '../../lib/chat-api'
 import FriendRequestsModal from './FriendRequestsModal'
 import SearchUserModal from './SearchUserModal'
@@ -48,23 +48,20 @@ function getFirstChar(name: string): string {
   return name.charAt(0).toUpperCase() || '?'
 }
 
-interface UserInfo {
-  name: string
-  avatar: string
-}
-
 export default function ConversationList() {
   const navigate = useNavigate()
   const { conversationType, conversationId } = useParams()
+  const { user } = useAuth()
   const {
     conversations, togglePin, friendRequests, loadFriendRequests,
-    loadConversations, loadMessages, friends,
+    loadConversations, loadMessages, loadUserProfiles,
+    getUserDisplayName, getUserAvatar,
   } = useMessageStore()
+  const currentUserId = user?.id || ''
   const [searchText, setSearchText] = useState('')
   const [showFriendRequests, setShowFriendRequests] = useState(false)
   const [showSearchUser, setShowSearchUser] = useState(false)
   const [showCreateGroup, setShowCreateGroup] = useState(false)
-  const [userCache, setUserCache] = useState<Record<string, UserInfo>>({})
   const pendingCount = friendRequests.filter(r => r.status === 'pending').length
 
   useEffect(() => {
@@ -73,58 +70,32 @@ export default function ConversationList() {
 
   // 解析私聊会话中的好友 ID 为用户昵称
   useEffect(() => {
-    const unknownIds = new Set<string>()
+    const ids = new Set<string>()
     for (const c of conversations) {
       if (c.conversation_type !== 'private') continue
       const parts = c.conversation_id.split('_')
       if (parts.length !== 2) continue
-      for (const id of parts) {
-        if (userCache[id]) continue
-        const friend = friends.find(f => f.friend_id === id)
-        if (friend?.remark) {
-          setUserCache(prev => ({ ...prev, [id]: { name: friend.remark!, avatar: '' } }))
-          continue
-        }
-        unknownIds.add(id)
-      }
+      const otherId = parts[0] === currentUserId ? parts[1] : parts[0]
+      if (!otherId || otherId === currentUserId) continue
+      ids.add(otherId)
     }
-    if (unknownIds.size === 0) return
-    const ids = [...unknownIds]
-    Promise.allSettled(ids.map(id => userApi.getProfile(id))).then(results => {
-      const newCache: Record<string, UserInfo> = {}
-      results.forEach((r, i) => {
-        if (r.status === 'fulfilled') {
-          newCache[ids[i]] = { name: r.value.data.user.name, avatar: r.value.data.user.avatar }
-        }
-      })
-      if (Object.keys(newCache).length > 0) {
-        setUserCache(prev => ({ ...prev, ...newCache }))
-      }
-    })
-  }, [conversations, friends, userCache])
+    if (ids.size > 0) loadUserProfiles([...ids])
+  }, [conversations, currentUserId, loadUserProfiles])
 
   const getDisplayName = (conv: ConversationInfo): string => {
     if (conv.conversation_type !== 'private') return conv.name
     const parts = conv.conversation_id.split('_')
     if (parts.length !== 2) return conv.name
-    for (const id of parts) {
-      const cached = userCache[id]
-      if (cached?.name) return cached.name
-      const friend = friends.find(f => f.friend_id === id)
-      if (friend?.remark) return friend.remark
-    }
-    return conv.name
+    const otherId = parts[0] === currentUserId ? parts[1] : parts[0]
+    return getUserDisplayName(otherId)
   }
 
   const getAvatar = (conv: ConversationInfo): string | null => {
     if (conv.conversation_type !== 'private') return null
     const parts = conv.conversation_id.split('_')
     if (parts.length !== 2) return null
-    for (const id of parts) {
-      const avatar = userCache[id]?.avatar
-      if (avatar) return avatar
-    }
-    return null
+    const otherId = parts[0] === currentUserId ? parts[1] : parts[0]
+    return getUserAvatar(otherId) || null
   }
 
   const sorted = [...conversations].sort((a, b) => {

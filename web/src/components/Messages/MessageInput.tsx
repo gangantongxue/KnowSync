@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent, type ChangeEvent } from 'react'
+import { useRef, useState, useEffect, type KeyboardEvent, type ChangeEvent } from 'react'
 import { Button, message as antMessage } from 'antd'
 import { PictureOutlined, FileOutlined } from '@ant-design/icons'
 import { useMessageStore } from '../../store/message-store'
@@ -6,16 +6,31 @@ import { messageApi } from '../../lib/chat-api'
 import type { Message } from '../../lib/chat-api'
 import MentionDropdown from './MentionDropdown'
 
+function extractMentions(content: string): string[] {
+  const regex = /@(\S+)/g
+  const ids: string[] = []
+  let match: RegExpExecArray | null
+  while ((match = regex.exec(content)) !== null) {
+    if (!ids.includes(match[1])) {
+      ids.push(match[1])
+    }
+  }
+  return ids
+}
+
 interface MessageInputProps {
   conversationType: string
   conversationId: string
+  currentUserId: string
   replyTo: Message | null
   onCancelReply: () => void
+  onMention?: string
+  mentionTrigger?: number
   groupId?: string
   groupOwnerId?: string
 }
 
-export default function MessageInput({ conversationType, conversationId, replyTo, onCancelReply, groupId, groupOwnerId }: MessageInputProps) {
+export default function MessageInput({ conversationType, conversationId, currentUserId, replyTo, onCancelReply, onMention, mentionTrigger, groupId, groupOwnerId }: MessageInputProps) {
   const { sendMessage, sendingMessage } = useMessageStore()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -23,6 +38,21 @@ export default function MessageInput({ conversationType, conversationId, replyTo
   const [text, setText] = useState('')
   const [showMention, setShowMention] = useState(false)
   const [mentionSearch, setMentionSearch] = useState('')
+
+  useEffect(() => {
+    if (replyTo) {
+      textareaRef.current?.focus()
+    }
+  }, [replyTo])
+
+  useEffect(() => {
+    if (mentionTrigger && mentionTrigger > 0 && onMention) {
+      setText(prev => prev + `@${onMention} `)
+      requestAnimationFrame(() => {
+        textareaRef.current?.focus()
+      })
+    }
+  }, [mentionTrigger])
 
   const handleInput = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
@@ -44,7 +74,7 @@ export default function MessageInput({ conversationType, conversationId, replyTo
     setShowMention(false)
   }
 
-  const handleMentionSelect = (username: string) => {
+  const handleMentionSelect = (userId: string) => {
     const el = textareaRef.current
     if (!el) return
     const cursorPos = el.selectionStart
@@ -52,12 +82,12 @@ export default function MessageInput({ conversationType, conversationId, replyTo
     if (lastAtIndex === -1) return
     const before = text.slice(0, lastAtIndex)
     const after = text.slice(cursorPos)
-    const newText = before + `@${username} ` + after
+    const newText = before + `@${userId} ` + after
     setText(newText)
     setShowMention(false)
     requestAnimationFrame(() => {
       el.focus()
-      const newPos = lastAtIndex + username.length + 2
+      const newPos = lastAtIndex + userId.length + 3
       el.setSelectionRange(newPos, newPos)
     })
   }
@@ -69,18 +99,22 @@ export default function MessageInput({ conversationType, conversationId, replyTo
     if (replyTo) {
       try {
         if (conversationType === 'private') {
+          const parts = conversationId.split('_')
+          const receiverId = parts.length === 2 ? (parts[0] === currentUserId ? parts[1] : parts[0]) : conversationId
           await messageApi.sendPrivate({
-            receiver_id: conversationId,
+            receiver_id: receiverId,
             content_type: 'text',
             content: trimmed,
             reply_to_id: replyTo.id,
           })
         } else {
+          const mentions = extractMentions(trimmed)
           await messageApi.sendGroup({
             group_id: conversationId,
             content_type: 'text',
             content: trimmed,
             reply_to_id: replyTo.id,
+            mentions,
           })
         }
       } catch {
@@ -89,7 +123,7 @@ export default function MessageInput({ conversationType, conversationId, replyTo
       }
       onCancelReply()
     } else {
-      sendMessage(conversationType, conversationId, trimmed, 'text')
+      await sendMessage(conversationType, conversationId, trimmed, 'text', currentUserId)
     }
 
     setText('')
@@ -119,7 +153,7 @@ export default function MessageInput({ conversationType, conversationId, replyTo
     const reader = new FileReader()
     reader.onload = () => {
       const base64 = reader.result as string
-      sendMessage(conversationType, conversationId, base64, 'image')
+      sendMessage(conversationType, conversationId, base64, 'image', currentUserId)
     }
     reader.readAsDataURL(file)
     e.target.value = ''

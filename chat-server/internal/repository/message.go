@@ -22,7 +22,7 @@ func (r *MessageRepository) CreateMessage(ctx context.Context, msg *schema.Messa
 	return r.DB.WithContext(ctx).Create(msg).Error
 }
 
-// GetMessagesByConversation 获取会话消息列表（游标分页，按seq_id DESC）.
+// GetMessagesByConversation 获取会话消息列表（游标分页，返回按 seq_id ASC 排序）.
 func (r *MessageRepository) GetMessagesByConversation(ctx context.Context, conversationType, conversationID string, beforeSeqID uint64, limit int) ([]schema.Message, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 50
@@ -33,8 +33,12 @@ func (r *MessageRepository) GetMessagesByConversation(ctx context.Context, conve
 	if beforeSeqID > 0 {
 		db = db.Where("seq_id < ?", beforeSeqID)
 	}
+	// 查询最新的 limit 条消息（DESC），再反转为 ASC 供前端按时间正序展示
 	if err := db.Order("seq_id DESC").Limit(limit).Find(&messages).Error; err != nil {
 		return nil, err
+	}
+	for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
+		messages[i], messages[j] = messages[j], messages[i]
 	}
 	return messages, nil
 }

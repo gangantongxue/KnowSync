@@ -1,50 +1,67 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { groupApi } from '../../lib/chat-api'
+import { useMessageStore } from '../../store/message-store'
 import type { GroupMember } from '../../lib/chat-api'
 
 interface MentionDropdownProps {
   groupId: string
   ownerId: string
-  onSelect: (username: string) => void
+  onSelect: (userId: string) => void
   searchText: string
 }
 
-export default function MentionDropdown({ groupId, ownerId, onSelect, searchText }: MentionDropdownProps) {
+export default function MentionDropdown({ groupId, ownerId: _ownerId, onSelect, searchText }: MentionDropdownProps) {
+  const { loadUserProfiles, getUserDisplayName, getUserAvatar } = useMessageStore()
   const [members, setMembers] = useState<GroupMember[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     groupApi.getMembers(groupId).then(res => {
       setMembers(res.data.members)
-    }).catch(() => {})
-  }, [groupId])
+      const ids = res.data.members.map(m => m.user_id)
+      loadUserProfiles(ids)
+      setLoading(false)
+    }).catch(() => setLoading(false))
+  }, [groupId, loadUserProfiles])
 
   const lower = searchText.toLowerCase()
-  const filtered = members.filter(m => {
-    const userId = m.user_id.toLowerCase()
-    return userId.includes(lower)
-  })
+  const filtered = useMemo(() => members.filter(m => {
+    if (!lower) return true
+    const displayName = getUserDisplayName(m.user_id).toLowerCase()
+    return m.user_id.toLowerCase().includes(lower) || displayName.includes(lower)
+  }), [members, lower, getUserDisplayName])
+
+  if (loading) {
+    return (
+      <div className="absolute bottom-full left-0 mb-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+        <div className="px-3 py-2 text-sm text-gray-400">加载中...</div>
+      </div>
+    )
+  }
 
   if (filtered.length === 0) return null
 
-  const handleClick = (member: GroupMember) => {
-    const name = member.user_id === ownerId ? '所有人' : `user_${member.user_id.slice(0, 6)}`
-    onSelect(name)
-  }
-
   return (
-    <div className="absolute bottom-full left-0 mb-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto z-50">
+    <div className="absolute bottom-full left-0 mb-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg max-h-52 overflow-y-auto z-50">
       {filtered.map((member) => {
-        const isOwner = member.user_id === ownerId
+        const displayName = getUserDisplayName(member.user_id)
+        const avatar = getUserAvatar(member.user_id)
         return (
           <div
-            key={member.id}
+            key={member.user_id}
             className="px-3 py-2 text-sm cursor-pointer flex items-center gap-2 text-gray-700 hover:bg-gray-50"
-            onClick={() => handleClick(member)}
+            onClick={() => onSelect(member.user_id)}
           >
-            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-600 shrink-0">
-              {isOwner ? '全' : member.user_id.slice(0, 2)}
+            {avatar ? (
+              <img src={avatar} alt="" className="w-7 h-7 rounded-full object-cover shrink-0" />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-medium shrink-0">
+                {displayName.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0">
+              <span className="truncate block">{displayName}</span>
             </div>
-            <span className="truncate">{isOwner ? '@所有人' : `user_${member.user_id.slice(0, 6)}`}</span>
           </div>
         )
       })}
