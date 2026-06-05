@@ -23,6 +23,7 @@ import (
 	"github.com/gangantongxue/knowsync/ai-server/internal/vectorstore"
 	"github.com/gangantongxue/knowsync/ai-server/internal/worker"
 	"github.com/gangantongxue/knowsync/ai-server/pkg/config"
+	"github.com/gangantongxue/knowsync/ai-server/pkg/logger"
 	"github.com/gangantongxue/knowsync/ai-server/pkg/redis"
 )
 
@@ -37,21 +38,27 @@ func NewApp() error {
 		return err
 	}
 
-	// 2. 连接 Redis
+	// 2. 初始化日志记录器
+	if _, err := logger.NewLogger(cfg); err != nil {
+		slog.Error("初始化日志记录器失败", "error", err)
+		return err
+	}
+
+	// 3. 连接 Redis
 	rdb, err := redis.NewRedis(&cfg.Redis)
 	if err != nil {
 		slog.Error("连接 Redis 失败", "error", err)
 		return err
 	}
 
-	// 3. 初始化外部服务客户端
+	// 4. 初始化外部服务客户端
 	client, err := service.NewClient(cfg)
 	if err != nil {
 		slog.Error("初始化外部服务客户端失败", "error", err)
 		return err
 	}
 
-	// 4. 初始化向量化模型（Eino OpenAI Embedder）
+	// 5. 初始化向量化模型（Eino OpenAI Embedder）
 	emb, err := embedder.NewClient(&cfg.Embedder)
 	if err != nil {
 		slog.Error("初始化向量化模型失败", "error", err)
@@ -59,54 +66,54 @@ func NewApp() error {
 	}
 	slog.Info("向量化模型客户端初始化完成")
 
-	// 5. 初始化 LLM（DeepSeek ChatModel）
+	// 6. 初始化 LLM（DeepSeek ChatModel）
 	llmModel, err := llm.NewChatModel(&cfg.LLM)
 	if err != nil {
 		slog.Error("初始化 LLM 模型失败", "error", err)
 		return err
 	}
 
-	// 6. 初始化数据库连接
+	// 7. 初始化数据库连接
 	repo, err := repository.NewRepository(&cfg.Database)
 	if err != nil {
 		slog.Error("初始化数据库连接失败", "error", err)
 		return err
 	}
 
-	// 7. 初始化语义切分器
+	// 8. 初始化语义切分器
 	chunk := chunker.NewChunker(1000)
 	slog.Info("语义切分器初始化完成")
 
-	// 8. 初始化向量存储
+	// 9. 初始化向量存储
 	vs, err := vectorstore.NewStore(cfg.Chromem.Path)
 	if err != nil {
 		slog.Error("初始化向量存储失败", "error", err)
 		return err
 	}
 
-	// 9. 初始化服务层
+	// 10. 初始化服务层
 	svc, err := service.NewService(cfg, rdb, client, repo, llmModel, emb, vs)
 	if err != nil {
 		slog.Error("初始化服务层失败", "error", err)
 		return err
 	}
 
-	// 10. 初始化 Worker
+	// 11. 初始化 Worker
 	w := worker.NewWorker(rdb, svc, emb, chunk, vs, cfg.Worker.Concurrency, cfg.Worker.MaxRetries)
 
-	// 11. 启动 Worker（后台 goroutine）
+	// 12. 启动 Worker（后台 goroutine）
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go w.Start(ctx)
 
-	// 12. 初始化 gRPC Handler
+	// 13. 初始化 gRPC Handler
 	hdl, err := handler.NewHandler(svc)
 	if err != nil {
 		slog.Error("初始化处理器失败", "error", err)
 		return err
 	}
 
-	// 13. 启动 gRPC 服务器
+	// 14. 启动 gRPC 服务器
 	addr := fmt.Sprintf(":%d", cfg.GRPC.Port)
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {

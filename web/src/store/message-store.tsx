@@ -138,7 +138,7 @@ interface ChatContextValue extends ChatState {
   loadConversations: () => Promise<void>
   loadMessages: (convType: string, convId: string) => Promise<void>
   loadMoreMessages: (convType: string, convId: string) => Promise<boolean>
-  sendMessage: (convType: string, convId: string, content: string, contentType: string, currentUserId: string) => Promise<void>
+  sendMessage: (convType: string, convId: string, content: string, contentType: string, currentUserId: string, replyToId?: string, mentions?: string[]) => Promise<void>
   recallMessage: (messageId: string) => Promise<void>
   sendFriendRequest: (receiverId: string, remark: string) => Promise<void>
   acceptFriendRequest: (requestId: string) => Promise<void>
@@ -232,15 +232,15 @@ export function MessageProvider({ children }: { children: ReactNode }) {
     }
   }, [state.hasMore, state.messages])
 
-  const sendMessage = useCallback(async (convType: string, convId: string, content: string, contentType: string, currentUserId: string) => {
+  const sendMessage = useCallback(async (convType: string, convId: string, content: string, contentType: string, currentUserId: string, replyToId?: string, mentions?: string[]) => {
     dispatch({ type: 'SET_SENDING_MESSAGE', sending: true })
     try {
       let res: { data: { message: Message } }
       if (convType === 'private') {
-        res = await messageApi.sendPrivate({ receiver_id: getReceiverID(convId, currentUserId), content_type: contentType, content })
+        res = await messageApi.sendPrivate({ receiver_id: getReceiverID(convId, currentUserId), content_type: contentType, content, reply_to_id: replyToId })
       } else {
-        const mentions = extractMentions(content)
-        res = await messageApi.sendGroup({ group_id: convId, content_type: contentType, content, mentions })
+        const finalMentions = mentions || extractMentions(content)
+        res = await messageApi.sendGroup({ group_id: convId, content_type: contentType, content, mentions: finalMentions, reply_to_id: replyToId })
       }
       const key = getKey(convType, convId)
       dispatch({ type: 'APPEND_MESSAGE', key, message: res.data.message })

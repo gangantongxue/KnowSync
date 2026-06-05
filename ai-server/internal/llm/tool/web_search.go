@@ -23,11 +23,11 @@ func NewWebSearch(ws WebSearcher) *WebSearch {
 func (w *WebSearch) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "web_search",
-		Desc: "在互联网上搜索信息。当你的知识储备不足以回答用户问题，或用户询问的是需要最新信息的问题时，使用此工具联网搜索。搜索结果为中文优先。",
+		Desc: "在互联网上搜索信息。当你的知识储备不足以回答用户问题，或用户询问的是需要最新信息的问题时，使用此工具联网搜索。⚠️ 重要：请将搜索关键词翻译为英文再搜索，以获得更好的搜索结果。搜索到英文内容后请翻译为中文回答用户。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
 			"query": {
 				Type:     TypeString,
-				Desc:     "搜索关键词，从中英文用户问题中提取核心搜索词，使用中文搜索",
+				Desc:     "搜索关键词，必须使用英文。从用户问题中提取核心搜索词，翻译为英文",
 				Required: true,
 			},
 		}),

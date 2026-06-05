@@ -125,6 +125,26 @@ export default function GroupSettingsModal({ groupId, onClose }: GroupSettingsMo
     }
   }
 
+  const handleSetAdmin = async (userId: string) => {
+    try {
+      await groupApi.setAdmin(groupId, userId)
+      message.success('已设为管理员')
+      loadGroupData()
+    } catch {
+      message.error('设置失败')
+    }
+  }
+
+  const handleRemoveAdmin = async (userId: string) => {
+    try {
+      await groupApi.removeAdmin(groupId, userId)
+      message.success('已取消管理员')
+      loadGroupData()
+    } catch {
+      message.error('操作失败')
+    }
+  }
+
   const handleAddMembers = async () => {
     if (selectedMemberIds.length === 0) {
       message.warning('请选择要添加的成员')
@@ -250,8 +270,10 @@ export default function GroupSettingsModal({ groupId, onClose }: GroupSettingsMo
               {sortedMembers.map(member => {
                 const isSelf = member.user_id === currentUserId
                 const isOwnerMember = member.role === 'owner'
+                const canTransfer = isOwner && !isSelf
+                const canSetAdmin = isOwner && !isOwnerMember && member.role === 'member'
+                const canRemoveAdmin = isOwner && !isOwnerMember && member.role === 'admin'
                 const canRemove = isOwner && !isOwnerMember && !isSelf
-                const canTransfer = isOwner && isOwnerMember && !isSelf
 
                 return (
                   <div key={member.user_id} className="flex items-center justify-between py-2 px-2 rounded hover:bg-gray-50">
@@ -275,6 +297,22 @@ export default function GroupSettingsModal({ groupId, onClose }: GroupSettingsMo
                       </span>
                     </div>
                     <div className="flex gap-1 shrink-0">
+                      {canSetAdmin && (
+                        <button
+                          onClick={() => handleSetAdmin(member.user_id)}
+                          className="text-xs text-blue-500 hover:text-blue-600 px-1.5 py-0.5"
+                        >
+                          设管理员
+                        </button>
+                      )}
+                      {canRemoveAdmin && (
+                        <button
+                          onClick={() => handleRemoveAdmin(member.user_id)}
+                          className="text-xs text-gray-500 hover:text-gray-700 px-1.5 py-0.5"
+                        >
+                          取消管理员
+                        </button>
+                      )}
                       {canTransfer && (
                         <button
                           onClick={() => setConfirmAction({ type: 'transfer', userId: member.user_id })}

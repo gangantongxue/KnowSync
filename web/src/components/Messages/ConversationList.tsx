@@ -98,6 +98,22 @@ export default function ConversationList() {
     return getUserAvatar(otherId) || null
   }
 
+  function parseMentionsFromExtra(extra: string | null | undefined): string[] {
+    if (!extra) return []
+    try { return JSON.parse(extra).mentions || [] } catch { return [] }
+  }
+
+  function resolveMentionText(content: string, extra: string | null | undefined): string {
+    if (!content) return content
+    const mentions = parseMentionsFromExtra(extra)
+    return content.replace(/@(\S+)/g, (_match, userId) => {
+      if (mentions.includes(userId)) {
+        return `@${getUserDisplayName(userId)}`
+      }
+      return _match
+    })
+  }
+
   const sorted = [...conversations].sort((a, b) => {
     if (a.pinned !== b.pinned) return a.pinned ? -1 : 1
     return (b.last_message_at || 0) - (a.last_message_at || 0)
@@ -171,7 +187,7 @@ export default function ConversationList() {
       <div className="flex-1 overflow-y-auto">
         {filtered.map(conv => {
           const active = isActive(conv)
-          const previewContent = conv.last_message?.content || ''
+          const previewContent = resolveMentionText(conv.last_message?.content || '', conv.last_message?.extra)
           const displayName = getDisplayName(conv)
           const avatarUrl = getAvatar(conv)
 

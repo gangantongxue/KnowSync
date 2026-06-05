@@ -124,7 +124,7 @@ func (s *Service) initAgent(ctx context.Context) error {
 		// 新增通用增强工具
 		llmtool.NewCurrentTime(),
 		llmtool.NewCalculator(),
-		llmtool.NewWebSearch(s.Web),
+		// llmtool.NewWebSearch(s.Web),              // TODO: 后续接入 SearXNG 等搜索引擎后再启用
 		llmtool.NewImportFromURL(s.Web, s.Client),
 		llmtool.NewGenerateDiagram(s.Client),
 		llmtool.NewDiffText(),

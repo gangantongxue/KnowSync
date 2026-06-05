@@ -1,22 +1,9 @@
 import { useRef, useState, useEffect, type KeyboardEvent, type ChangeEvent } from 'react'
-import { Button, message as antMessage } from 'antd'
+import { Button } from 'antd'
 import { PictureOutlined, FileOutlined } from '@ant-design/icons'
 import { useMessageStore } from '../../store/message-store'
-import { messageApi } from '../../lib/chat-api'
 import type { Message } from '../../lib/chat-api'
 import MentionDropdown from './MentionDropdown'
-
-function extractMentions(content: string): string[] {
-  const regex = /@(\S+)/g
-  const ids: string[] = []
-  let match: RegExpExecArray | null
-  while ((match = regex.exec(content)) !== null) {
-    if (!ids.includes(match[1])) {
-      ids.push(match[1])
-    }
-  }
-  return ids
-}
 
 interface MessageInputProps {
   conversationType: string
@@ -31,13 +18,14 @@ interface MessageInputProps {
 }
 
 export default function MessageInput({ conversationType, conversationId, currentUserId, replyTo, onCancelReply, onMention, mentionTrigger, groupId, groupOwnerId }: MessageInputProps) {
-  const { sendMessage, sendingMessage } = useMessageStore()
+  const { sendMessage, sendingMessage, getUserDisplayName } = useMessageStore()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const [text, setText] = useState('')
   const [showMention, setShowMention] = useState(false)
   const [mentionSearch, setMentionSearch] = useState('')
+  const mentionMapRef = useRef<Record<string, string>>({})
 
   useEffect(() => {
     if (replyTo) {
@@ -47,7 +35,9 @@ export default function MessageInput({ conversationType, conversationId, current
 
   useEffect(() => {
     if (mentionTrigger && mentionTrigger > 0 && onMention) {
-      setText(prev => prev + `@${onMention} `)
+      const displayName = getUserDisplayName(onMention)
+      mentionMapRef.current[displayName] = onMention
+      setText(prev => prev + `@${displayName} `)
       requestAnimationFrame(() => {
         textareaRef.current?.focus()
       })
@@ -63,12 +53,15 @@ export default function MessageInput({ conversationType, conversationId, current
     el.style.height = `${Math.min(el.scrollHeight, 150)}px`
 
     if (groupId && value.includes('@')) {
-      const lastAtIndex = value.lastIndexOf('@')
-      const afterAt = value.slice(lastAtIndex + 1)
-      if (!afterAt.includes(' ') && !afterAt.includes('\n')) {
-        setShowMention(true)
-        setMentionSearch(afterAt)
-        return
+      const cursorPos = el.selectionStart
+      const lastAtIndex = value.lastIndexOf('@', cursorPos - 1)
+      if (lastAtIndex !== -1) {
+        const afterAt = value.slice(lastAtIndex + 1, cursorPos)
+        if (!afterAt.includes(' ') && !afterAt.includes('\n')) {
+          setShowMention(true)
+          setMentionSearch(afterAt)
+          return
+        }
       }
     }
     setShowMention(false)
@@ -80,62 +73,61 @@ export default function MessageInput({ conversationType, conversationId, current
     const cursorPos = el.selectionStart
     const lastAtIndex = text.lastIndexOf('@', cursorPos - 1)
     if (lastAtIndex === -1) return
+    const displayName = getUserDisplayName(userId)
+    mentionMapRef.current[displayName] = userId
     const before = text.slice(0, lastAtIndex)
     const after = text.slice(cursorPos)
-    const newText = before + `@${userId} ` + after
+    const newText = before + `@${displayName} ` + after
     setText(newText)
     setShowMention(false)
     requestAnimationFrame(() => {
       el.focus()
-      const newPos = lastAtIndex + userId.length + 3
+      const newPos = lastAtIndex + displayName.length + 3
       el.setSelectionRange(newPos, newPos)
     })
-  }
-
-  const handleSend = async () => {
-    const trimmed = text.trim()
-    if (!trimmed || sendingMessage) return
-
-    if (replyTo) {
-      try {
-        if (conversationType === 'private') {
-          const parts = conversationId.split('_')
-          const receiverId = parts.length === 2 ? (parts[0] === currentUserId ? parts[1] : parts[0]) : conversationId
-          await messageApi.sendPrivate({
-            receiver_id: receiverId,
-            content_type: 'text',
-            content: trimmed,
-            reply_to_id: replyTo.id,
-          })
-        } else {
-          const mentions = extractMentions(trimmed)
-          await messageApi.sendGroup({
-            group_id: conversationId,
-            content_type: 'text',
-            content: trimmed,
-            reply_to_id: replyTo.id,
-            mentions,
-          })
-        }
-      } catch {
-        antMessage.error('发送失败')
-        return
-      }
-      onCancelReply()
-    } else {
-      await sendMessage(conversationType, conversationId, trimmed, 'text', currentUserId)
-    }
-
-    setText('')
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-    }
   }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault()
       handleSend()
+      return
+    }
+
+    // Backspace: delete @mention as a block
+    if (e.key === 'Backspace') {
+      const el = textareaRef.current
+      if (!el) return
+      const cursorPos = el.selectionStart
+      if (cursorPos !== el.selectionEnd) return
+
+      const beforeCursor = text.slice(0, cursorPos)
+      for (const displayName of Object.keys(mentionMapRef.current)) {
+        const pattern = `@${displayName} `
+        if (beforeCursor.endsWith(pattern)) {
+          e.preventDefault()
+          const newText = text.slice(0, beforeCursor.length - pattern.length) + text.slice(cursorPos)
+          setText(newText)
+          delete mentionMapRef.current[displayName]
+          return
+        }
+      }
+    }
+  }
+
+  const handleSend = async () => {
+    const trimmed = text.trim()
+    if (!trimmed || sendingMessage) return
+
+    const replyToId = replyTo?.id
+    const mentionIds = Object.values(mentionMapRef.current)
+    await sendMessage(conversationType, conversationId, trimmed, 'text', currentUserId, replyToId, mentionIds.length > 0 ? mentionIds : undefined)
+    if (replyTo) onCancelReply()
+
+    setText('')
+    mentionMapRef.current = {}
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
     }
   }
 
@@ -162,23 +154,10 @@ export default function MessageInput({ conversationType, conversationId, current
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-
     const reader = new FileReader()
     reader.onload = () => {
       const base64 = reader.result as string
-      const extra = JSON.stringify({ filename: file.name, size: file.size })
-      try {
-        messageApi.sendGroup({
-          group_id: conversationId,
-          content_type: 'file',
-          content: base64,
-          extra,
-        }).then(() => {
-          // message sent via API, need to refresh
-        }).catch(() => antMessage.error('文件发送失败'))
-      } catch {
-        antMessage.error('文件发送失败')
-      }
+      sendMessage(conversationType, conversationId, base64, 'file', currentUserId)
     }
     reader.readAsDataURL(file)
     e.target.value = ''
@@ -210,10 +189,10 @@ export default function MessageInput({ conversationType, conversationId, current
             rows={1}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:outline-none focus:border-blue-400 min-h-[40px] max-h-[150px]"
           />
-          {showMention && groupId && groupOwnerId && (
+          {showMention && groupId && (
             <MentionDropdown
               groupId={groupId}
-              ownerId={groupOwnerId}
+              ownerId={groupOwnerId || ''}
               onSelect={handleMentionSelect}
               searchText={mentionSearch}
             />

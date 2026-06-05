@@ -4,6 +4,11 @@ grpc:
 log:
   level: info
   dir: ./logs
+  max_size: 100
+  max_backups: 3
+  max_age: 7
+  compress: true
+  local_time: true
 
 redis:
   addrs:

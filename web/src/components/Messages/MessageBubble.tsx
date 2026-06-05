@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Popover, Button, message as antMessage } from 'antd'
+import { Streamdown } from '../Chat/Streamdown'
 import type { Message } from '../../lib/chat-api'
 import InvitationCard from './InvitationCard'
 import ForwardModal from './ForwardModal'
@@ -48,40 +49,6 @@ function parseMentions(extra: string | null): string[] {
   }
 }
 
-function renderTextWithMentions(content: string, mentions: string[], currentUserId: string, mentionNames: Record<string, string>, onMention?: (userId: string) => void): React.ReactNode[] {
-  const parts: React.ReactNode[] = []
-  const regex = /@(\S+)/g
-  let lastIndex = 0
-  let match: RegExpExecArray | null
-
-  while ((match = regex.exec(content)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(<span key={`t${lastIndex}`}>{content.slice(lastIndex, match.index)}</span>)
-    }
-    const userId = match[1]
-    const displayName = mentionNames[userId] || userId
-    if (mentions.includes(userId)) {
-      const isSelf = userId === currentUserId
-      parts.push(
-        <span
-          key={`m${match.index}`}
-          className={`cursor-pointer ${isSelf ? 'bg-yellow-200 text-blue-600 px-0.5 rounded' : 'text-blue-500'}`}
-          onClick={() => onMention?.(userId)}
-        >
-          @{displayName}
-        </span>
-      )
-    } else {
-      parts.push(<span key={`p${match.index}`}>@{displayName}</span>)
-    }
-    lastIndex = match.index + match[0].length
-  }
-  if (lastIndex < content.length) {
-    parts.push(<span key={`t${lastIndex}`}>{content.slice(lastIndex)}</span>)
-  }
-  return parts.length > 0 ? parts : [<span key="all">{content}</span>]
-}
-
 export default function MessageBubble({ message, isOwn, senderName, senderAvatar, repliedMessage, currentUserId, onReply, onRecall, onMention, onJumpToMessage, highlight, mentionNames }: MessageBubbleProps) {
   const navigate = useNavigate()
   const [imgError, setImgError] = useState(false)
@@ -89,6 +56,17 @@ export default function MessageBubble({ message, isOwn, senderName, senderAvatar
 
   const mentions = parseMentions(message.extra)
   const isMentionedSelf = mentions.includes(currentUserId)
+
+  const processedContent = useMemo(() => {
+    if (message.content_type !== 'text') return message.content
+    return message.content.replace(/@(\S+)/g, (_match, userId) => {
+      if (mentions.includes(userId)) {
+        const name = mentionNames?.[userId] || userId
+        return `**@${name}**`
+      }
+      return _match
+    })
+  }, [message.content, message.content_type, mentions, mentionNames])
 
   if (message.status === 'recalled') {
     return (
@@ -104,9 +82,9 @@ export default function MessageBubble({ message, isOwn, senderName, senderAvatar
     switch (message.content_type) {
       case 'text':
         return (
-          <p className="whitespace-pre-wrap break-words">
-            {renderTextWithMentions(message.content, mentions, currentUserId, mentionNames || {}, onMention)}
-          </p>
+          <div className={isOwn ? 'text-white' : 'text-gray-800'}>
+            <Streamdown content={processedContent} />
+          </div>
         )
       case 'image':
         return (
