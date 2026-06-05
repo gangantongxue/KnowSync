@@ -12,7 +12,7 @@ logger:
   local_time: true
 
 database:
-  host: localhost
+  host: mysql
   port: 3306
   user: root
   password: 123456
@@ -23,7 +23,7 @@ database:
 
 redis:
   addrs:
-    - "localhost:6379"
+    - "redis:6379"
   password: ""
   db: 0
   pool_size: 10

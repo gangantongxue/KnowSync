@@ -7,19 +7,19 @@ log:
 
 redis:
   addrs:
-    - localhost:6379
+    - redis:6379
   password: ""
   db: 0
 
 database:
-  host: localhost
+  host: mysql
   port: 3306
   user: root
   password: password
   dbname: knowsync
 
 gateway:
-  addr: http://localhost:8080
+  addr: http://gateway:8080
 
 service_token:
   secret: "change-me-to-a-random-secret"

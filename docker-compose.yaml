@@ -95,8 +95,6 @@ services:
         condition: service_healthy
       repo-server:
         condition: service_started
-      gateway:
-        condition: service_started
     volumes:
       - ./ai-server/logs:/app/logs
       - ./data/vectors:/app/data/vectors

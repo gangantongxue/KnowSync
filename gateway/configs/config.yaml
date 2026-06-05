@@ -29,7 +29,7 @@ grpc_clients:
 
 redis:
   addrs:
-    - localhost:6379
+    - redis:6379
   password: ""
   db: 0
 

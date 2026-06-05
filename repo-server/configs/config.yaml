@@ -12,7 +12,7 @@ logger:
   local_time: true
 
 database:
-  host: localhost
+  host: mysql
   port: 3306
   user: root
   password: 123456

@@ -181,8 +181,19 @@ func (h *Handler) Search() app.HandlerFunc {
 			return
 		}
 
+		tokenString, jti, err := h.authManager.Generate(c, "", "")
+		if err != nil {
+			slog.Error("生成 service token 失败", "error", err)
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "服务内部错误")
+			return
+		}
+
+		md := metadata.Pairs("x-service-token", tokenString)
+		grpcCtx := metadata.NewOutgoingContext(c, md)
+		defer func() { _ = h.authManager.RevokeByJTI(c, jti) }()
+
 		client := pb.NewAIServiceClient(conn)
-		resp, err := client.Search(c, &pb.SearchRequest{
+		resp, err := client.Search(grpcCtx, &pb.SearchRequest{
 			Query:    req.Query,
 			Page:     req.Page,
 			PageSize: req.PageSize,

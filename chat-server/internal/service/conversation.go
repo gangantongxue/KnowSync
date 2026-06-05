@@ -36,7 +36,6 @@ func (s *Service) GetConversationList(ctx context.Context, userID string) ([]Con
 	groups, err := s.Repo.Conversation.GetGroupConversations(ctx, userID)
 	if err != nil {
 		slog.Error("获取群组会话失败", "error", err)
-		return nil, err
 	}
 
 	var conversations []Conversation

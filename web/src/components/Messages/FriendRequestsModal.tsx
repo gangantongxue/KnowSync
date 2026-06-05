@@ -2,10 +2,16 @@ import { useState, useEffect } from 'react'
 import { message } from 'antd'
 import { useMessageStore } from '../../store/message-store'
 import { friendApi } from '../../lib/chat-api'
+import { userApi } from '../../lib/user-api'
 import type { FriendRequest } from '../../lib/chat-api'
 
 interface FriendRequestsModalProps {
   onClose: () => void
+}
+
+interface UserInfo {
+  name: string
+  avatar: string
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -20,21 +26,36 @@ const STATUS_COLOR: Record<string, string> = {
   rejected: 'bg-gray-100 text-gray-500',
 }
 
+const PASTEL_BG = [
+  'bg-red-100 text-red-600',
+  'bg-blue-100 text-blue-600',
+  'bg-green-100 text-green-600',
+  'bg-yellow-100 text-yellow-700',
+  'bg-purple-100 text-purple-700',
+  'bg-pink-100 text-pink-600',
+  'bg-indigo-100 text-indigo-600',
+  'bg-teal-100 text-teal-600',
+]
+
+function getAvatarColor(name: string): string {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return PASTEL_BG[Math.abs(hash) % PASTEL_BG.length]
+}
+
 export default function FriendRequestsModal({ onClose }: FriendRequestsModalProps) {
-  const { acceptFriendRequest, rejectFriendRequest, friends } = useMessageStore()
+  const { acceptFriendRequest, rejectFriendRequest } = useMessageStore()
   const [tab, setTab] = useState<'received' | 'sent'>('received')
   const [receivedRequests, setReceivedRequests] = useState<FriendRequest[]>([])
   const [sentRequests, setSentRequests] = useState<FriendRequest[]>([])
   const [loading, setLoading] = useState(false)
+  const [userCache, setUserCache] = useState<Record<string, UserInfo>>({})
 
   useEffect(() => {
     loadRequests()
   }, [])
-
-  const getFriendName = (userId: string): string => {
-    const friend = friends.find(f => f.friend_id === userId)
-    return friend?.remark || userId
-  }
 
   const loadRequests = async () => {
     setLoading(true)
@@ -43,8 +64,31 @@ export default function FriendRequestsModal({ onClose }: FriendRequestsModalProp
         friendApi.getReceivedRequests(),
         friendApi.getSentRequests(),
       ])
-      setReceivedRequests(receivedRes.data.friend_requests)
-      setSentRequests(sentRes.data.friend_requests)
+      const received = receivedRes.data.friend_requests
+      const sent = sentRes.data.friend_requests
+      setReceivedRequests(received)
+      setSentRequests(sent)
+
+      const allIds = new Set<string>()
+      received.forEach(r => allIds.add(r.sender_id))
+      sent.forEach(r => allIds.add(r.receiver_id))
+      const unknownIds = [...allIds].filter(id => !userCache[id])
+
+      if (unknownIds.length > 0) {
+        const profiles = await Promise.allSettled(
+          unknownIds.map(id => userApi.getProfile(id))
+        )
+        const newCache = { ...userCache }
+        profiles.forEach((result, i) => {
+          if (result.status === 'fulfilled') {
+            newCache[unknownIds[i]] = {
+              name: result.value.data.user.name,
+              avatar: result.value.data.user.avatar,
+            }
+          }
+        })
+        setUserCache(newCache)
+      }
     } catch {
       message.error('加载好友请求失败')
     } finally {
@@ -73,17 +117,25 @@ export default function FriendRequestsModal({ onClose }: FriendRequestsModalProp
   }
 
   const renderRequest = (req: FriendRequest, isReceived: boolean) => {
-    const displayName = isReceived ? getFriendName(req.sender_id) : getFriendName(req.receiver_id)
+    const targetId = isReceived ? req.sender_id : req.receiver_id
+    const info = userCache[targetId]
+    const displayName = info?.name || targetId
+    const avatarUrl = info?.avatar
 
     return (
       <div key={req.id} className="flex items-center justify-between py-3 border-b border-gray-50">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-medium shrink-0">
-            {displayName.charAt(0).toUpperCase()}
-          </div>
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+          ) : (
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium shrink-0 ${getAvatarColor(displayName)}`}>
+              {displayName.charAt(0).toUpperCase()}
+            </div>
+          )}
           <div className="min-w-0">
-            <div className="text-sm text-gray-800 truncate">{displayName}</div>
-            {req.remark && <div className="text-xs text-gray-500 truncate">{req.remark}</div>}
+            <div className="text-sm text-gray-800 truncate font-medium">{displayName}</div>
+            <div className="text-xs text-gray-400 truncate">ID: {targetId}</div>
+            {req.remark && <div className="text-xs text-gray-500 truncate">备注: {req.remark}</div>}
             <div className="text-xs text-gray-400">{new Date(req.created_at * 1000).toLocaleDateString()}</div>
           </div>
         </div>

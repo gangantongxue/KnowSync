@@ -1,31 +1,50 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../store/auth-context'
-import { messageApi } from '../../lib/chat-api'
+import { messageApi, friendApi } from '../../lib/chat-api'
 
 export default function TopBar() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user } = useAuth()
   const [query, setQuery] = useState('')
-  const [totalUnread, setTotalUnread] = useState(0)
+  const [hasNotification, setHasNotification] = useState(false)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     const isMessagesPage = location.pathname.startsWith('/messages')
     if (isMessagesPage) return
 
-    const fetchUnread = async () => {
+    const fetchStatus = async () => {
       try {
-        const resp = await messageApi.getUnreadCount()
-        const counts = resp.data?.counts || {}
-        const total = Object.values(counts).reduce((a, b) => a + b, 0)
-        setTotalUnread(total)
+        const [unreadResp, friendResp] = await Promise.all([
+          messageApi.getUnreadCount(),
+          friendApi.getReceivedRequests(),
+        ])
+        const counts = unreadResp.data?.counts || {}
+        const totalUnread = Object.values(counts).reduce((a, b) => a + b, 0)
+        const pendingRequests = (friendResp.data?.friend_requests || []).filter(r => r.status === 'pending').length
+        const total = totalUnread + pendingRequests
+
+        if (total > 0) {
+          setHasNotification(true)
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current)
+            intervalRef.current = null
+          }
+        }
       } catch { /* ignore */ }
     }
 
-    fetchUnread()
-    const interval = setInterval(fetchUnread, 30000)
-    return () => clearInterval(interval)
+    setHasNotification(false)
+    fetchStatus()
+    intervalRef.current = setInterval(fetchStatus, 30000)
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
   }, [location.pathname])
 
   const handleSearch = (e: React.FormEvent) => {
@@ -68,10 +87,8 @@ export default function TopBar() {
             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
             <polyline points="22,6 12,13 2,6" />
           </svg>
-          {totalUnread > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-medium">
-              {totalUnread > 99 ? '99+' : totalUnread}
-            </span>
+          {hasNotification && (
+            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full" />
           )}
         </button>
 

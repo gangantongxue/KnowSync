@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Input, Badge, Dropdown, message } from 'antd'
 import { UserAddOutlined, TeamOutlined, SearchOutlined } from '@ant-design/icons'
 import { useMessageStore } from '../../store/message-store'
 import { conversationApi } from '../../lib/chat-api'
+import { userApi } from '../../lib/user-api'
 import type { ConversationInfo } from '../../lib/chat-api'
 import FriendRequestsModal from './FriendRequestsModal'
 import SearchUserModal from './SearchUserModal'
@@ -47,17 +48,84 @@ function getFirstChar(name: string): string {
   return name.charAt(0).toUpperCase() || '?'
 }
 
+interface UserInfo {
+  name: string
+  avatar: string
+}
+
 export default function ConversationList() {
   const navigate = useNavigate()
   const { conversationType, conversationId } = useParams()
   const {
     conversations, togglePin, friendRequests, loadFriendRequests,
-    loadConversations, loadMessages,
+    loadConversations, loadMessages, friends,
   } = useMessageStore()
   const [searchText, setSearchText] = useState('')
   const [showFriendRequests, setShowFriendRequests] = useState(false)
   const [showSearchUser, setShowSearchUser] = useState(false)
   const [showCreateGroup, setShowCreateGroup] = useState(false)
+  const [userCache, setUserCache] = useState<Record<string, UserInfo>>({})
+  const pendingCount = friendRequests.filter(r => r.status === 'pending').length
+
+  useEffect(() => {
+    loadFriendRequests()
+  }, [loadFriendRequests])
+
+  // 解析私聊会话中的好友 ID 为用户昵称
+  useEffect(() => {
+    const unknownIds = new Set<string>()
+    for (const c of conversations) {
+      if (c.conversation_type !== 'private') continue
+      const parts = c.conversation_id.split('_')
+      if (parts.length !== 2) continue
+      for (const id of parts) {
+        if (userCache[id]) continue
+        const friend = friends.find(f => f.friend_id === id)
+        if (friend?.remark) {
+          setUserCache(prev => ({ ...prev, [id]: { name: friend.remark!, avatar: '' } }))
+          continue
+        }
+        unknownIds.add(id)
+      }
+    }
+    if (unknownIds.size === 0) return
+    const ids = [...unknownIds]
+    Promise.allSettled(ids.map(id => userApi.getProfile(id))).then(results => {
+      const newCache: Record<string, UserInfo> = {}
+      results.forEach((r, i) => {
+        if (r.status === 'fulfilled') {
+          newCache[ids[i]] = { name: r.value.data.user.name, avatar: r.value.data.user.avatar }
+        }
+      })
+      if (Object.keys(newCache).length > 0) {
+        setUserCache(prev => ({ ...prev, ...newCache }))
+      }
+    })
+  }, [conversations, friends, userCache])
+
+  const getDisplayName = (conv: ConversationInfo): string => {
+    if (conv.conversation_type !== 'private') return conv.name
+    const parts = conv.conversation_id.split('_')
+    if (parts.length !== 2) return conv.name
+    for (const id of parts) {
+      const cached = userCache[id]
+      if (cached?.name) return cached.name
+      const friend = friends.find(f => f.friend_id === id)
+      if (friend?.remark) return friend.remark
+    }
+    return conv.name
+  }
+
+  const getAvatar = (conv: ConversationInfo): string | null => {
+    if (conv.conversation_type !== 'private') return null
+    const parts = conv.conversation_id.split('_')
+    if (parts.length !== 2) return null
+    for (const id of parts) {
+      const avatar = userCache[id]?.avatar
+      if (avatar) return avatar
+    }
+    return null
+  }
 
   const sorted = [...conversations].sort((a, b) => {
     if (a.pinned !== b.pinned) return a.pinned ? -1 : 1
@@ -103,7 +171,7 @@ export default function ConversationList() {
             onClick={() => { loadFriendRequests(); setShowFriendRequests(true) }}
             className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600"
           >
-            <Badge count={friendRequests.length} size="small" offset={[4, -4]}>
+            <Badge count={pendingCount} size="small" offset={[4, -4]}>
               <UserAddOutlined className="text-base" />
             </Badge>
             <span>好友申请</span>
@@ -133,6 +201,8 @@ export default function ConversationList() {
         {filtered.map(conv => {
           const active = isActive(conv)
           const previewContent = conv.last_message?.content || ''
+          const displayName = getDisplayName(conv)
+          const avatarUrl = getAvatar(conv)
 
           const contextMenuItems = [
             {
@@ -157,14 +227,18 @@ export default function ConversationList() {
                   active ? 'bg-blue-50' : 'hover:bg-gray-50'
                 }`}
               >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium shrink-0 ${getAvatarColor(conv.name)}`}>
-                  {getFirstChar(conv.name)}
-                </div>
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                ) : (
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium shrink-0 ${getAvatarColor(displayName)}`}>
+                    {getFirstChar(displayName)}
+                  </div>
+                )}
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <span className={`text-sm font-medium truncate ${active ? 'text-blue-600' : 'text-gray-800'}`}>
-                      {conv.name}
+                      {displayName}
                     </span>
                     <span className="text-xs text-gray-400 shrink-0 ml-1">
                       {formatRelativeTime(conv.last_message_at)}

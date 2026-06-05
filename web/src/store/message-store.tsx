@@ -155,6 +155,9 @@ export function MessageProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'SET_CONVERSATIONS', conversations })
       const total = conversations.reduce((sum, c) => sum + c.unread_count, 0)
       dispatch({ type: 'SET_TOTAL_UNREAD', total })
+      // 加载会话后同步加载好友列表（用于解析昵称）
+      const friendRes = await friendApi.getList()
+      dispatch({ type: 'SET_FRIENDS', friends: friendRes.data.friends })
     } catch (err) {
       dispatch({ type: 'SET_ERROR', error: (err as Error).message })
     }

@@ -33,8 +33,8 @@ func (r *ConversationRepository) GetGroupConversations(ctx context.Context, user
 	var results []GroupConversationInfo
 	if err := r.DB.WithContext(ctx).
 		Table("groups").
-		Select("groups.*, group_members.role, group_members.last_read_seq_id, group_members.pinned").
-		Joins("JOIN group_members ON group_members.group_id = groups.id").
+		Select("`groups`.*, group_members.role, group_members.last_read_seq_id, group_members.pinned").
+		Joins("JOIN group_members ON group_members.group_id = `groups`.id").
 		Where("group_members.user_id = ?", userID).
 		Find(&results).Error; err != nil {
 		return nil, err
