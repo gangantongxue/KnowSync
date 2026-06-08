@@ -72,10 +72,6 @@ func (h *Handler) SendPrivateMessage() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "发送消息失败")
 			return
 		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
-			return
-		}
 
 		response.Success(c, ctx, map[string]any{
 			KeyMessage: marshalMessageResp(resp.Message),
@@ -117,10 +113,6 @@ func (h *Handler) SendGroupMessage() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC SendGroupMessage 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "发送消息失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -170,10 +162,6 @@ func (h *Handler) GetMessages() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取消息列表失败")
 			return
 		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
-			return
-		}
 
 		messages := make([]map[string]any, 0, len(resp.Messages))
 		for _, m := range resp.Messages {
@@ -210,17 +198,13 @@ func (h *Handler) RecallMessage() app.HandlerFunc {
 		}
 
 		client := pb.NewChatServiceClient(conn)
-		resp, err := client.RecallMessage(c, &pb.RecallMessageReq{
+		_, err := client.RecallMessage(c, &pb.RecallMessageReq{
 			MessageId: messageID,
 			SenderId:  uid,
 		})
 		if err != nil {
 			slog.Error("gRPC RecallMessage 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "撤回消息失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -261,10 +245,6 @@ func (h *Handler) ForwardMessage() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "转发消息失败")
 			return
 		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
-			return
-		}
 
 		response.Success(c, ctx, map[string]any{
 			KeyMessage: marshalMessageResp(resp.Message),
@@ -294,10 +274,6 @@ func (h *Handler) GetUnreadCount() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC GetUnreadCount 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取未读数失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 

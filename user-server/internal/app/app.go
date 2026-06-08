@@ -16,6 +16,7 @@ import (
 	"github.com/gangantongxue/knowsync/user-server/internal/handler"
 	"github.com/gangantongxue/knowsync/user-server/internal/repository"
 	"github.com/gangantongxue/knowsync/user-server/internal/service"
+	"github.com/gangantongxue/knowsync/user-server/pkg/auth"
 	"github.com/gangantongxue/knowsync/user-server/pkg/config"
 	"github.com/gangantongxue/knowsync/user-server/pkg/database"
 	"github.com/gangantongxue/knowsync/user-server/pkg/database/schema"
@@ -66,18 +67,21 @@ func NewApp() error {
 		return err
 	}
 
-	mailer := mail.NewMailer(&cfg.Email, logger)
-	service, err := service.NewService(cfg, repo, mailer, logger)
+	// 加载 RSA 私钥
+	privateKey, err := auth.LoadPrivateKeyFromFile(cfg.Auth.RSAPrivateKeyPath)
 	if err != nil {
-		slog.Error("初始化服务失败", "error", err)
-		return err
+		slog.Error("加载 RSA 私钥失败", "error", err)
+		return fmt.Errorf("加载 RSA 私钥失败: %w", err)
 	}
 
-	handler, err := handler.NewHandler(service)
-	if err != nil {
-		slog.Error("初始化处理程序失败", "error", err)
-		return err
-	}
+	mailer := mail.NewMailer(&cfg.Email, logger)
+
+	// 创建服务（注入接口，Go 隐式满足）
+	userSvc := service.NewUserService(repo, repo, repo)
+	authSvc := service.NewAuthService(repo, repo, repo, cfg, privateKey, mailer)
+
+	// 创建处理程序
+	h := handler.NewHandler(userSvc, authSvc)
 
 	slog.Info("=====应用初始化完成=====")
 
@@ -89,7 +93,7 @@ func NewApp() error {
 	}
 
 	srv := grpc.NewServer()
-	pb.RegisterUserServiceServer(srv, handler)
+	pb.RegisterUserServiceServer(srv, h)
 	reflection.Register(srv)
 
 	// 监听退出信号，实现优雅关闭

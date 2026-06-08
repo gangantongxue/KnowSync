@@ -5,17 +5,17 @@ import (
 	"context"
 
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // SendFriendRequest 发送好友申请.
 func (h *Handler) SendFriendRequest(ctx context.Context, req *pb.SendFriendRequestReq) (*pb.SendFriendRequestResp, error) {
-	fr, err := h.Service.SendFriendRequest(ctx, req.GetSenderId(), req.GetReceiverId(), req.GetRemark())
+	fr, err := h.FriendService.SendFriendRequest(ctx, req.GetSenderId(), req.GetReceiverId(), req.GetRemark())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &pb.SendFriendRequestResp{
-		Success: true,
-		Msg:     "发送成功",
 		FriendRequest: &pb.FriendRequest{
 			Id:         fr.ID,
 			SenderId:   fr.SenderID,
@@ -32,9 +32,9 @@ func (h *Handler) SendFriendRequest(ctx context.Context, req *pb.SendFriendReque
 //
 //nolint:dupl // GetFriendRequestsByReceiver/Sender 业务相似，保持独立方便理解
 func (h *Handler) GetFriendRequestsByReceiver(ctx context.Context, req *pb.GetFriendRequestsByReceiverReq) (*pb.GetFriendRequestsResp, error) {
-	requests, err := h.Service.GetFriendRequestsByReceiver(ctx, req.GetReceiverId())
+	requests, err := h.FriendService.GetFriendRequestsByReceiver(ctx, req.GetReceiverId())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	pbRequests := make([]*pb.FriendRequest, len(requests))
 	for i, r := range requests {
@@ -49,8 +49,6 @@ func (h *Handler) GetFriendRequestsByReceiver(ctx context.Context, req *pb.GetFr
 		}
 	}
 	return &pb.GetFriendRequestsResp{
-		Success:        true,
-		Msg:            MsgSuccess,
 		FriendRequests: pbRequests,
 	}, nil
 }
@@ -59,9 +57,9 @@ func (h *Handler) GetFriendRequestsByReceiver(ctx context.Context, req *pb.GetFr
 //
 //nolint:dupl // GetFriendRequestsByReceiver/Sender 业务相似，保持独立方便理解
 func (h *Handler) GetFriendRequestsBySender(ctx context.Context, req *pb.GetFriendRequestsBySenderReq) (*pb.GetFriendRequestsResp, error) {
-	requests, err := h.Service.GetFriendRequestsBySender(ctx, req.GetSenderId())
+	requests, err := h.FriendService.GetFriendRequestsBySender(ctx, req.GetSenderId())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	pbRequests := make([]*pb.FriendRequest, len(requests))
 	for i, r := range requests {
@@ -76,39 +74,31 @@ func (h *Handler) GetFriendRequestsBySender(ctx context.Context, req *pb.GetFrie
 		}
 	}
 	return &pb.GetFriendRequestsResp{
-		Success:        true,
-		Msg:            MsgSuccess,
 		FriendRequests: pbRequests,
 	}, nil
 }
 
 // AcceptFriendRequest 接受好友申请.
 func (h *Handler) AcceptFriendRequest(ctx context.Context, req *pb.AcceptFriendRequestReq) (*pb.AcceptFriendRequestResp, error) {
-	if err := h.Service.AcceptFriendRequest(ctx, req.GetRequestId(), req.GetReceiverId()); err != nil {
-		return nil, err
+	if err := h.FriendService.AcceptFriendRequest(ctx, req.GetRequestId(), req.GetReceiverId()); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.AcceptFriendRequestResp{
-		Success: true,
-		Msg:     "接受成功",
-	}, nil
+	return &pb.AcceptFriendRequestResp{}, nil
 }
 
 // RejectFriendRequest 拒绝好友申请.
 func (h *Handler) RejectFriendRequest(ctx context.Context, req *pb.RejectFriendRequestReq) (*pb.RejectFriendRequestResp, error) {
-	if err := h.Service.RejectFriendRequest(ctx, req.GetRequestId(), req.GetReceiverId()); err != nil {
-		return nil, err
+	if err := h.FriendService.RejectFriendRequest(ctx, req.GetRequestId(), req.GetReceiverId()); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.RejectFriendRequestResp{
-		Success: true,
-		Msg:     "拒绝成功",
-	}, nil
+	return &pb.RejectFriendRequestResp{}, nil
 }
 
 // GetFriendList 获取好友列表.
 func (h *Handler) GetFriendList(ctx context.Context, req *pb.GetFriendListReq) (*pb.GetFriendListResp, error) {
-	friends, err := h.Service.GetFriendList(ctx, req.GetUserId(), req.GetQuery())
+	friends, err := h.FriendService.GetFriendList(ctx, req.GetUserId(), req.GetQuery())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	pbFriends := make([]*pb.Friend, len(friends))
 	for i, f := range friends {
@@ -122,39 +112,31 @@ func (h *Handler) GetFriendList(ctx context.Context, req *pb.GetFriendListReq) (
 		}
 	}
 	return &pb.GetFriendListResp{
-		Success: true,
-		Msg:     MsgSuccess,
 		Friends: pbFriends,
 	}, nil
 }
 
 // DeleteFriend 删除好友.
 func (h *Handler) DeleteFriend(ctx context.Context, req *pb.DeleteFriendReq) (*pb.DeleteFriendResp, error) {
-	if err := h.Service.DeleteFriend(ctx, req.GetUserId(), req.GetFriendId()); err != nil {
-		return nil, err
+	if err := h.FriendService.DeleteFriend(ctx, req.GetUserId(), req.GetFriendId()); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.DeleteFriendResp{
-		Success: true,
-		Msg:     "删除成功",
-	}, nil
+	return &pb.DeleteFriendResp{}, nil
 }
 
 // UpdateFriendRemark 更新好友备注.
 func (h *Handler) UpdateFriendRemark(ctx context.Context, req *pb.UpdateFriendRemarkReq) (*pb.UpdateFriendRemarkResp, error) {
-	if err := h.Service.UpdateFriendRemark(ctx, req.GetUserId(), req.GetFriendId(), req.GetRemark()); err != nil {
-		return nil, err
+	if err := h.FriendService.UpdateFriendRemark(ctx, req.GetUserId(), req.GetFriendId(), req.GetRemark()); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.UpdateFriendRemarkResp{
-		Success: true,
-		Msg:     "更新成功",
-	}, nil
+	return &pb.UpdateFriendRemarkResp{}, nil
 }
 
 // SearchUsers 搜索用户.
 func (h *Handler) SearchUsers(ctx context.Context, req *pb.SearchUsersReq) (*pb.SearchUsersResp, error) {
-	users, err := h.Service.SearchUsers(ctx, req.GetQuery())
+	users, err := h.FriendService.SearchUsers(ctx, req.GetQuery())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	pbUsers := make([]*pb.SearchUserInfo, len(users))
 	for i, u := range users {
@@ -165,8 +147,6 @@ func (h *Handler) SearchUsers(ctx context.Context, req *pb.SearchUsersReq) (*pb.
 		}
 	}
 	return &pb.SearchUsersResp{
-		Success: true,
-		Msg:     MsgSuccess,
-		Users:   pbUsers,
+		Users: pbUsers,
 	}, nil
 }

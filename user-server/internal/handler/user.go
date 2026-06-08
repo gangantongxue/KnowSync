@@ -4,26 +4,32 @@ import (
 	"context"
 
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
+	"github.com/gangantongxue/knowsync/user-server/internal/service"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
+// UserHandler 用户处理器.
+type UserHandler struct {
+	userSvc *service.UserService
+}
+
+// NewUserHandler 创建用户处理器.
+func NewUserHandler(userSvc *service.UserService) *UserHandler {
+	return &UserHandler{userSvc: userSvc}
+}
+
 // GetUser 获取用户信息.
-func (h *Handler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
-	user, err := h.Service.GetUser(ctx, req.GetUserId())
+func (h *UserHandler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
+	user, err := h.userSvc.GetUser(ctx, req.UserId)
 	if err != nil {
-		return &pb.GetUserResponse{
-			Success: false,
-			Msg:     err.Error(),
-		}, err
+		return nil, status.Error(codes.Internal, "获取用户信息失败")
 	}
 	if user == nil {
-		return &pb.GetUserResponse{
-			Success: false,
-			Msg:     "user not found",
-		}, nil
+		return nil, status.Error(codes.NotFound, "用户不存在")
 	}
+
 	return &pb.GetUserResponse{
-		Success: true,
-		Msg:     "get user success",
 		User: &pb.User{
 			Id:     user.ID,
 			Name:   user.Name,
@@ -34,23 +40,16 @@ func (h *Handler) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetU
 }
 
 // UpdateUserInfo 更新用户信息.
-func (h *Handler) UpdateUserInfo(ctx context.Context, req *pb.UpdateUserInfoRequest) (*pb.UpdateUserInfoResponse, error) {
-	user, err := h.Service.UpdateUserInfo(ctx, req.GetUser().GetId(), req.GetUser().GetName(), req.GetUser().GetEmail(), req.GetUser().GetAvatar())
+func (h *UserHandler) UpdateUserInfo(ctx context.Context, req *pb.UpdateUserInfoRequest) (*pb.UpdateUserInfoResponse, error) {
+	user, err := h.userSvc.UpdateUserInfo(ctx, req.GetUser().GetId(), req.GetUser().GetName(), req.GetUser().GetEmail(), req.GetUser().GetAvatar())
 	if err != nil {
-		return &pb.UpdateUserInfoResponse{
-			Success: false,
-			Msg:     err.Error(),
-		}, err
+		return nil, status.Error(codes.Internal, "更新用户信息失败")
 	}
 	if user == nil {
-		return &pb.UpdateUserInfoResponse{
-			Success: false,
-			Msg:     "user not found",
-		}, nil
+		return nil, status.Error(codes.NotFound, "用户不存在")
 	}
+
 	return &pb.UpdateUserInfoResponse{
-		Success: true,
-		Msg:     "update user info success",
 		User: &pb.User{
 			Id:     user.ID,
 			Name:   user.Name,
@@ -61,31 +60,21 @@ func (h *Handler) UpdateUserInfo(ctx context.Context, req *pb.UpdateUserInfoRequ
 }
 
 // SetAvatar 设置用户头像.
-func (h *Handler) SetAvatar(ctx context.Context, req *pb.SetAvatarRequest) (*pb.SetAvatarResponse, error) {
-	err := h.Service.SetAvatar(ctx, req.GetUserId(), req.GetAvatar())
+func (h *UserHandler) SetAvatar(ctx context.Context, req *pb.SetAvatarRequest) (*pb.SetAvatarResponse, error) {
+	err := h.userSvc.SetAvatar(ctx, req.UserId, req.Avatar)
 	if err != nil {
-		return &pb.SetAvatarResponse{
-			Success: false,
-			Msg:     err.Error(),
-		}, err
+		return nil, status.Error(codes.Internal, "设置头像失败")
 	}
-	return &pb.SetAvatarResponse{
-		Success: true,
-		Msg:     "set avatar success",
-	}, nil
+
+	return &pb.SetAvatarResponse{}, nil
 }
 
 // Unregister 注销用户.
-func (h *Handler) Unregister(ctx context.Context, req *pb.UnregisterRequest) (*pb.UnregisterResponse, error) {
-	err := h.Service.Unregister(ctx, req.GetUserId(), req.GetEmail(), req.GetPassword(), req.GetVerifyCode())
+func (h *UserHandler) Unregister(ctx context.Context, req *pb.UnregisterRequest) (*pb.UnregisterResponse, error) {
+	err := h.userSvc.Unregister(ctx, req.UserId, req.Email, req.Password, req.VerifyCode)
 	if err != nil {
-		return &pb.UnregisterResponse{
-			Success: false,
-			Msg:     err.Error(),
-		}, err
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	return &pb.UnregisterResponse{
-		Success: true,
-		Msg:     "unregister success",
-	}, nil
+
+	return &pb.UnregisterResponse{}, nil
 }

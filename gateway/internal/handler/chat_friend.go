@@ -53,10 +53,6 @@ func (h *Handler) SendFriendRequest() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "发送好友申请失败")
 			return
 		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
-			return
-		}
 
 		response.Success(c, ctx, map[string]any{
 			"friend_request": map[string]any{
@@ -97,10 +93,6 @@ func (h *Handler) GetFriendRequestsByReceiver() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取好友申请失败")
 			return
 		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
-			return
-		}
 
 		requests := make([]map[string]any, 0, len(resp.FriendRequests))
 		for _, fr := range resp.FriendRequests {
@@ -139,10 +131,6 @@ func (h *Handler) GetFriendRequestsBySender() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取好友申请失败")
 			return
 		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
-			return
-		}
 
 		requests := make([]map[string]any, 0, len(resp.FriendRequests))
 		for _, fr := range resp.FriendRequests {
@@ -179,17 +167,13 @@ func (h *Handler) AcceptFriendRequest() app.HandlerFunc {
 		}
 
 		client := pb.NewChatServiceClient(conn)
-		resp, err := client.AcceptFriendRequest(c, &pb.AcceptFriendRequestReq{
+		_, err := client.AcceptFriendRequest(c, &pb.AcceptFriendRequestReq{
 			RequestId:  requestID,
 			ReceiverId: uid,
 		})
 		if err != nil {
 			slog.Error("gRPC AcceptFriendRequest 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "接受好友申请失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -221,17 +205,13 @@ func (h *Handler) RejectFriendRequest() app.HandlerFunc {
 		}
 
 		client := pb.NewChatServiceClient(conn)
-		resp, err := client.RejectFriendRequest(c, &pb.RejectFriendRequestReq{
+		_, err := client.RejectFriendRequest(c, &pb.RejectFriendRequestReq{
 			RequestId:  requestID,
 			ReceiverId: uid,
 		})
 		if err != nil {
 			slog.Error("gRPC RejectFriendRequest 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "拒绝好友申请失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -264,10 +244,6 @@ func (h *Handler) GetFriendList() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC GetFriendList 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取好友列表失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -313,17 +289,13 @@ func (h *Handler) DeleteFriend() app.HandlerFunc {
 		}
 
 		client := pb.NewChatServiceClient(conn)
-		resp, err := client.DeleteFriend(c, &pb.DeleteFriendReq{
+		_, err := client.DeleteFriend(c, &pb.DeleteFriendReq{
 			UserId:   uid,
 			FriendId: friendID,
 		})
 		if err != nil {
 			slog.Error("gRPC DeleteFriend 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "删除好友失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -361,7 +333,7 @@ func (h *Handler) UpdateFriendRemark() app.HandlerFunc {
 		}
 
 		client := pb.NewChatServiceClient(conn)
-		resp, err := client.UpdateFriendRemark(c, &pb.UpdateFriendRemarkReq{
+		_, err := client.UpdateFriendRemark(c, &pb.UpdateFriendRemarkReq{
 			UserId:   uid,
 			FriendId: friendID,
 			Remark:   req.Remark,
@@ -369,10 +341,6 @@ func (h *Handler) UpdateFriendRemark() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC UpdateFriendRemark 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "更新备注失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -402,10 +370,6 @@ func (h *Handler) SearchUsers() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC SearchUsers 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "搜索用户失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 

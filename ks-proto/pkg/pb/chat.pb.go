@@ -7,12 +7,11 @@
 package pb
 
 import (
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -264,9 +263,7 @@ func (x *SendFriendRequestReq) GetRemark() string {
 // SendFriendRequestResp 发送好友申请响应
 type SendFriendRequestResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	FriendRequest *FriendRequest         `protobuf:"bytes,3,opt,name=friend_request,json=friendRequest,proto3" json:"friend_request,omitempty"`
+	FriendRequest *FriendRequest         `protobuf:"bytes,1,opt,name=friend_request,json=friendRequest,proto3" json:"friend_request,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -299,20 +296,6 @@ func (x *SendFriendRequestResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use SendFriendRequestResp.ProtoReflect.Descriptor instead.
 func (*SendFriendRequestResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *SendFriendRequestResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *SendFriendRequestResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *SendFriendRequestResp) GetFriendRequest() *FriendRequest {
@@ -415,9 +398,7 @@ func (x *GetFriendRequestsBySenderReq) GetSenderId() string {
 // GetFriendRequestsResp 获取好友申请列表响应
 type GetFriendRequestsResp struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
-	Success        bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg            string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	FriendRequests []*FriendRequest       `protobuf:"bytes,3,rep,name=friend_requests,json=friendRequests,proto3" json:"friend_requests,omitempty"`
+	FriendRequests []*FriendRequest       `protobuf:"bytes,1,rep,name=friend_requests,json=friendRequests,proto3" json:"friend_requests,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -450,20 +431,6 @@ func (x *GetFriendRequestsResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetFriendRequestsResp.ProtoReflect.Descriptor instead.
 func (*GetFriendRequestsResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *GetFriendRequestsResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetFriendRequestsResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *GetFriendRequestsResp) GetFriendRequests() []*FriendRequest {
@@ -529,8 +496,6 @@ func (x *AcceptFriendRequestReq) GetReceiverId() string {
 // AcceptFriendRequestResp 接受好友申请响应
 type AcceptFriendRequestResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -563,20 +528,6 @@ func (x *AcceptFriendRequestResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use AcceptFriendRequestResp.ProtoReflect.Descriptor instead.
 func (*AcceptFriendRequestResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *AcceptFriendRequestResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *AcceptFriendRequestResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 // RejectFriendRequestReq 拒绝好友申请请求
@@ -635,8 +586,6 @@ func (x *RejectFriendRequestReq) GetReceiverId() string {
 // RejectFriendRequestResp 拒绝好友申请响应
 type RejectFriendRequestResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -669,20 +618,6 @@ func (x *RejectFriendRequestResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use RejectFriendRequestResp.ProtoReflect.Descriptor instead.
 func (*RejectFriendRequestResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *RejectFriendRequestResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *RejectFriendRequestResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 // GetFriendListReq 获取好友列表请求
@@ -741,9 +676,7 @@ func (x *GetFriendListReq) GetQuery() string {
 // GetFriendListResp 获取好友列表响应
 type GetFriendListResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Friends       []*Friend              `protobuf:"bytes,3,rep,name=friends,proto3" json:"friends,omitempty"`
+	Friends       []*Friend              `protobuf:"bytes,1,rep,name=friends,proto3" json:"friends,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -776,20 +709,6 @@ func (x *GetFriendListResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetFriendListResp.ProtoReflect.Descriptor instead.
 func (*GetFriendListResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *GetFriendListResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetFriendListResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *GetFriendListResp) GetFriends() []*Friend {
@@ -855,8 +774,6 @@ func (x *DeleteFriendReq) GetFriendId() string {
 // DeleteFriendResp 删除好友响应
 type DeleteFriendResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -889,20 +806,6 @@ func (x *DeleteFriendResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use DeleteFriendResp.ProtoReflect.Descriptor instead.
 func (*DeleteFriendResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *DeleteFriendResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *DeleteFriendResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 // UpdateFriendRemarkReq 更新好友备注请求
@@ -969,8 +872,6 @@ func (x *UpdateFriendRemarkReq) GetRemark() string {
 // UpdateFriendRemarkResp 更新好友备注响应
 type UpdateFriendRemarkResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1003,20 +904,6 @@ func (x *UpdateFriendRemarkResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use UpdateFriendRemarkResp.ProtoReflect.Descriptor instead.
 func (*UpdateFriendRemarkResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *UpdateFriendRemarkResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *UpdateFriendRemarkResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 // SearchUsersReq 搜索用户请求
@@ -1067,9 +954,7 @@ func (x *SearchUsersReq) GetQuery() string {
 // SearchUsersResp 搜索用户响应
 type SearchUsersResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Users         []*SearchUserInfo      `protobuf:"bytes,3,rep,name=users,proto3" json:"users,omitempty"`
+	Users         []*SearchUserInfo      `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1102,20 +987,6 @@ func (x *SearchUsersResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use SearchUsersResp.ProtoReflect.Descriptor instead.
 func (*SearchUsersResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *SearchUsersResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *SearchUsersResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *SearchUsersResp) GetUsers() []*SearchUserInfo {
@@ -1399,9 +1270,7 @@ func (x *SendPrivateMessageReq) GetReplyToId() string {
 // SendPrivateMessageResp 发送私聊消息响应
 type SendPrivateMessageResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Message       *Message               `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
+	Message       *Message               `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1434,20 +1303,6 @@ func (x *SendPrivateMessageResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use SendPrivateMessageResp.ProtoReflect.Descriptor instead.
 func (*SendPrivateMessageResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{22}
-}
-
-func (x *SendPrivateMessageResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *SendPrivateMessageResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *SendPrivateMessageResp) GetMessage() *Message {
@@ -1553,9 +1408,7 @@ func (x *SendGroupMessageReq) GetReplyToId() string {
 // SendGroupMessageResp 发送群聊消息响应
 type SendGroupMessageResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Message       *Message               `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
+	Message       *Message               `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1588,20 +1441,6 @@ func (x *SendGroupMessageResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use SendGroupMessageResp.ProtoReflect.Descriptor instead.
 func (*SendGroupMessageResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{24}
-}
-
-func (x *SendGroupMessageResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *SendGroupMessageResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *SendGroupMessageResp) GetMessage() *Message {
@@ -1683,9 +1522,7 @@ func (x *GetMessagesReq) GetLimit() int32 {
 // GetMessagesResp 获取消息列表响应
 type GetMessagesResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Messages      []*Message             `protobuf:"bytes,3,rep,name=messages,proto3" json:"messages,omitempty"`
+	Messages      []*Message             `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1718,20 +1555,6 @@ func (x *GetMessagesResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetMessagesResp.ProtoReflect.Descriptor instead.
 func (*GetMessagesResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{26}
-}
-
-func (x *GetMessagesResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetMessagesResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *GetMessagesResp) GetMessages() []*Message {
@@ -1797,8 +1620,6 @@ func (x *RecallMessageReq) GetSenderId() string {
 // RecallMessageResp 撤回消息响应
 type RecallMessageResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1831,20 +1652,6 @@ func (x *RecallMessageResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use RecallMessageResp.ProtoReflect.Descriptor instead.
 func (*RecallMessageResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{28}
-}
-
-func (x *RecallMessageResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *RecallMessageResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 // ForwardMessageReq 转发消息请求
@@ -1919,9 +1726,7 @@ func (x *ForwardMessageReq) GetMessageIds() []string {
 // ForwardMessageResp 转发消息响应
 type ForwardMessageResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Message       *Message               `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
+	Message       *Message               `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1954,20 +1759,6 @@ func (x *ForwardMessageResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ForwardMessageResp.ProtoReflect.Descriptor instead.
 func (*ForwardMessageResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{30}
-}
-
-func (x *ForwardMessageResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *ForwardMessageResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *ForwardMessageResp) GetMessage() *Message {
@@ -2094,9 +1885,7 @@ func (x *Conversation) GetLastReadSeqId() uint64 {
 // GetUnreadCountResp 获取未读数响应
 type GetUnreadCountResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Counts        map[string]int32       `protobuf:"bytes,3,rep,name=counts,proto3" json:"counts,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	Counts        map[string]int32       `protobuf:"bytes,1,rep,name=counts,proto3" json:"counts,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2129,20 +1918,6 @@ func (x *GetUnreadCountResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetUnreadCountResp.ProtoReflect.Descriptor instead.
 func (*GetUnreadCountResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{33}
-}
-
-func (x *GetUnreadCountResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetUnreadCountResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *GetUnreadCountResp) GetCounts() map[string]int32 {
@@ -2394,9 +2169,7 @@ func (x *CreateGroupReq) GetMemberIds() []string {
 // CreateGroupResp 创建群组响应
 type CreateGroupResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Group         *Group                 `protobuf:"bytes,3,opt,name=group,proto3" json:"group,omitempty"`
+	Group         *Group                 `protobuf:"bytes,1,opt,name=group,proto3" json:"group,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2429,20 +2202,6 @@ func (x *CreateGroupResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CreateGroupResp.ProtoReflect.Descriptor instead.
 func (*CreateGroupResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{37}
-}
-
-func (x *CreateGroupResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *CreateGroupResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *CreateGroupResp) GetGroup() *Group {
@@ -2508,10 +2267,8 @@ func (x *GetGroupInfoReq) GetUserId() string {
 // GetGroupInfoResp 获取群信息响应
 type GetGroupInfoResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Group         *Group                 `protobuf:"bytes,3,opt,name=group,proto3" json:"group,omitempty"`
-	IsMember      bool                   `protobuf:"varint,4,opt,name=is_member,json=isMember,proto3" json:"is_member,omitempty"`
+	Group         *Group                 `protobuf:"bytes,1,opt,name=group,proto3" json:"group,omitempty"`
+	IsMember      bool                   `protobuf:"varint,2,opt,name=is_member,json=isMember,proto3" json:"is_member,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2544,20 +2301,6 @@ func (x *GetGroupInfoResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetGroupInfoResp.ProtoReflect.Descriptor instead.
 func (*GetGroupInfoResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{39}
-}
-
-func (x *GetGroupInfoResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetGroupInfoResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *GetGroupInfoResp) GetGroup() *Group {
@@ -2646,8 +2389,6 @@ func (x *UpdateGroupReq) GetAvatar() string {
 // UpdateGroupResp 更新群信息响应
 type UpdateGroupResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2680,20 +2421,6 @@ func (x *UpdateGroupResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use UpdateGroupResp.ProtoReflect.Descriptor instead.
 func (*UpdateGroupResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{41}
-}
-
-func (x *UpdateGroupResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *UpdateGroupResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 // AddMembersReq 添加成员请求
@@ -2760,8 +2487,6 @@ func (x *AddMembersReq) GetMemberIds() []string {
 // AddMembersResp 添加成员响应
 type AddMembersResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2794,20 +2519,6 @@ func (x *AddMembersResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use AddMembersResp.ProtoReflect.Descriptor instead.
 func (*AddMembersResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{43}
-}
-
-func (x *AddMembersResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *AddMembersResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 // RemoveMemberReq 移除成员请求
@@ -2874,8 +2585,6 @@ func (x *RemoveMemberReq) GetUserId() string {
 // RemoveMemberResp 移除成员响应
 type RemoveMemberResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2908,20 +2617,6 @@ func (x *RemoveMemberResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use RemoveMemberResp.ProtoReflect.Descriptor instead.
 func (*RemoveMemberResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{45}
-}
-
-func (x *RemoveMemberResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *RemoveMemberResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 // LeaveGroupReq 退出群组请求
@@ -2980,8 +2675,6 @@ func (x *LeaveGroupReq) GetUserId() string {
 // LeaveGroupResp 退出群组响应
 type LeaveGroupResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3014,20 +2707,6 @@ func (x *LeaveGroupResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use LeaveGroupResp.ProtoReflect.Descriptor instead.
 func (*LeaveGroupResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{47}
-}
-
-func (x *LeaveGroupResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *LeaveGroupResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 // TransferOwnershipReq 转让群主请求
@@ -3094,8 +2773,6 @@ func (x *TransferOwnershipReq) GetNewOwnerId() string {
 // TransferOwnershipResp 转让群主响应
 type TransferOwnershipResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3128,20 +2805,6 @@ func (x *TransferOwnershipResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use TransferOwnershipResp.ProtoReflect.Descriptor instead.
 func (*TransferOwnershipResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{49}
-}
-
-func (x *TransferOwnershipResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *TransferOwnershipResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 // SetAdminReq 设置管理员请求
@@ -3208,8 +2871,6 @@ func (x *SetAdminReq) GetUserId() string {
 // SetAdminResp 设置管理员响应
 type SetAdminResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3242,20 +2903,6 @@ func (x *SetAdminResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use SetAdminResp.ProtoReflect.Descriptor instead.
 func (*SetAdminResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{51}
-}
-
-func (x *SetAdminResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *SetAdminResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 // RemoveAdminReq 移除管理员请求
@@ -3322,8 +2969,6 @@ func (x *RemoveAdminReq) GetUserId() string {
 // RemoveAdminResp 移除管理员响应
 type RemoveAdminResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3356,20 +3001,6 @@ func (x *RemoveAdminResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use RemoveAdminResp.ProtoReflect.Descriptor instead.
 func (*RemoveAdminResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{53}
-}
-
-func (x *RemoveAdminResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *RemoveAdminResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 // GetGroupMembersReq 获取群成员请求
@@ -3428,9 +3059,7 @@ func (x *GetGroupMembersReq) GetUserId() string {
 // GetGroupMembersResp 获取群成员响应
 type GetGroupMembersResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Members       []*GroupMember         `protobuf:"bytes,3,rep,name=members,proto3" json:"members,omitempty"`
+	Members       []*GroupMember         `protobuf:"bytes,1,rep,name=members,proto3" json:"members,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3463,20 +3092,6 @@ func (x *GetGroupMembersResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetGroupMembersResp.ProtoReflect.Descriptor instead.
 func (*GetGroupMembersResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{55}
-}
-
-func (x *GetGroupMembersResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetGroupMembersResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *GetGroupMembersResp) GetMembers() []*GroupMember {
@@ -3534,9 +3149,7 @@ func (x *GetUserGroupsReq) GetUserId() string {
 // GetUserGroupsResp 获取用户群列表响应
 type GetUserGroupsResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Groups        []*Group               `protobuf:"bytes,3,rep,name=groups,proto3" json:"groups,omitempty"`
+	Groups        []*Group               `protobuf:"bytes,1,rep,name=groups,proto3" json:"groups,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3569,20 +3182,6 @@ func (x *GetUserGroupsResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetUserGroupsResp.ProtoReflect.Descriptor instead.
 func (*GetUserGroupsResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{57}
-}
-
-func (x *GetUserGroupsResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetUserGroupsResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *GetUserGroupsResp) GetGroups() []*Group {
@@ -3749,9 +3348,7 @@ func (x *GetConversationListReq) GetUserId() string {
 // GetConversationListResp 获取会话列表响应
 type GetConversationListResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Conversations []*ConversationInfo    `protobuf:"bytes,3,rep,name=conversations,proto3" json:"conversations,omitempty"`
+	Conversations []*ConversationInfo    `protobuf:"bytes,1,rep,name=conversations,proto3" json:"conversations,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3784,20 +3381,6 @@ func (x *GetConversationListResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetConversationListResp.ProtoReflect.Descriptor instead.
 func (*GetConversationListResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{60}
-}
-
-func (x *GetConversationListResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetConversationListResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *GetConversationListResp) GetConversations() []*ConversationInfo {
@@ -3871,8 +3454,6 @@ func (x *MarkConversationReadReq) GetConversationId() string {
 // MarkConversationReadResp 标记会话已读响应
 type MarkConversationReadResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3905,20 +3486,6 @@ func (x *MarkConversationReadResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use MarkConversationReadResp.ProtoReflect.Descriptor instead.
 func (*MarkConversationReadResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{62}
-}
-
-func (x *MarkConversationReadResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *MarkConversationReadResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 // TogglePinReq 切换置顶请求
@@ -3985,9 +3552,7 @@ func (x *TogglePinReq) GetConversationId() string {
 // TogglePinResp 切换置顶响应
 type TogglePinResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Pinned        bool                   `protobuf:"varint,3,opt,name=pinned,proto3" json:"pinned,omitempty"`
+	Pinned        bool                   `protobuf:"varint,1,opt,name=pinned,proto3" json:"pinned,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4020,20 +3585,6 @@ func (x *TogglePinResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use TogglePinResp.ProtoReflect.Descriptor instead.
 func (*TogglePinResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{64}
-}
-
-func (x *TogglePinResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *TogglePinResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *TogglePinResp) GetPinned() bool {
@@ -4107,8 +3658,6 @@ func (x *DeleteConversationReq) GetConversationId() string {
 // DeleteConversationResp 删除会话响应
 type DeleteConversationResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4141,20 +3690,6 @@ func (x *DeleteConversationResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use DeleteConversationResp.ProtoReflect.Descriptor instead.
 func (*DeleteConversationResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{66}
-}
-
-func (x *DeleteConversationResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *DeleteConversationResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 // GetOnlineStatusReq 获取在线状态请求
@@ -4205,9 +3740,7 @@ func (x *GetOnlineStatusReq) GetUserIds() []string {
 // GetOnlineStatusResp 获取在线状态响应
 type GetOnlineStatusResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	OnlineStatus  map[string]bool        `protobuf:"bytes,3,rep,name=online_status,json=onlineStatus,proto3" json:"online_status,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	OnlineStatus  map[string]bool        `protobuf:"bytes,1,rep,name=online_status,json=onlineStatus,proto3" json:"online_status,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4240,20 +3773,6 @@ func (x *GetOnlineStatusResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetOnlineStatusResp.ProtoReflect.Descriptor instead.
 func (*GetOnlineStatusResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{68}
-}
-
-func (x *GetOnlineStatusResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetOnlineStatusResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *GetOnlineStatusResp) GetOnlineStatus() map[string]bool {
@@ -4311,9 +3830,7 @@ func (x *GetMessageByIDReq) GetMessageId() string {
 // GetMessageByIDResp 根据ID获取消息响应
 type GetMessageByIDResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Message       *Message               `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
+	Message       *Message               `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4346,20 +3863,6 @@ func (x *GetMessageByIDResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetMessageByIDResp.ProtoReflect.Descriptor instead.
 func (*GetMessageByIDResp) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{70}
-}
-
-func (x *GetMessageByIDResp) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetMessageByIDResp) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *GetMessageByIDResp) GetMessage() *Message {
@@ -4398,62 +3901,46 @@ const file_chat_proto_rawDesc = "" +
 	"\tsender_id\x18\x01 \x01(\tR\bsenderId\x12\x1f\n" +
 	"\vreceiver_id\x18\x02 \x01(\tR\n" +
 	"receiverId\x12\x16\n" +
-	"\x06remark\x18\x03 \x01(\tR\x06remark\"\x80\x01\n" +
-	"\x15SendFriendRequestResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12;\n" +
-	"\x0efriend_request\x18\x03 \x01(\v2\x14.proto.FriendRequestR\rfriendRequest\"A\n" +
+	"\x06remark\x18\x03 \x01(\tR\x06remark\"T\n" +
+	"\x15SendFriendRequestResp\x12;\n" +
+	"\x0efriend_request\x18\x01 \x01(\v2\x14.proto.FriendRequestR\rfriendRequest\"A\n" +
 	"\x1eGetFriendRequestsByReceiverReq\x12\x1f\n" +
 	"\vreceiver_id\x18\x01 \x01(\tR\n" +
 	"receiverId\";\n" +
 	"\x1cGetFriendRequestsBySenderReq\x12\x1b\n" +
-	"\tsender_id\x18\x01 \x01(\tR\bsenderId\"\x82\x01\n" +
-	"\x15GetFriendRequestsResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12=\n" +
-	"\x0ffriend_requests\x18\x03 \x03(\v2\x14.proto.FriendRequestR\x0efriendRequests\"X\n" +
+	"\tsender_id\x18\x01 \x01(\tR\bsenderId\"V\n" +
+	"\x15GetFriendRequestsResp\x12=\n" +
+	"\x0ffriend_requests\x18\x01 \x03(\v2\x14.proto.FriendRequestR\x0efriendRequests\"X\n" +
 	"\x16AcceptFriendRequestReq\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x12\x1f\n" +
 	"\vreceiver_id\x18\x02 \x01(\tR\n" +
-	"receiverId\"E\n" +
-	"\x17AcceptFriendRequestResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"X\n" +
+	"receiverId\"\x19\n" +
+	"\x17AcceptFriendRequestResp\"X\n" +
 	"\x16RejectFriendRequestReq\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x12\x1f\n" +
 	"\vreceiver_id\x18\x02 \x01(\tR\n" +
-	"receiverId\"E\n" +
-	"\x17RejectFriendRequestResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"A\n" +
+	"receiverId\"\x19\n" +
+	"\x17RejectFriendRequestResp\"A\n" +
 	"\x10GetFriendListReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
-	"\x05query\x18\x02 \x01(\tR\x05query\"h\n" +
-	"\x11GetFriendListResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12'\n" +
-	"\afriends\x18\x03 \x03(\v2\r.proto.FriendR\afriends\"G\n" +
+	"\x05query\x18\x02 \x01(\tR\x05query\"<\n" +
+	"\x11GetFriendListResp\x12'\n" +
+	"\afriends\x18\x01 \x03(\v2\r.proto.FriendR\afriends\"G\n" +
 	"\x0fDeleteFriendReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1b\n" +
-	"\tfriend_id\x18\x02 \x01(\tR\bfriendId\">\n" +
-	"\x10DeleteFriendResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"e\n" +
+	"\tfriend_id\x18\x02 \x01(\tR\bfriendId\"\x12\n" +
+	"\x10DeleteFriendResp\"e\n" +
 	"\x15UpdateFriendRemarkReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1b\n" +
 	"\tfriend_id\x18\x02 \x01(\tR\bfriendId\x12\x16\n" +
-	"\x06remark\x18\x03 \x01(\tR\x06remark\"D\n" +
-	"\x16UpdateFriendRemarkResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"&\n" +
+	"\x06remark\x18\x03 \x01(\tR\x06remark\"\x18\n" +
+	"\x16UpdateFriendRemarkResp\"&\n" +
 	"\x0eSearchUsersReq\x12\x14\n" +
-	"\x05query\x18\x01 \x01(\tR\x05query\"j\n" +
-	"\x0fSearchUsersResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12+\n" +
-	"\x05users\x18\x03 \x03(\v2\x15.proto.SearchUserInfoR\x05users\"L\n" +
+	"\x05query\x18\x01 \x01(\tR\x05query\">\n" +
+	"\x0fSearchUsersResp\x12+\n" +
+	"\x05users\x18\x01 \x03(\v2\x15.proto.SearchUserInfoR\x05users\"L\n" +
 	"\x0eSearchUserInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
@@ -4479,11 +3966,9 @@ const file_chat_proto_rawDesc = "" +
 	"\fcontent_type\x18\x03 \x01(\tR\vcontentType\x12\x18\n" +
 	"\acontent\x18\x04 \x01(\tR\acontent\x12\x14\n" +
 	"\x05extra\x18\x05 \x01(\tR\x05extra\x12\x1e\n" +
-	"\vreply_to_id\x18\x06 \x01(\tR\treplyToId\"n\n" +
-	"\x16SendPrivateMessageResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12(\n" +
-	"\amessage\x18\x03 \x01(\v2\x0e.proto.MessageR\amessage\"\xdc\x01\n" +
+	"\vreply_to_id\x18\x06 \x01(\tR\treplyToId\"B\n" +
+	"\x16SendPrivateMessageResp\x12(\n" +
+	"\amessage\x18\x01 \x01(\v2\x0e.proto.MessageR\amessage\"\xdc\x01\n" +
 	"\x13SendGroupMessageReq\x12\x1b\n" +
 	"\tsender_id\x18\x01 \x01(\tR\bsenderId\x12\x19\n" +
 	"\bgroup_id\x18\x02 \x01(\tR\agroupId\x12!\n" +
@@ -4491,48 +3976,38 @@ const file_chat_proto_rawDesc = "" +
 	"\acontent\x18\x04 \x01(\tR\acontent\x12\x14\n" +
 	"\x05extra\x18\x05 \x01(\tR\x05extra\x12\x1a\n" +
 	"\bmentions\x18\x06 \x03(\tR\bmentions\x12\x1e\n" +
-	"\vreply_to_id\x18\a \x01(\tR\treplyToId\"l\n" +
-	"\x14SendGroupMessageResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12(\n" +
-	"\amessage\x18\x03 \x01(\v2\x0e.proto.MessageR\amessage\"\xa0\x01\n" +
+	"\vreply_to_id\x18\a \x01(\tR\treplyToId\"@\n" +
+	"\x14SendGroupMessageResp\x12(\n" +
+	"\amessage\x18\x01 \x01(\v2\x0e.proto.MessageR\amessage\"\xa0\x01\n" +
 	"\x0eGetMessagesReq\x12+\n" +
 	"\x11conversation_type\x18\x01 \x01(\tR\x10conversationType\x12'\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tR\x0econversationId\x12\"\n" +
 	"\rbefore_seq_id\x18\x03 \x01(\x04R\vbeforeSeqId\x12\x14\n" +
-	"\x05limit\x18\x04 \x01(\x05R\x05limit\"i\n" +
-	"\x0fGetMessagesResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12*\n" +
-	"\bmessages\x18\x03 \x03(\v2\x0e.proto.MessageR\bmessages\"N\n" +
+	"\x05limit\x18\x04 \x01(\x05R\x05limit\"=\n" +
+	"\x0fGetMessagesResp\x12*\n" +
+	"\bmessages\x18\x01 \x03(\v2\x0e.proto.MessageR\bmessages\"N\n" +
 	"\x10RecallMessageReq\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tR\tmessageId\x12\x1b\n" +
-	"\tsender_id\x18\x02 \x01(\tR\bsenderId\"?\n" +
-	"\x11RecallMessageResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"\xc1\x01\n" +
+	"\tsender_id\x18\x02 \x01(\tR\bsenderId\"\x13\n" +
+	"\x11RecallMessageResp\"\xc1\x01\n" +
 	"\x11ForwardMessageReq\x12\x1b\n" +
 	"\tsender_id\x18\x01 \x01(\tR\bsenderId\x128\n" +
 	"\x18target_conversation_type\x18\x02 \x01(\tR\x16targetConversationType\x124\n" +
 	"\x16target_conversation_id\x18\x03 \x01(\tR\x14targetConversationId\x12\x1f\n" +
 	"\vmessage_ids\x18\x04 \x03(\tR\n" +
-	"messageIds\"j\n" +
-	"\x12ForwardMessageResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12(\n" +
-	"\amessage\x18\x03 \x01(\v2\x0e.proto.MessageR\amessage\"e\n" +
+	"messageIds\">\n" +
+	"\x12ForwardMessageResp\x12(\n" +
+	"\amessage\x18\x01 \x01(\v2\x0e.proto.MessageR\amessage\"e\n" +
 	"\x11GetUnreadCountReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x127\n" +
 	"\fconversation\x18\x02 \x03(\v2\x13.proto.ConversationR\fconversation\"\x8d\x01\n" +
 	"\fConversation\x12+\n" +
 	"\x11conversation_type\x18\x01 \x01(\tR\x10conversationType\x12'\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tR\x0econversationId\x12'\n" +
-	"\x10last_read_seq_id\x18\x03 \x01(\x04R\rlastReadSeqId\"\xba\x01\n" +
-	"\x12GetUnreadCountResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12=\n" +
-	"\x06counts\x18\x03 \x03(\v2%.proto.GetUnreadCountResp.CountsEntryR\x06counts\x1a9\n" +
+	"\x10last_read_seq_id\x18\x03 \x01(\x04R\rlastReadSeqId\"\x8e\x01\n" +
+	"\x12GetUnreadCountResp\x12=\n" +
+	"\x06counts\x18\x01 \x03(\v2%.proto.GetUnreadCountResp.CountsEntryR\x06counts\x1a9\n" +
 	"\vCountsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\"\xbf\x01\n" +
@@ -4557,87 +4032,65 @@ const file_chat_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
 	"\x06avatar\x18\x03 \x01(\tR\x06avatar\x12\x1d\n" +
 	"\n" +
-	"member_ids\x18\x04 \x03(\tR\tmemberIds\"a\n" +
-	"\x0fCreateGroupResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\"\n" +
-	"\x05group\x18\x03 \x01(\v2\f.proto.GroupR\x05group\"E\n" +
+	"member_ids\x18\x04 \x03(\tR\tmemberIds\"5\n" +
+	"\x0fCreateGroupResp\x12\"\n" +
+	"\x05group\x18\x01 \x01(\v2\f.proto.GroupR\x05group\"E\n" +
 	"\x0fGetGroupInfoReq\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\"\x7f\n" +
-	"\x10GetGroupInfoResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\"\n" +
-	"\x05group\x18\x03 \x01(\v2\f.proto.GroupR\x05group\x12\x1b\n" +
-	"\tis_member\x18\x04 \x01(\bR\bisMember\"p\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"S\n" +
+	"\x10GetGroupInfoResp\x12\"\n" +
+	"\x05group\x18\x01 \x01(\v2\f.proto.GroupR\x05group\x12\x1b\n" +
+	"\tis_member\x18\x02 \x01(\bR\bisMember\"p\n" +
 	"\x0eUpdateGroupReq\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x16\n" +
-	"\x06avatar\x18\x04 \x01(\tR\x06avatar\"=\n" +
-	"\x0fUpdateGroupResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"j\n" +
+	"\x06avatar\x18\x04 \x01(\tR\x06avatar\"\x11\n" +
+	"\x0fUpdateGroupResp\"j\n" +
 	"\rAddMembersReq\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x1f\n" +
 	"\voperator_id\x18\x02 \x01(\tR\n" +
 	"operatorId\x12\x1d\n" +
 	"\n" +
-	"member_ids\x18\x03 \x03(\tR\tmemberIds\"<\n" +
-	"\x0eAddMembersResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"f\n" +
+	"member_ids\x18\x03 \x03(\tR\tmemberIds\"\x10\n" +
+	"\x0eAddMembersResp\"f\n" +
 	"\x0fRemoveMemberReq\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x1f\n" +
 	"\voperator_id\x18\x02 \x01(\tR\n" +
 	"operatorId\x12\x17\n" +
-	"\auser_id\x18\x03 \x01(\tR\x06userId\">\n" +
-	"\x10RemoveMemberResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"C\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\"\x12\n" +
+	"\x10RemoveMemberResp\"C\n" +
 	"\rLeaveGroupReq\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\"<\n" +
-	"\x0eLeaveGroupResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"}\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"\x10\n" +
+	"\x0eLeaveGroupResp\"}\n" +
 	"\x14TransferOwnershipReq\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12(\n" +
 	"\x10current_owner_id\x18\x02 \x01(\tR\x0ecurrentOwnerId\x12 \n" +
 	"\fnew_owner_id\x18\x03 \x01(\tR\n" +
-	"newOwnerId\"C\n" +
-	"\x15TransferOwnershipResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"b\n" +
+	"newOwnerId\"\x17\n" +
+	"\x15TransferOwnershipResp\"b\n" +
 	"\vSetAdminReq\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x1f\n" +
 	"\voperator_id\x18\x02 \x01(\tR\n" +
 	"operatorId\x12\x17\n" +
-	"\auser_id\x18\x03 \x01(\tR\x06userId\":\n" +
-	"\fSetAdminResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"e\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\"\x0e\n" +
+	"\fSetAdminResp\"e\n" +
 	"\x0eRemoveAdminReq\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x1f\n" +
 	"\voperator_id\x18\x02 \x01(\tR\n" +
 	"operatorId\x12\x17\n" +
-	"\auser_id\x18\x03 \x01(\tR\x06userId\"=\n" +
-	"\x0fRemoveAdminResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"H\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\"\x11\n" +
+	"\x0fRemoveAdminResp\"H\n" +
 	"\x12GetGroupMembersReq\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\"o\n" +
-	"\x13GetGroupMembersResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12,\n" +
-	"\amembers\x18\x03 \x03(\v2\x12.proto.GroupMemberR\amembers\"+\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"C\n" +
+	"\x13GetGroupMembersResp\x12,\n" +
+	"\amembers\x18\x01 \x03(\v2\x12.proto.GroupMemberR\amembers\"+\n" +
 	"\x10GetUserGroupsReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\"e\n" +
-	"\x11GetUserGroupsResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12$\n" +
-	"\x06groups\x18\x03 \x03(\v2\f.proto.GroupR\x06groups\"\xc8\x02\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"9\n" +
+	"\x11GetUserGroupsResp\x12$\n" +
+	"\x06groups\x18\x01 \x03(\v2\f.proto.GroupR\x06groups\"\xc8\x02\n" +
 	"\x10ConversationInfo\x12+\n" +
 	"\x11conversation_type\x18\x01 \x01(\tR\x10conversationType\x12'\n" +
 	"\x0fconversation_id\x18\x02 \x01(\tR\x0econversationId\x12\x12\n" +
@@ -4649,49 +4102,37 @@ const file_chat_proto_rawDesc = "" +
 	"\x06pinned\x18\b \x01(\bR\x06pinned\x12\x1c\n" +
 	"\tmentioned\x18\t \x01(\bR\tmentioned\"1\n" +
 	"\x16GetConversationListReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\"\x84\x01\n" +
-	"\x17GetConversationListResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12=\n" +
-	"\rconversations\x18\x03 \x03(\v2\x17.proto.ConversationInfoR\rconversations\"\x88\x01\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"X\n" +
+	"\x17GetConversationListResp\x12=\n" +
+	"\rconversations\x18\x01 \x03(\v2\x17.proto.ConversationInfoR\rconversations\"\x88\x01\n" +
 	"\x17MarkConversationReadReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12+\n" +
 	"\x11conversation_type\x18\x02 \x01(\tR\x10conversationType\x12'\n" +
-	"\x0fconversation_id\x18\x03 \x01(\tR\x0econversationId\"F\n" +
-	"\x18MarkConversationReadResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"}\n" +
+	"\x0fconversation_id\x18\x03 \x01(\tR\x0econversationId\"\x1a\n" +
+	"\x18MarkConversationReadResp\"}\n" +
 	"\fTogglePinReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12+\n" +
 	"\x11conversation_type\x18\x02 \x01(\tR\x10conversationType\x12'\n" +
-	"\x0fconversation_id\x18\x03 \x01(\tR\x0econversationId\"S\n" +
-	"\rTogglePinResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x16\n" +
-	"\x06pinned\x18\x03 \x01(\bR\x06pinned\"\x86\x01\n" +
+	"\x0fconversation_id\x18\x03 \x01(\tR\x0econversationId\"'\n" +
+	"\rTogglePinResp\x12\x16\n" +
+	"\x06pinned\x18\x01 \x01(\bR\x06pinned\"\x86\x01\n" +
 	"\x15DeleteConversationReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12+\n" +
 	"\x11conversation_type\x18\x02 \x01(\tR\x10conversationType\x12'\n" +
-	"\x0fconversation_id\x18\x03 \x01(\tR\x0econversationId\"D\n" +
-	"\x16DeleteConversationResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"/\n" +
+	"\x0fconversation_id\x18\x03 \x01(\tR\x0econversationId\"\x18\n" +
+	"\x16DeleteConversationResp\"/\n" +
 	"\x12GetOnlineStatusReq\x12\x19\n" +
-	"\buser_ids\x18\x01 \x03(\tR\auserIds\"\xd5\x01\n" +
-	"\x13GetOnlineStatusResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12Q\n" +
-	"\ronline_status\x18\x03 \x03(\v2,.proto.GetOnlineStatusResp.OnlineStatusEntryR\fonlineStatus\x1a?\n" +
+	"\buser_ids\x18\x01 \x03(\tR\auserIds\"\xa9\x01\n" +
+	"\x13GetOnlineStatusResp\x12Q\n" +
+	"\ronline_status\x18\x01 \x03(\v2,.proto.GetOnlineStatusResp.OnlineStatusEntryR\fonlineStatus\x1a?\n" +
 	"\x11OnlineStatusEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\bR\x05value:\x028\x01\"2\n" +
 	"\x11GetMessageByIDReq\x12\x1d\n" +
 	"\n" +
-	"message_id\x18\x01 \x01(\tR\tmessageId\"j\n" +
-	"\x12GetMessageByIDResp\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12(\n" +
-	"\amessage\x18\x03 \x01(\v2\x0e.proto.MessageR\amessage2\xa3\x12\n" +
+	"message_id\x18\x01 \x01(\tR\tmessageId\">\n" +
+	"\x12GetMessageByIDResp\x12(\n" +
+	"\amessage\x18\x01 \x01(\v2\x0e.proto.MessageR\amessage2\xa3\x12\n" +
 	"\vChatService\x12N\n" +
 	"\x11SendFriendRequest\x12\x1b.proto.SendFriendRequestReq\x1a\x1c.proto.SendFriendRequestResp\x12b\n" +
 	"\x1bGetFriendRequestsByReceiver\x12%.proto.GetFriendRequestsByReceiverReq\x1a\x1c.proto.GetFriendRequestsResp\x12^\n" +

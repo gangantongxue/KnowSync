@@ -5,17 +5,17 @@ import (
 	"context"
 
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // CreateGroup 创建群组.
 func (h *Handler) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (*pb.CreateGroupResp, error) {
-	group, err := h.Service.CreateGroup(ctx, req.GetUserId(), req.GetName(), req.GetAvatar(), req.GetMemberIds())
+	group, err := h.GroupService.CreateGroup(ctx, req.GetUserId(), req.GetName(), req.GetAvatar(), req.GetMemberIds())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &pb.CreateGroupResp{
-		Success: true,
-		Msg:     "创建成功",
 		Group: &pb.Group{
 			Id:        group.ID,
 			Name:      group.Name,
@@ -29,13 +29,11 @@ func (h *Handler) CreateGroup(ctx context.Context, req *pb.CreateGroupReq) (*pb.
 
 // GetGroupInfo 获取群信息.
 func (h *Handler) GetGroupInfo(ctx context.Context, req *pb.GetGroupInfoReq) (*pb.GetGroupInfoResp, error) {
-	group, isMember, err := h.Service.GetGroupInfo(ctx, req.GetGroupId(), req.GetUserId())
+	group, isMember, err := h.GroupService.GetGroupInfo(ctx, req.GetGroupId(), req.GetUserId())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &pb.GetGroupInfoResp{
-		Success: true,
-		Msg:     MsgSuccess,
 		Group: &pb.Group{
 			Id:        group.ID,
 			Name:      group.Name,
@@ -50,86 +48,65 @@ func (h *Handler) GetGroupInfo(ctx context.Context, req *pb.GetGroupInfoReq) (*p
 
 // UpdateGroup 更新群信息.
 func (h *Handler) UpdateGroup(ctx context.Context, req *pb.UpdateGroupReq) (*pb.UpdateGroupResp, error) {
-	if err := h.Service.UpdateGroup(ctx, req.GetGroupId(), req.GetUserId(), req.GetName(), req.GetAvatar()); err != nil {
-		return nil, err
+	if err := h.GroupService.UpdateGroup(ctx, req.GetGroupId(), req.GetUserId(), req.GetName(), req.GetAvatar()); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.UpdateGroupResp{
-		Success: true,
-		Msg:     "更新成功",
-	}, nil
+	return &pb.UpdateGroupResp{}, nil
 }
 
 // AddMembers 添加成员.
 func (h *Handler) AddMembers(ctx context.Context, req *pb.AddMembersReq) (*pb.AddMembersResp, error) {
-	if err := h.Service.AddMembers(ctx, req.GetGroupId(), req.GetOperatorId(), req.GetMemberIds()); err != nil {
-		return nil, err
+	if err := h.GroupService.AddMembers(ctx, req.GetGroupId(), req.GetOperatorId(), req.GetMemberIds()); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.AddMembersResp{
-		Success: true,
-		Msg:     "添加成功",
-	}, nil
+	return &pb.AddMembersResp{}, nil
 }
 
 // RemoveMember 移除成员.
 func (h *Handler) RemoveMember(ctx context.Context, req *pb.RemoveMemberReq) (*pb.RemoveMemberResp, error) {
-	if err := h.Service.RemoveMember(ctx, req.GetGroupId(), req.GetOperatorId(), req.GetUserId()); err != nil {
-		return nil, err
+	if err := h.GroupService.RemoveMember(ctx, req.GetGroupId(), req.GetOperatorId(), req.GetUserId()); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.RemoveMemberResp{
-		Success: true,
-		Msg:     "移除成功",
-	}, nil
+	return &pb.RemoveMemberResp{}, nil
 }
 
 // LeaveGroup 退出群组.
 func (h *Handler) LeaveGroup(ctx context.Context, req *pb.LeaveGroupReq) (*pb.LeaveGroupResp, error) {
-	if err := h.Service.LeaveGroup(ctx, req.GetGroupId(), req.GetUserId()); err != nil {
-		return nil, err
+	if err := h.GroupService.LeaveGroup(ctx, req.GetGroupId(), req.GetUserId()); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.LeaveGroupResp{
-		Success: true,
-		Msg:     "退出成功",
-	}, nil
+	return &pb.LeaveGroupResp{}, nil
 }
 
 // TransferOwnership 转让群主.
 func (h *Handler) TransferOwnership(ctx context.Context, req *pb.TransferOwnershipReq) (*pb.TransferOwnershipResp, error) {
-	if err := h.Service.TransferOwnership(ctx, req.GetGroupId(), req.GetCurrentOwnerId(), req.GetNewOwnerId()); err != nil {
-		return nil, err
+	if err := h.GroupService.TransferOwnership(ctx, req.GetGroupId(), req.GetCurrentOwnerId(), req.GetNewOwnerId()); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.TransferOwnershipResp{
-		Success: true,
-		Msg:     "转让成功",
-	}, nil
+	return &pb.TransferOwnershipResp{}, nil
 }
 
 // SetAdmin 设置管理员.
 func (h *Handler) SetAdmin(ctx context.Context, req *pb.SetAdminReq) (*pb.SetAdminResp, error) {
-	if err := h.Service.SetAdmin(ctx, req.GetGroupId(), req.GetOperatorId(), req.GetUserId()); err != nil {
-		return nil, err
+	if err := h.GroupService.SetAdmin(ctx, req.GetGroupId(), req.GetOperatorId(), req.GetUserId()); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.SetAdminResp{
-		Success: true,
-		Msg:     "设置成功",
-	}, nil
+	return &pb.SetAdminResp{}, nil
 }
 
 // RemoveAdmin 移除管理员.
 func (h *Handler) RemoveAdmin(ctx context.Context, req *pb.RemoveAdminReq) (*pb.RemoveAdminResp, error) {
-	if err := h.Service.RemoveAdmin(ctx, req.GetGroupId(), req.GetOperatorId(), req.GetUserId()); err != nil {
-		return nil, err
+	if err := h.GroupService.RemoveAdmin(ctx, req.GetGroupId(), req.GetOperatorId(), req.GetUserId()); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.RemoveAdminResp{
-		Success: true,
-		Msg:     "移除成功",
-	}, nil
+	return &pb.RemoveAdminResp{}, nil
 }
 
 // GetGroupMembers 获取群成员.
 func (h *Handler) GetGroupMembers(ctx context.Context, req *pb.GetGroupMembersReq) (*pb.GetGroupMembersResp, error) {
-	members, err := h.Service.GetGroupMembers(ctx, req.GetGroupId(), req.GetUserId())
+	members, err := h.GroupService.GetGroupMembers(ctx, req.GetGroupId(), req.GetUserId())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	pbMembers := make([]*pb.GroupMember, len(members))
 	for i, m := range members {
@@ -142,17 +119,15 @@ func (h *Handler) GetGroupMembers(ctx context.Context, req *pb.GetGroupMembersRe
 		}
 	}
 	return &pb.GetGroupMembersResp{
-		Success: true,
-		Msg:     MsgSuccess,
 		Members: pbMembers,
 	}, nil
 }
 
 // GetUserGroups 获取用户群列表.
 func (h *Handler) GetUserGroups(ctx context.Context, req *pb.GetUserGroupsReq) (*pb.GetUserGroupsResp, error) {
-	groups, err := h.Service.GetUserGroups(ctx, req.GetUserId())
+	groups, err := h.GroupService.GetUserGroups(ctx, req.GetUserId())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	pbGroups := make([]*pb.Group, len(groups))
 	for i, g := range groups {
@@ -166,8 +141,6 @@ func (h *Handler) GetUserGroups(ctx context.Context, req *pb.GetUserGroupsReq) (
 		}
 	}
 	return &pb.GetUserGroupsResp{
-		Success: true,
-		Msg:     MsgSuccess,
-		Groups:  pbGroups,
+		Groups: pbGroups,
 	}, nil
 }

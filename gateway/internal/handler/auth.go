@@ -80,10 +80,6 @@ func (h *Handler) Register() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "注册失败")
 			return
 		}
-		if !registerResp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, registerResp.Msg)
-			return
-		}
 
 		// --- 保存头像到本地存储并通知 user-server ---
 		userID := registerResp.User.Id
@@ -140,10 +136,6 @@ func (h *Handler) Login() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "登录失败")
 			return
 		}
-		if !loginResp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, loginResp.Msg)
-			return
-		}
 
 		// 设置 refresh_token 为 httpOnly cookie（安全存储）
 		setRefreshTokenCookie(ctx, loginResp.RefreshToken)
@@ -183,15 +175,11 @@ func (h *Handler) Logout() app.HandlerFunc {
 		}
 
 		userClient := pb.NewUserServiceClient(conn)
-		logoutResp, err := userClient.Logout(c, &pb.LogoutRequest{
+		_, err := userClient.Logout(c, &pb.LogoutRequest{
 			RefreshToken: req.RefreshToken,
 		})
 		if err != nil {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "登出失败")
-			return
-		}
-		if !logoutResp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, logoutResp.Msg)
 			return
 		}
 
@@ -222,12 +210,6 @@ func (h *Handler) Refresh() app.HandlerFunc {
 		})
 		if err != nil {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "刷新令牌失败")
-			return
-		}
-		if !refreshResp.Success {
-			// 刷新失败，清除 cookie
-			ctx.SetCookie("refresh_token", "", -1, "/api/v1/auth", "", protocol.CookieSameSiteLaxMode, false, true)
-			response.Error(c, ctx, 401, errcode.ErrUnauth, refreshResp.Msg)
 			return
 		}
 

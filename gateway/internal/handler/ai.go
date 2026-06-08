@@ -203,10 +203,6 @@ func (h *Handler) Search() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "搜索失败")
 			return
 		}
-		if !resp.Success {
-			response.Error(c, ctx, 500, errcode.ErrBadReq, resp.Msg)
-			return
-		}
 
 		response.Success(c, ctx, map[string]any{
 			"repo_ids":    resp.RepoIds,
@@ -239,10 +235,6 @@ func (h *Handler) GetChatSessions() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC GetChatSessions 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取会话列表失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -290,10 +282,6 @@ func (h *Handler) GetChatMessages() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取消息列表失败")
 			return
 		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
-			return
-		}
 
 		messages := make([]map[string]any, 0, len(resp.Messages))
 		for _, m := range resp.Messages {
@@ -329,17 +317,13 @@ func (h *Handler) DeleteChatSession() app.HandlerFunc {
 		}
 
 		client := pb.NewAIServiceClient(conn)
-		resp, err := client.DeleteChatSession(c, &pb.DeleteChatSessionRequest{
+		_, err := client.DeleteChatSession(c, &pb.DeleteChatSessionRequest{
 			UserId:    uid,
 			SessionId: sessionID,
 		})
 		if err != nil {
 			slog.Error("gRPC DeleteChatSession 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "删除会话失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 

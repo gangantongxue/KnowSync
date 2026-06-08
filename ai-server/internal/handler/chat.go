@@ -4,7 +4,9 @@ import (
 	"context"
 
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 
 	"github.com/gangantongxue/knowsync/ai-server/internal/llm/tool"
 	"github.com/gangantongxue/knowsync/ai-server/internal/service"
@@ -84,10 +86,7 @@ func (h *Handler) GetChatSessions(ctx context.Context, req *pb.GetChatSessionsRe
 
 	sessions, hasMore, err := h.Service.Repo.ListSessions(req.GetUserId(), req.GetCursor(), limit)
 	if err != nil {
-		return &pb.GetChatSessionsResponse{ //nolint:nilerr // 项目约定：handler 将业务错误编码到响应体中
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	pbSessions := make([]*pb.ChatSession, len(sessions))
@@ -102,7 +101,6 @@ func (h *Handler) GetChatSessions(ctx context.Context, req *pb.GetChatSessionsRe
 	}
 
 	return &pb.GetChatSessionsResponse{
-		Success:  true,
 		Sessions: pbSessions,
 		HasMore:  hasMore,
 	}, nil
@@ -120,10 +118,7 @@ func (h *Handler) GetChatMessages(ctx context.Context, req *pb.GetChatMessagesRe
 
 	messages, hasMore, err := h.Service.Repo.ListMessages(req.GetSessionId(), req.GetCursor(), limit)
 	if err != nil {
-		return &pb.GetChatMessagesResponse{ //nolint:nilerr // 项目约定：handler 将业务错误编码到响应体中
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	pbMessages := make([]*pb.ChatMessage, len(messages))
@@ -139,7 +134,6 @@ func (h *Handler) GetChatMessages(ctx context.Context, req *pb.GetChatMessagesRe
 	}
 
 	return &pb.GetChatMessagesResponse{
-		Success:  true,
 		Messages: pbMessages,
 		HasMore:  hasMore,
 	}, nil
@@ -151,13 +145,8 @@ func (h *Handler) GetChatMessages(ctx context.Context, req *pb.GetChatMessagesRe
 //nolint:revive // ctx required by interface
 func (h *Handler) DeleteChatSession(ctx context.Context, req *pb.DeleteChatSessionRequest) (*pb.DeleteChatSessionResponse, error) {
 	if err := h.Service.Repo.DeleteSession(req.GetSessionId(), req.GetUserId()); err != nil {
-		return &pb.DeleteChatSessionResponse{ //nolint:nilerr // 项目约定：handler 将业务错误编码到响应体中
-			Success: false,
-			Msg:     err.Error(),
-		}, nil
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &pb.DeleteChatSessionResponse{
-		Success: true,
-	}, nil
+	return &pb.DeleteChatSessionResponse{}, nil
 }

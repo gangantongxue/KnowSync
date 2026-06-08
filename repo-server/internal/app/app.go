@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/gangantongxue/knowsync/repo-server/internal/handler"
-	"github.com/gangantongxue/knowsync/repo-server/internal/repository"
+	"github.com/gangantongxue/knowsync/repo-server/internal/repository/postgres"
 	"github.com/gangantongxue/knowsync/repo-server/internal/service"
 	"github.com/gangantongxue/knowsync/repo-server/pkg/config"
 	"github.com/gangantongxue/knowsync/repo-server/pkg/database"
@@ -50,19 +50,17 @@ func NewApp() error {
 		return err
 	}
 
-	repo, err := repository.NewRepository(db)
-	if err != nil {
-		slog.Error("初始化仓库失败", "error", err)
-		return err
-	}
+	// 创建具体实现
+	repoRepo := postgres.NewRepoRepo(db)
+	collabRepo := postgres.NewCollaboratorRepo(db)
+	followRepo := postgres.NewFollowRepo(db)
 
-	svc, err := service.NewService(repo)
-	if err != nil {
-		slog.Error("初始化服务失败", "error", err)
-		return err
-	}
+	// 创建服务（注入接口，Go 隐式满足）
+	repoSvc := service.NewRepoService(repoRepo, collabRepo, followRepo)
+	collabSvc := service.NewCollaboratorService(collabRepo, repoRepo)
+	followSvc := service.NewFollowService(followRepo, repoRepo)
 
-	h, err := handler.NewHandler(svc)
+	h, err := handler.NewHandler(repoSvc, collabSvc, followSvc)
 	if err != nil {
 		slog.Error("初始化处理程序失败", "error", err)
 		return err

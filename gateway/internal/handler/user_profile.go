@@ -50,7 +50,7 @@ func (h *Handler) GetUserProfile() app.HandlerFunc {
 				userCh <- userResult{err: err}
 				return
 			}
-			if !resp.Success || resp.User == nil {
+			if resp.User == nil {
 				userCh <- userResult{err: errUserNotFound}
 				return
 			}
@@ -70,10 +70,7 @@ func (h *Handler) GetUserProfile() app.HandlerFunc {
 				reposCh <- reposResult{err: err}
 				return
 			}
-			if !resp.Success {
-				reposCh <- reposResult{err: errRepoListFailed}
-				return
-			}
+
 			reposCh <- reposResult{repos: resp.Repos}
 		}()
 
@@ -140,10 +137,6 @@ func (h *Handler) ListUserPublicRepos() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取知识库列表失败")
 			return
 		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, "获取知识库列表失败")
-			return
-		}
 
 		publicRepos := make([]map[string]any, 0)
 		for _, r := range resp.Repos {
@@ -178,7 +171,7 @@ func (h *Handler) determineFriendStatus(c context.Context, authUserID, targetUse
 
 	// 检查是否已是好友
 	friendListResp, err := chatClient.GetFriendList(c, &pb.GetFriendListReq{UserId: authUserID})
-	if err == nil && friendListResp.Success {
+	if err == nil {
 		for _, f := range friendListResp.Friends {
 			if f.FriendId == targetUserID {
 				return "friends"
@@ -188,7 +181,7 @@ func (h *Handler) determineFriendStatus(c context.Context, authUserID, targetUse
 
 	// 检查发送的好友申请
 	sentResp, err := chatClient.GetFriendRequestsBySender(c, &pb.GetFriendRequestsBySenderReq{SenderId: authUserID})
-	if err == nil && sentResp.Success {
+	if err == nil {
 		for _, req := range sentResp.FriendRequests {
 			if req.ReceiverId == targetUserID {
 				return "pending_sent"
@@ -198,7 +191,7 @@ func (h *Handler) determineFriendStatus(c context.Context, authUserID, targetUse
 
 	// 检查收到的好友申请
 	receivedResp, err := chatClient.GetFriendRequestsByReceiver(c, &pb.GetFriendRequestsByReceiverReq{ReceiverId: authUserID})
-	if err == nil && receivedResp.Success {
+	if err == nil {
 		for _, req := range receivedResp.FriendRequests {
 			if req.SenderId == targetUserID {
 				return "pending_received"

@@ -74,15 +74,14 @@ func NewApp() error {
 		return err
 	}
 
-	// 初始化统一的 Service
-	svc := service.NewService(repo, hub)
+	// 创建具体服务
+	msgSvc := service.NewMessageService(repo, hub)
+	convSvc := service.NewConversationService(repo, hub)
+	friendSvc := service.NewFriendService(repo, hub)
+	groupSvc := service.NewGroupService(repo, hub)
 
-	// 初始化 gRPC Handler
-	hdl, err := handler.NewHandler(svc)
-	if err != nil {
-		slog.Error("初始化 gRPC 处理器失败", "error", err)
-		return err
-	}
+	// 创建 handler
+	hdl := handler.NewHandler(msgSvc, convSvc, friendSvc, groupSvc, hub)
 
 	slog.Info("=====应用初始化完成=====")
 

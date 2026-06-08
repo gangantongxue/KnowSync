@@ -76,10 +76,6 @@ func (h *Handler) CreateGroup() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "创建群组失败")
 			return
 		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
-			return
-		}
 
 		response.Success(c, ctx, map[string]any{
 			"group": marshalGroup(resp.Group),
@@ -111,10 +107,6 @@ func (h *Handler) GetGroupInfo() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC GetGroupInfo 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取群信息失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -153,7 +145,7 @@ func (h *Handler) UpdateGroup() app.HandlerFunc {
 		}
 
 		client := pb.NewChatServiceClient(conn)
-		resp, err := client.UpdateGroup(c, &pb.UpdateGroupReq{
+		_, err := client.UpdateGroup(c, &pb.UpdateGroupReq{
 			GroupId: groupID,
 			UserId:  uid,
 			Name:    req.Name,
@@ -162,10 +154,6 @@ func (h *Handler) UpdateGroup() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC UpdateGroup 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "更新群信息失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -197,17 +185,13 @@ func (h *Handler) LeaveGroup() app.HandlerFunc {
 		}
 
 		client := pb.NewChatServiceClient(conn)
-		resp, err := client.LeaveGroup(c, &pb.LeaveGroupReq{
+		_, err := client.LeaveGroup(c, &pb.LeaveGroupReq{
 			GroupId: groupID,
 			UserId:  uid,
 		})
 		if err != nil {
 			slog.Error("gRPC LeaveGroup 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "退出群组失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -245,7 +229,7 @@ func (h *Handler) AddMembers() app.HandlerFunc {
 		}
 
 		client := pb.NewChatServiceClient(conn)
-		resp, err := client.AddMembers(c, &pb.AddMembersReq{
+		_, err := client.AddMembers(c, &pb.AddMembersReq{
 			GroupId:    groupID,
 			OperatorId: uid,
 			MemberIds:  req.MemberIDs,
@@ -253,10 +237,6 @@ func (h *Handler) AddMembers() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC AddMembers 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "添加成员失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -289,7 +269,7 @@ func (h *Handler) RemoveMember() app.HandlerFunc {
 		}
 
 		client := pb.NewChatServiceClient(conn)
-		resp, err := client.RemoveMember(c, &pb.RemoveMemberReq{
+		_, err := client.RemoveMember(c, &pb.RemoveMemberReq{
 			GroupId:    groupID,
 			OperatorId: uid,
 			UserId:     userID,
@@ -297,10 +277,6 @@ func (h *Handler) RemoveMember() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC RemoveMember 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "移除成员失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -332,10 +308,6 @@ func (h *Handler) GetGroupMembers() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC GetGroupMembers 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取群成员失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -386,7 +358,7 @@ func (h *Handler) TransferOwnership() app.HandlerFunc {
 		}
 
 		client := pb.NewChatServiceClient(conn)
-		resp, err := client.TransferOwnership(c, &pb.TransferOwnershipReq{
+		_, err := client.TransferOwnership(c, &pb.TransferOwnershipReq{
 			GroupId:        groupID,
 			CurrentOwnerId: uid,
 			NewOwnerId:     req.NewOwnerID,
@@ -394,10 +366,6 @@ func (h *Handler) TransferOwnership() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC TransferOwnership 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "转让群主失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -435,7 +403,7 @@ func (h *Handler) SetAdmin() app.HandlerFunc {
 		}
 
 		client := pb.NewChatServiceClient(conn)
-		resp, err := client.SetAdmin(c, &pb.SetAdminReq{
+		_, err := client.SetAdmin(c, &pb.SetAdminReq{
 			GroupId:    groupID,
 			OperatorId: uid,
 			UserId:     req.UserID,
@@ -443,10 +411,6 @@ func (h *Handler) SetAdmin() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC SetAdmin 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "设置管理员失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -479,7 +443,7 @@ func (h *Handler) RemoveAdmin() app.HandlerFunc {
 		}
 
 		client := pb.NewChatServiceClient(conn)
-		resp, err := client.RemoveAdmin(c, &pb.RemoveAdminReq{
+		_, err := client.RemoveAdmin(c, &pb.RemoveAdminReq{
 			GroupId:    groupID,
 			OperatorId: uid,
 			UserId:     userID,
@@ -487,10 +451,6 @@ func (h *Handler) RemoveAdmin() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC RemoveAdmin 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "移除管理员失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -522,10 +482,6 @@ func (h *Handler) GetUserGroups() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC GetUserGroups 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取群列表失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 

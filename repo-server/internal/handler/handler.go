@@ -9,10 +9,20 @@ import (
 // Handler gRPC 处理程序，实现 pb.RepoServiceServer 接口.
 type Handler struct {
 	pb.UnimplementedRepoServiceServer
-	Service *service.Service
+	RepoService   *service.RepoService
+	CollabService *service.CollaboratorService
+	FollowService *service.FollowService
 }
 
 // NewHandler 创建 gRPC 处理程序实例.
-func NewHandler(svc *service.Service) (*Handler, error) {
-	return &Handler{Service: svc}, nil
+func NewHandler(
+	repoSvc *service.RepoService,
+	collabSvc *service.CollaboratorService,
+	followSvc *service.FollowService,
+) (*Handler, error) {
+	return &Handler{
+		RepoService:   repoSvc,
+		CollabService: collabSvc,
+		FollowService: followSvc,
+	}, nil
 }

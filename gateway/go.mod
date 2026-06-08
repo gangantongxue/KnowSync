@@ -12,7 +12,10 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
-require go.uber.org/atomic v1.11.0 // indirect
+require (
+	github.com/rogpeppe/go-internal v1.14.1 // indirect
+	go.uber.org/atomic v1.11.0 // indirect
+)
 
 replace github.com/gangantongxue/knowsync/ks-proto => ../ks-proto
 
@@ -45,5 +48,5 @@ require (
 	golang.org/x/text v0.37.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )

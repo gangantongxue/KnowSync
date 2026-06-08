@@ -57,7 +57,7 @@ func (h *Handler) GetUser() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取用户信息失败")
 			return
 		}
-		if !getUserResp.Success || getUserResp.User == nil {
+		if getUserResp.User == nil {
 			response.Error(c, ctx, 404, errcode.ErrNotFound, "用户不存在")
 			return
 		}
@@ -105,8 +105,8 @@ func (h *Handler) UpdateUser() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "更新用户信息失败")
 			return
 		}
-		if !updateResp.Success || updateResp.User == nil {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, updateResp.Msg)
+		if updateResp.User == nil {
+			response.Error(c, ctx, 400, errcode.ErrBadReq, "用户不存在")
 			return
 		}
 
@@ -228,7 +228,7 @@ func (h *Handler) DeleteUser() app.HandlerFunc {
 		}
 
 		userClient := pb.NewUserServiceClient(conn)
-		unregResp, err := userClient.Unregister(c, &pb.UnregisterRequest{
+		_, err = userClient.Unregister(c, &pb.UnregisterRequest{
 			UserId:     userID,
 			Email:      req.Email,
 			Password:   req.Password,
@@ -236,10 +236,6 @@ func (h *Handler) DeleteUser() app.HandlerFunc {
 		})
 		if err != nil {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "注销账户失败")
-			return
-		}
-		if !unregResp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, unregResp.Msg)
 			return
 		}
 
@@ -269,17 +265,13 @@ func (h *Handler) ResetPassword() app.HandlerFunc {
 		}
 
 		userClient := pb.NewUserServiceClient(conn)
-		resetResp, err := userClient.ResetPassword(c, &pb.ResetPasswordRequest{
+		_, err = userClient.ResetPassword(c, &pb.ResetPasswordRequest{
 			UserId:      userID,
 			OldPassword: req.OldPassword,
 			NewPassword: req.NewPassword,
 		})
 		if err != nil {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "重置密码失败")
-			return
-		}
-		if !resetResp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resetResp.Msg)
 			return
 		}
 

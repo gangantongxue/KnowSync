@@ -2,17 +2,16 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v7.34.0
-// source: proto/ai.proto
+// source: ai.proto
 
 package pb
 
 import (
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -36,7 +35,7 @@ type ChatSession struct {
 
 func (x *ChatSession) Reset() {
 	*x = ChatSession{}
-	mi := &file_proto_ai_proto_msgTypes[0]
+	mi := &file_ai_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48,7 +47,7 @@ func (x *ChatSession) String() string {
 func (*ChatSession) ProtoMessage() {}
 
 func (x *ChatSession) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[0]
+	mi := &file_ai_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61,7 +60,7 @@ func (x *ChatSession) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatSession.ProtoReflect.Descriptor instead.
 func (*ChatSession) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{0}
+	return file_ai_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *ChatSession) GetId() string {
@@ -114,7 +113,7 @@ type ChatMessage struct {
 
 func (x *ChatMessage) Reset() {
 	*x = ChatMessage{}
-	mi := &file_proto_ai_proto_msgTypes[1]
+	mi := &file_ai_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -126,7 +125,7 @@ func (x *ChatMessage) String() string {
 func (*ChatMessage) ProtoMessage() {}
 
 func (x *ChatMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[1]
+	mi := &file_ai_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -139,7 +138,7 @@ func (x *ChatMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatMessage.ProtoReflect.Descriptor instead.
 func (*ChatMessage) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{1}
+	return file_ai_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ChatMessage) GetId() string {
@@ -197,7 +196,7 @@ type ChatMessageMeta struct {
 
 func (x *ChatMessageMeta) Reset() {
 	*x = ChatMessageMeta{}
-	mi := &file_proto_ai_proto_msgTypes[2]
+	mi := &file_ai_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -209,7 +208,7 @@ func (x *ChatMessageMeta) String() string {
 func (*ChatMessageMeta) ProtoMessage() {}
 
 func (x *ChatMessageMeta) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[2]
+	mi := &file_ai_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -222,7 +221,7 @@ func (x *ChatMessageMeta) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatMessageMeta.ProtoReflect.Descriptor instead.
 func (*ChatMessageMeta) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{2}
+	return file_ai_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ChatMessageMeta) GetId() string {
@@ -264,7 +263,7 @@ type ChatRequest struct {
 
 func (x *ChatRequest) Reset() {
 	*x = ChatRequest{}
-	mi := &file_proto_ai_proto_msgTypes[3]
+	mi := &file_ai_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -276,7 +275,7 @@ func (x *ChatRequest) String() string {
 func (*ChatRequest) ProtoMessage() {}
 
 func (x *ChatRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[3]
+	mi := &file_ai_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -289,7 +288,7 @@ func (x *ChatRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatRequest.ProtoReflect.Descriptor instead.
 func (*ChatRequest) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{3}
+	return file_ai_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ChatRequest) GetUserId() string {
@@ -326,7 +325,7 @@ type AskUserEvent struct {
 
 func (x *AskUserEvent) Reset() {
 	*x = AskUserEvent{}
-	mi := &file_proto_ai_proto_msgTypes[4]
+	mi := &file_ai_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -338,7 +337,7 @@ func (x *AskUserEvent) String() string {
 func (*AskUserEvent) ProtoMessage() {}
 
 func (x *AskUserEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[4]
+	mi := &file_ai_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -351,7 +350,7 @@ func (x *AskUserEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AskUserEvent.ProtoReflect.Descriptor instead.
 func (*AskUserEvent) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{4}
+	return file_ai_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *AskUserEvent) GetQuestion() string {
@@ -403,7 +402,7 @@ type ChatResponse struct {
 
 func (x *ChatResponse) Reset() {
 	*x = ChatResponse{}
-	mi := &file_proto_ai_proto_msgTypes[5]
+	mi := &file_ai_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -415,7 +414,7 @@ func (x *ChatResponse) String() string {
 func (*ChatResponse) ProtoMessage() {}
 
 func (x *ChatResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[5]
+	mi := &file_ai_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -428,7 +427,7 @@ func (x *ChatResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatResponse.ProtoReflect.Descriptor instead.
 func (*ChatResponse) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{5}
+	return file_ai_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ChatResponse) GetSessionId() string {
@@ -540,7 +539,7 @@ type GetChatSessionsRequest struct {
 
 func (x *GetChatSessionsRequest) Reset() {
 	*x = GetChatSessionsRequest{}
-	mi := &file_proto_ai_proto_msgTypes[6]
+	mi := &file_ai_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -552,7 +551,7 @@ func (x *GetChatSessionsRequest) String() string {
 func (*GetChatSessionsRequest) ProtoMessage() {}
 
 func (x *GetChatSessionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[6]
+	mi := &file_ai_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -565,7 +564,7 @@ func (x *GetChatSessionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetChatSessionsRequest.ProtoReflect.Descriptor instead.
 func (*GetChatSessionsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{6}
+	return file_ai_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetChatSessionsRequest) GetUserId() string {
@@ -591,17 +590,15 @@ func (x *GetChatSessionsRequest) GetLimit() int32 {
 
 type GetChatSessionsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Sessions      []*ChatSession         `protobuf:"bytes,3,rep,name=sessions,proto3" json:"sessions,omitempty"`
-	HasMore       bool                   `protobuf:"varint,4,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"` // 是否还有更多数据
+	Sessions      []*ChatSession         `protobuf:"bytes,1,rep,name=sessions,proto3" json:"sessions,omitempty"`
+	HasMore       bool                   `protobuf:"varint,2,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"` // 是否还有更多数据
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetChatSessionsResponse) Reset() {
 	*x = GetChatSessionsResponse{}
-	mi := &file_proto_ai_proto_msgTypes[7]
+	mi := &file_ai_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -613,7 +610,7 @@ func (x *GetChatSessionsResponse) String() string {
 func (*GetChatSessionsResponse) ProtoMessage() {}
 
 func (x *GetChatSessionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[7]
+	mi := &file_ai_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -626,21 +623,7 @@ func (x *GetChatSessionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetChatSessionsResponse.ProtoReflect.Descriptor instead.
 func (*GetChatSessionsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *GetChatSessionsResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetChatSessionsResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
+	return file_ai_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetChatSessionsResponse) GetSessions() []*ChatSession {
@@ -669,7 +652,7 @@ type GetChatMessagesRequest struct {
 
 func (x *GetChatMessagesRequest) Reset() {
 	*x = GetChatMessagesRequest{}
-	mi := &file_proto_ai_proto_msgTypes[8]
+	mi := &file_ai_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -681,7 +664,7 @@ func (x *GetChatMessagesRequest) String() string {
 func (*GetChatMessagesRequest) ProtoMessage() {}
 
 func (x *GetChatMessagesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[8]
+	mi := &file_ai_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -694,7 +677,7 @@ func (x *GetChatMessagesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetChatMessagesRequest.ProtoReflect.Descriptor instead.
 func (*GetChatMessagesRequest) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{8}
+	return file_ai_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetChatMessagesRequest) GetUserId() string {
@@ -727,17 +710,15 @@ func (x *GetChatMessagesRequest) GetLimit() int32 {
 
 type GetChatMessagesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Messages      []*ChatMessage         `protobuf:"bytes,3,rep,name=messages,proto3" json:"messages,omitempty"`
-	HasMore       bool                   `protobuf:"varint,4,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"` // 是否还有更多数据
+	Messages      []*ChatMessage         `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
+	HasMore       bool                   `protobuf:"varint,2,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"` // 是否还有更多数据
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetChatMessagesResponse) Reset() {
 	*x = GetChatMessagesResponse{}
-	mi := &file_proto_ai_proto_msgTypes[9]
+	mi := &file_ai_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -749,7 +730,7 @@ func (x *GetChatMessagesResponse) String() string {
 func (*GetChatMessagesResponse) ProtoMessage() {}
 
 func (x *GetChatMessagesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[9]
+	mi := &file_ai_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -762,21 +743,7 @@ func (x *GetChatMessagesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetChatMessagesResponse.ProtoReflect.Descriptor instead.
 func (*GetChatMessagesResponse) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *GetChatMessagesResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetChatMessagesResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
+	return file_ai_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetChatMessagesResponse) GetMessages() []*ChatMessage {
@@ -803,7 +770,7 @@ type DeleteChatSessionRequest struct {
 
 func (x *DeleteChatSessionRequest) Reset() {
 	*x = DeleteChatSessionRequest{}
-	mi := &file_proto_ai_proto_msgTypes[10]
+	mi := &file_ai_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -815,7 +782,7 @@ func (x *DeleteChatSessionRequest) String() string {
 func (*DeleteChatSessionRequest) ProtoMessage() {}
 
 func (x *DeleteChatSessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[10]
+	mi := &file_ai_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -828,7 +795,7 @@ func (x *DeleteChatSessionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteChatSessionRequest.ProtoReflect.Descriptor instead.
 func (*DeleteChatSessionRequest) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{10}
+	return file_ai_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *DeleteChatSessionRequest) GetUserId() string {
@@ -847,15 +814,13 @@ func (x *DeleteChatSessionRequest) GetSessionId() string {
 
 type DeleteChatSessionResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *DeleteChatSessionResponse) Reset() {
 	*x = DeleteChatSessionResponse{}
-	mi := &file_proto_ai_proto_msgTypes[11]
+	mi := &file_ai_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -867,7 +832,7 @@ func (x *DeleteChatSessionResponse) String() string {
 func (*DeleteChatSessionResponse) ProtoMessage() {}
 
 func (x *DeleteChatSessionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[11]
+	mi := &file_ai_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -880,21 +845,7 @@ func (x *DeleteChatSessionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteChatSessionResponse.ProtoReflect.Descriptor instead.
 func (*DeleteChatSessionResponse) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *DeleteChatSessionResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *DeleteChatSessionResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
+	return file_ai_proto_rawDescGZIP(), []int{11}
 }
 
 type SearchRequest struct {
@@ -909,7 +860,7 @@ type SearchRequest struct {
 
 func (x *SearchRequest) Reset() {
 	*x = SearchRequest{}
-	mi := &file_proto_ai_proto_msgTypes[12]
+	mi := &file_ai_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -921,7 +872,7 @@ func (x *SearchRequest) String() string {
 func (*SearchRequest) ProtoMessage() {}
 
 func (x *SearchRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[12]
+	mi := &file_ai_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -934,7 +885,7 @@ func (x *SearchRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchRequest.ProtoReflect.Descriptor instead.
 func (*SearchRequest) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{12}
+	return file_ai_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *SearchRequest) GetUserId() string {
@@ -967,18 +918,16 @@ func (x *SearchRequest) GetPageSize() int32 {
 
 type SearchResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"` // 错误描述
-	RepoIds       []string               `protobuf:"bytes,3,rep,name=repo_ids,json=repoIds,proto3" json:"repo_ids,omitempty"`
-	TotalPages    int32                  `protobuf:"varint,4,opt,name=total_pages,json=totalPages,proto3" json:"total_pages,omitempty"` // 总页数
-	HasMore       bool                   `protobuf:"varint,5,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`          // 是否还有更多数据
+	RepoIds       []string               `protobuf:"bytes,1,rep,name=repo_ids,json=repoIds,proto3" json:"repo_ids,omitempty"`
+	TotalPages    int32                  `protobuf:"varint,2,opt,name=total_pages,json=totalPages,proto3" json:"total_pages,omitempty"` // 总页数
+	HasMore       bool                   `protobuf:"varint,3,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`          // 是否还有更多数据
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *SearchResponse) Reset() {
 	*x = SearchResponse{}
-	mi := &file_proto_ai_proto_msgTypes[13]
+	mi := &file_ai_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -990,7 +939,7 @@ func (x *SearchResponse) String() string {
 func (*SearchResponse) ProtoMessage() {}
 
 func (x *SearchResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[13]
+	mi := &file_ai_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1003,21 +952,7 @@ func (x *SearchResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchResponse.ProtoReflect.Descriptor instead.
 func (*SearchResponse) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *SearchResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *SearchResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
+	return file_ai_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *SearchResponse) GetRepoIds() []string {
@@ -1051,7 +986,7 @@ type UpdateRepoVisibilityRequest struct {
 
 func (x *UpdateRepoVisibilityRequest) Reset() {
 	*x = UpdateRepoVisibilityRequest{}
-	mi := &file_proto_ai_proto_msgTypes[14]
+	mi := &file_ai_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1063,7 +998,7 @@ func (x *UpdateRepoVisibilityRequest) String() string {
 func (*UpdateRepoVisibilityRequest) ProtoMessage() {}
 
 func (x *UpdateRepoVisibilityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[14]
+	mi := &file_ai_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1076,7 +1011,7 @@ func (x *UpdateRepoVisibilityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRepoVisibilityRequest.ProtoReflect.Descriptor instead.
 func (*UpdateRepoVisibilityRequest) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{14}
+	return file_ai_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *UpdateRepoVisibilityRequest) GetRepoId() string {
@@ -1095,14 +1030,13 @@ func (x *UpdateRepoVisibilityRequest) GetIsPublic() bool {
 
 type UpdateRepoVisibilityResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UpdateRepoVisibilityResponse) Reset() {
 	*x = UpdateRepoVisibilityResponse{}
-	mi := &file_proto_ai_proto_msgTypes[15]
+	mi := &file_ai_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1114,7 +1048,7 @@ func (x *UpdateRepoVisibilityResponse) String() string {
 func (*UpdateRepoVisibilityResponse) ProtoMessage() {}
 
 func (x *UpdateRepoVisibilityResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[15]
+	mi := &file_ai_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1127,14 +1061,7 @@ func (x *UpdateRepoVisibilityResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRepoVisibilityResponse.ProtoReflect.Descriptor instead.
 func (*UpdateRepoVisibilityResponse) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *UpdateRepoVisibilityResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
+	return file_ai_proto_rawDescGZIP(), []int{15}
 }
 
 // VectorizeArticleRequest 向量化文章请求
@@ -1149,7 +1076,7 @@ type VectorizeArticleRequest struct {
 
 func (x *VectorizeArticleRequest) Reset() {
 	*x = VectorizeArticleRequest{}
-	mi := &file_proto_ai_proto_msgTypes[16]
+	mi := &file_ai_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1161,7 +1088,7 @@ func (x *VectorizeArticleRequest) String() string {
 func (*VectorizeArticleRequest) ProtoMessage() {}
 
 func (x *VectorizeArticleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[16]
+	mi := &file_ai_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1174,7 +1101,7 @@ func (x *VectorizeArticleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VectorizeArticleRequest.ProtoReflect.Descriptor instead.
 func (*VectorizeArticleRequest) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{16}
+	return file_ai_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *VectorizeArticleRequest) GetUserId() string {
@@ -1201,15 +1128,13 @@ func (x *VectorizeArticleRequest) GetFilePath() string {
 // VectorizeArticleResponse 向量化文章响应
 type VectorizeArticleResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *VectorizeArticleResponse) Reset() {
 	*x = VectorizeArticleResponse{}
-	mi := &file_proto_ai_proto_msgTypes[17]
+	mi := &file_ai_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1221,7 +1146,7 @@ func (x *VectorizeArticleResponse) String() string {
 func (*VectorizeArticleResponse) ProtoMessage() {}
 
 func (x *VectorizeArticleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[17]
+	mi := &file_ai_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1234,21 +1159,7 @@ func (x *VectorizeArticleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VectorizeArticleResponse.ProtoReflect.Descriptor instead.
 func (*VectorizeArticleResponse) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *VectorizeArticleResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *VectorizeArticleResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
+	return file_ai_proto_rawDescGZIP(), []int{17}
 }
 
 // DeleteRepoVectorsRequest 删除知识库向量请求
@@ -1261,7 +1172,7 @@ type DeleteRepoVectorsRequest struct {
 
 func (x *DeleteRepoVectorsRequest) Reset() {
 	*x = DeleteRepoVectorsRequest{}
-	mi := &file_proto_ai_proto_msgTypes[18]
+	mi := &file_ai_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1273,7 +1184,7 @@ func (x *DeleteRepoVectorsRequest) String() string {
 func (*DeleteRepoVectorsRequest) ProtoMessage() {}
 
 func (x *DeleteRepoVectorsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[18]
+	mi := &file_ai_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1286,7 +1197,7 @@ func (x *DeleteRepoVectorsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteRepoVectorsRequest.ProtoReflect.Descriptor instead.
 func (*DeleteRepoVectorsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{18}
+	return file_ai_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *DeleteRepoVectorsRequest) GetRepoId() string {
@@ -1299,15 +1210,13 @@ func (x *DeleteRepoVectorsRequest) GetRepoId() string {
 // DeleteRepoVectorsResponse 删除知识库向量响应
 type DeleteRepoVectorsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *DeleteRepoVectorsResponse) Reset() {
 	*x = DeleteRepoVectorsResponse{}
-	mi := &file_proto_ai_proto_msgTypes[19]
+	mi := &file_ai_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1319,7 +1228,7 @@ func (x *DeleteRepoVectorsResponse) String() string {
 func (*DeleteRepoVectorsResponse) ProtoMessage() {}
 
 func (x *DeleteRepoVectorsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[19]
+	mi := &file_ai_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1332,21 +1241,7 @@ func (x *DeleteRepoVectorsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteRepoVectorsResponse.ProtoReflect.Descriptor instead.
 func (*DeleteRepoVectorsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{19}
-}
-
-func (x *DeleteRepoVectorsResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *DeleteRepoVectorsResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
+	return file_ai_proto_rawDescGZIP(), []int{19}
 }
 
 // DeleteFileVectorsRequest 删除文件向量请求
@@ -1360,7 +1255,7 @@ type DeleteFileVectorsRequest struct {
 
 func (x *DeleteFileVectorsRequest) Reset() {
 	*x = DeleteFileVectorsRequest{}
-	mi := &file_proto_ai_proto_msgTypes[20]
+	mi := &file_ai_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1372,7 +1267,7 @@ func (x *DeleteFileVectorsRequest) String() string {
 func (*DeleteFileVectorsRequest) ProtoMessage() {}
 
 func (x *DeleteFileVectorsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[20]
+	mi := &file_ai_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1385,7 +1280,7 @@ func (x *DeleteFileVectorsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteFileVectorsRequest.ProtoReflect.Descriptor instead.
 func (*DeleteFileVectorsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{20}
+	return file_ai_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *DeleteFileVectorsRequest) GetRepoId() string {
@@ -1405,15 +1300,13 @@ func (x *DeleteFileVectorsRequest) GetFilePath() string {
 // DeleteFileVectorsResponse 删除文件向量响应
 type DeleteFileVectorsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *DeleteFileVectorsResponse) Reset() {
 	*x = DeleteFileVectorsResponse{}
-	mi := &file_proto_ai_proto_msgTypes[21]
+	mi := &file_ai_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1425,7 +1318,7 @@ func (x *DeleteFileVectorsResponse) String() string {
 func (*DeleteFileVectorsResponse) ProtoMessage() {}
 
 func (x *DeleteFileVectorsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_ai_proto_msgTypes[21]
+	mi := &file_ai_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1438,28 +1331,14 @@ func (x *DeleteFileVectorsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteFileVectorsResponse.ProtoReflect.Descriptor instead.
 func (*DeleteFileVectorsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_ai_proto_rawDescGZIP(), []int{21}
+	return file_ai_proto_rawDescGZIP(), []int{21}
 }
 
-func (x *DeleteFileVectorsResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
+var File_ai_proto protoreflect.FileDescriptor
 
-func (x *DeleteFileVectorsResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
-}
-
-var File_proto_ai_proto protoreflect.FileDescriptor
-
-const file_proto_ai_proto_rawDesc = "" +
+const file_ai_proto_rawDesc = "" +
 	"\n" +
-	"\x0eproto/ai.proto\x12\x05proto\"\x8a\x01\n" +
+	"\bai.proto\x12\x05proto\"\x8a\x01\n" +
 	"\vChatSession\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x14\n" +
@@ -1509,65 +1388,50 @@ const file_proto_ai_proto_rawDesc = "" +
 	"\x16GetChatSessionsRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x16\n" +
 	"\x06cursor\x18\x02 \x01(\x03R\x06cursor\x12\x14\n" +
-	"\x05limit\x18\x03 \x01(\x05R\x05limit\"\x90\x01\n" +
-	"\x17GetChatSessionsResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12.\n" +
-	"\bsessions\x18\x03 \x03(\v2\x12.proto.ChatSessionR\bsessions\x12\x19\n" +
-	"\bhas_more\x18\x04 \x01(\bR\ahasMore\"~\n" +
+	"\x05limit\x18\x03 \x01(\x05R\x05limit\"d\n" +
+	"\x17GetChatSessionsResponse\x12.\n" +
+	"\bsessions\x18\x01 \x03(\v2\x12.proto.ChatSessionR\bsessions\x12\x19\n" +
+	"\bhas_more\x18\x02 \x01(\bR\ahasMore\"~\n" +
 	"\x16GetChatMessagesRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1d\n" +
 	"\n" +
 	"session_id\x18\x02 \x01(\tR\tsessionId\x12\x16\n" +
 	"\x06cursor\x18\x03 \x01(\x03R\x06cursor\x12\x14\n" +
-	"\x05limit\x18\x04 \x01(\x05R\x05limit\"\x90\x01\n" +
-	"\x17GetChatMessagesResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12.\n" +
-	"\bmessages\x18\x03 \x03(\v2\x12.proto.ChatMessageR\bmessages\x12\x19\n" +
-	"\bhas_more\x18\x04 \x01(\bR\ahasMore\"R\n" +
+	"\x05limit\x18\x04 \x01(\x05R\x05limit\"d\n" +
+	"\x17GetChatMessagesResponse\x12.\n" +
+	"\bmessages\x18\x01 \x03(\v2\x12.proto.ChatMessageR\bmessages\x12\x19\n" +
+	"\bhas_more\x18\x02 \x01(\bR\ahasMore\"R\n" +
 	"\x18DeleteChatSessionRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1d\n" +
 	"\n" +
-	"session_id\x18\x02 \x01(\tR\tsessionId\"G\n" +
-	"\x19DeleteChatSessionResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"o\n" +
+	"session_id\x18\x02 \x01(\tR\tsessionId\"\x1b\n" +
+	"\x19DeleteChatSessionResponse\"o\n" +
 	"\rSearchRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05query\x18\x02 \x01(\tR\x05query\x12\x12\n" +
 	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"\x93\x01\n" +
-	"\x0eSearchResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x19\n" +
-	"\brepo_ids\x18\x03 \x03(\tR\arepoIds\x12\x1f\n" +
-	"\vtotal_pages\x18\x04 \x01(\x05R\n" +
+	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"g\n" +
+	"\x0eSearchResponse\x12\x19\n" +
+	"\brepo_ids\x18\x01 \x03(\tR\arepoIds\x12\x1f\n" +
+	"\vtotal_pages\x18\x02 \x01(\x05R\n" +
 	"totalPages\x12\x19\n" +
-	"\bhas_more\x18\x05 \x01(\bR\ahasMore\"S\n" +
+	"\bhas_more\x18\x03 \x01(\bR\ahasMore\"S\n" +
 	"\x1bUpdateRepoVisibilityRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x1b\n" +
-	"\tis_public\x18\x02 \x01(\bR\bisPublic\"8\n" +
-	"\x1cUpdateRepoVisibilityResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"h\n" +
+	"\tis_public\x18\x02 \x01(\bR\bisPublic\"\x1e\n" +
+	"\x1cUpdateRepoVisibilityResponse\"h\n" +
 	"\x17VectorizeArticleRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x17\n" +
 	"\arepo_id\x18\x02 \x01(\tR\x06repoId\x12\x1b\n" +
-	"\tfile_path\x18\x03 \x01(\tR\bfilePath\"F\n" +
-	"\x18VectorizeArticleResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"3\n" +
+	"\tfile_path\x18\x03 \x01(\tR\bfilePath\"\x1a\n" +
+	"\x18VectorizeArticleResponse\"3\n" +
 	"\x18DeleteRepoVectorsRequest\x12\x17\n" +
-	"\arepo_id\x18\x01 \x01(\tR\x06repoId\"G\n" +
-	"\x19DeleteRepoVectorsResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"P\n" +
+	"\arepo_id\x18\x01 \x01(\tR\x06repoId\"\x1b\n" +
+	"\x19DeleteRepoVectorsResponse\"P\n" +
 	"\x18DeleteFileVectorsRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x1b\n" +
-	"\tfile_path\x18\x02 \x01(\tR\bfilePath\"G\n" +
-	"\x19DeleteFileVectorsResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg2\xd7\x05\n" +
+	"\tfile_path\x18\x02 \x01(\tR\bfilePath\"\x1b\n" +
+	"\x19DeleteFileVectorsResponse2\xd7\x05\n" +
 	"\tAIService\x121\n" +
 	"\x04Chat\x12\x12.proto.ChatRequest\x1a\x13.proto.ChatResponse0\x01\x125\n" +
 	"\x06Search\x12\x14.proto.SearchRequest\x1a\x15.proto.SearchResponse\x12P\n" +
@@ -1580,19 +1444,19 @@ const file_proto_ai_proto_rawDesc = "" +
 	"\x11DeleteFileVectors\x12\x1f.proto.DeleteFileVectorsRequest\x1a .proto.DeleteFileVectorsResponseB\x11Z\x0fks-proto/pkg/pbb\x06proto3"
 
 var (
-	file_proto_ai_proto_rawDescOnce sync.Once
-	file_proto_ai_proto_rawDescData []byte
+	file_ai_proto_rawDescOnce sync.Once
+	file_ai_proto_rawDescData []byte
 )
 
-func file_proto_ai_proto_rawDescGZIP() []byte {
-	file_proto_ai_proto_rawDescOnce.Do(func() {
-		file_proto_ai_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_ai_proto_rawDesc), len(file_proto_ai_proto_rawDesc)))
+func file_ai_proto_rawDescGZIP() []byte {
+	file_ai_proto_rawDescOnce.Do(func() {
+		file_ai_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_ai_proto_rawDesc), len(file_ai_proto_rawDesc)))
 	})
-	return file_proto_ai_proto_rawDescData
+	return file_ai_proto_rawDescData
 }
 
-var file_proto_ai_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
-var file_proto_ai_proto_goTypes = []any{
+var file_ai_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+var file_ai_proto_goTypes = []any{
 	(*ChatSession)(nil),                  // 0: proto.ChatSession
 	(*ChatMessage)(nil),                  // 1: proto.ChatMessage
 	(*ChatMessageMeta)(nil),              // 2: proto.ChatMessageMeta
@@ -1616,7 +1480,7 @@ var file_proto_ai_proto_goTypes = []any{
 	(*DeleteFileVectorsRequest)(nil),     // 20: proto.DeleteFileVectorsRequest
 	(*DeleteFileVectorsResponse)(nil),    // 21: proto.DeleteFileVectorsResponse
 }
-var file_proto_ai_proto_depIdxs = []int32{
+var file_ai_proto_depIdxs = []int32{
 	4,  // 0: proto.ChatResponse.ask_user_event:type_name -> proto.AskUserEvent
 	0,  // 1: proto.GetChatSessionsResponse.sessions:type_name -> proto.ChatSession
 	1,  // 2: proto.GetChatMessagesResponse.messages:type_name -> proto.ChatMessage
@@ -1645,12 +1509,12 @@ var file_proto_ai_proto_depIdxs = []int32{
 	0,  // [0:3] is the sub-list for field type_name
 }
 
-func init() { file_proto_ai_proto_init() }
-func file_proto_ai_proto_init() {
-	if File_proto_ai_proto != nil {
+func init() { file_ai_proto_init() }
+func file_ai_proto_init() {
+	if File_ai_proto != nil {
 		return
 	}
-	file_proto_ai_proto_msgTypes[5].OneofWrappers = []any{
+	file_ai_proto_msgTypes[5].OneofWrappers = []any{
 		(*ChatResponse_ThinkingChunk)(nil),
 		(*ChatResponse_ContentChunk)(nil),
 		(*ChatResponse_AskUserEvent)(nil),
@@ -1659,17 +1523,17 @@ func file_proto_ai_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_ai_proto_rawDesc), len(file_proto_ai_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ai_proto_rawDesc), len(file_ai_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   22,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_proto_ai_proto_goTypes,
-		DependencyIndexes: file_proto_ai_proto_depIdxs,
-		MessageInfos:      file_proto_ai_proto_msgTypes,
+		GoTypes:           file_ai_proto_goTypes,
+		DependencyIndexes: file_ai_proto_depIdxs,
+		MessageInfos:      file_ai_proto_msgTypes,
 	}.Build()
-	File_proto_ai_proto = out.File
-	file_proto_ai_proto_goTypes = nil
-	file_proto_ai_proto_depIdxs = nil
+	File_ai_proto = out.File
+	file_ai_proto_goTypes = nil
+	file_ai_proto_depIdxs = nil
 }

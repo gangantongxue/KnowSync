@@ -78,10 +78,8 @@ message GetChatSessionsRequest {
 }
 
 message GetChatSessionsResponse {
-  bool success = 1;
-  string msg = 2;
-  repeated ChatSession sessions = 3;
-  bool has_more = 4; // 是否还有更多数据
+  repeated ChatSession sessions = 1;
+  bool has_more = 2; // 是否还有更多数据
 }
 
 message GetChatMessagesRequest {
@@ -92,10 +90,8 @@ message GetChatMessagesRequest {
 }
 
 message GetChatMessagesResponse {
-  bool success = 1;
-  string msg = 2;
-  repeated ChatMessage messages = 3;
-  bool has_more = 4; // 是否还有更多数据
+  repeated ChatMessage messages = 1;
+  bool has_more = 2; // 是否还有更多数据
 }
 
 message DeleteChatSessionRequest {
@@ -103,10 +99,7 @@ message DeleteChatSessionRequest {
   string session_id = 2;
 }
 
-message DeleteChatSessionResponse {
-  bool success = 1;
-  string msg = 2;
-}
+message DeleteChatSessionResponse {}
 
 // ========== 已有的（保持不变） ==========
 
@@ -118,11 +111,9 @@ message SearchRequest {
 }
 
 message SearchResponse {
-  bool success = 1;
-  string msg = 2; // 错误描述
-  repeated string repo_ids = 3;
-  int32 total_pages = 4; // 总页数
-  bool has_more = 5; // 是否还有更多数据
+  repeated string repo_ids = 1;
+  int32 total_pages = 2; // 总页数
+  bool has_more = 3; // 是否还有更多数据
 }
 
 message UpdateRepoVisibilityRequest {
@@ -130,9 +121,7 @@ message UpdateRepoVisibilityRequest {
   bool is_public = 2;
 }
 
-message UpdateRepoVisibilityResponse {
-  bool success = 1;
-}
+message UpdateRepoVisibilityResponse {}
 
 // VectorizeArticleRequest 向量化文章请求
 message VectorizeArticleRequest {
@@ -142,10 +131,7 @@ message VectorizeArticleRequest {
 }
 
 // VectorizeArticleResponse 向量化文章响应
-message VectorizeArticleResponse {
-  bool success = 1;
-  string msg = 2;
-}
+message VectorizeArticleResponse {}
 
 // DeleteRepoVectorsRequest 删除知识库向量请求
 message DeleteRepoVectorsRequest {
@@ -153,10 +139,7 @@ message DeleteRepoVectorsRequest {
 }
 
 // DeleteRepoVectorsResponse 删除知识库向量响应
-message DeleteRepoVectorsResponse {
-  bool success = 1;
-  string msg = 2;
-}
+message DeleteRepoVectorsResponse {}
 
 // DeleteFileVectorsRequest 删除文件向量请求
 message DeleteFileVectorsRequest {
@@ -165,10 +148,7 @@ message DeleteFileVectorsRequest {
 }
 
 // DeleteFileVectorsResponse 删除文件向量响应
-message DeleteFileVectorsResponse {
-  bool success = 1;
-  string msg = 2;
-}
+message DeleteFileVectorsResponse {}
 
 // ========== Service ==========
 

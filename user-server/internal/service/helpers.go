@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 	"regexp"
 
 	"golang.org/x/crypto/bcrypt"
@@ -45,6 +46,15 @@ func generateRefreshToken() (string, error) {
 func hashRefreshToken(token string) string {
 	h := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(h[:])
+}
+
+// generateVerifyCode 使用密码学安全随机数生成 4 位数字验证码.
+func generateVerifyCode() (string, error) {
+	n, err := rand.Int(rand.Reader, big.NewInt(10000))
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%04d", n.Int64()), nil
 }
 
 // validateRegisterParams 校验注册参数.

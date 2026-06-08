@@ -10,9 +10,29 @@ import (
 	"gorm.io/gorm"
 )
 
+// UserService 用户管理服务.
+type UserService struct {
+	userRepo       UserRepository
+	sessionRepo    SessionRepository
+	verifyCodeRepo VerifyCodeRepository
+}
+
+// NewUserService 创建用户管理服务.
+func NewUserService(
+	userRepo UserRepository,
+	sessionRepo SessionRepository,
+	verifyCodeRepo VerifyCodeRepository,
+) *UserService {
+	return &UserService{
+		userRepo:       userRepo,
+		sessionRepo:    sessionRepo,
+		verifyCodeRepo: verifyCodeRepo,
+	}
+}
+
 // GetUser 获取用户信息.
-func (s *Service) GetUser(ctx context.Context, userID string) (*schema.User, error) {
-	user, err := s.Repository.GetUser(ctx, userID)
+func (s *UserService) GetUser(ctx context.Context, userID string) (*schema.User, error) {
+	user, err := s.userRepo.GetUser(ctx, userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -24,8 +44,8 @@ func (s *Service) GetUser(ctx context.Context, userID string) (*schema.User, err
 }
 
 // UpdateUserInfo 更新用户信息.
-func (s *Service) UpdateUserInfo(ctx context.Context, userID, name, email, avatar string) (*schema.User, error) {
-	user, err := s.Repository.GetUser(ctx, userID)
+func (s *UserService) UpdateUserInfo(ctx context.Context, userID, name, email, avatar string) (*schema.User, error) {
+	user, err := s.userRepo.GetUser(ctx, userID)
 	if err != nil {
 		return nil, errors.New("用户不存在")
 	}
@@ -40,7 +60,7 @@ func (s *Service) UpdateUserInfo(ctx context.Context, userID, name, email, avata
 		user.Avatar = avatar
 	}
 
-	if err := s.Repository.UpdateUser(ctx, user); err != nil {
+	if err := s.userRepo.UpdateUser(ctx, user); err != nil {
 		slog.Error("更新用户信息失败", "user_id", userID, "error", err)
 		return nil, fmt.Errorf("更新用户信息失败: %w", err)
 	}
@@ -50,14 +70,14 @@ func (s *Service) UpdateUserInfo(ctx context.Context, userID, name, email, avata
 }
 
 // SetAvatar 设置用户头像.
-func (s *Service) SetAvatar(ctx context.Context, userID, avatar string) error {
-	user, err := s.Repository.GetUser(ctx, userID)
+func (s *UserService) SetAvatar(ctx context.Context, userID, avatar string) error {
+	user, err := s.userRepo.GetUser(ctx, userID)
 	if err != nil {
 		return errors.New("用户不存在")
 	}
 
 	user.Avatar = avatar
-	if err := s.Repository.UpdateUser(ctx, user); err != nil {
+	if err := s.userRepo.UpdateUser(ctx, user); err != nil {
 		slog.Error("设置头像失败", "user_id", userID, "error", err)
 		return fmt.Errorf("设置头像失败: %w", err)
 	}
@@ -67,9 +87,9 @@ func (s *Service) SetAvatar(ctx context.Context, userID, avatar string) error {
 }
 
 // Unregister 注销用户.
-func (s *Service) Unregister(ctx context.Context, userID, email, password, verifyCode string) error {
+func (s *UserService) Unregister(ctx context.Context, userID, email, password, verifyCode string) error {
 	// 1. 验证码校验
-	storedCode, err := s.Repository.GetVerifyCode(ctx, email)
+	storedCode, err := s.verifyCodeRepo.GetVerifyCode(ctx, email)
 	if err != nil {
 		return errors.New("验证码已过期或不存在")
 	}
@@ -78,7 +98,7 @@ func (s *Service) Unregister(ctx context.Context, userID, email, password, verif
 	}
 
 	// 2. 查找用户并校验密码
-	user, err := s.Repository.GetUser(ctx, userID)
+	user, err := s.userRepo.GetUser(ctx, userID)
 	if err != nil {
 		return errors.New("用户不存在")
 	}
@@ -87,18 +107,18 @@ func (s *Service) Unregister(ctx context.Context, userID, email, password, verif
 	}
 
 	// 3. 删除用户
-	if err := s.Repository.DeleteUser(ctx, userID); err != nil {
+	if err := s.userRepo.DeleteUser(ctx, userID); err != nil {
 		slog.Error("注销用户失败", "user_id", userID, "error", err)
 		return fmt.Errorf("注销用户失败: %w", err)
 	}
 
 	// 4. 清理该用户的所有会话
-	if err := s.Repository.InvalidateUserSessions(ctx, userID); err != nil {
+	if err := s.sessionRepo.InvalidateUserSessions(ctx, userID); err != nil {
 		slog.Warn("注销时清理会话失败", "user_id", userID, "error", err)
 	}
 
 	// 5. 删除已使用的验证码
-	if err := s.Repository.DeleteVerifyCode(ctx, email); err != nil {
+	if err := s.verifyCodeRepo.DeleteVerifyCode(ctx, email); err != nil {
 		slog.Warn("删除验证码失败", "email", email, "error", err)
 	}
 

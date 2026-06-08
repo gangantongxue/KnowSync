@@ -7,8 +7,8 @@ import (
 )
 
 // CreateUser 创建用户.
-func (r *Repository) CreateUser(user *schema.User) error {
-	return r.Database.DB.Create(user).Error
+func (r *Repository) CreateUser(ctx context.Context, user *schema.User) error {
+	return r.Database.DB.WithContext(ctx).Create(user).Error
 }
 
 // GetUser 获取用户.

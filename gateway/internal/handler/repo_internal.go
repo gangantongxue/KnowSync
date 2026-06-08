@@ -31,7 +31,7 @@ func (h *Handler) InternalListUserRepos() app.HandlerFunc {
 
 		client := pb.NewRepoServiceClient(conn)
 		resp, err := client.ListUserRepos(c, &pb.ListUserReposRequest{UserId: uid})
-		if err != nil || !resp.Success {
+		if err != nil {
 			slog.Error("获取用户仓库列表失败", "error", err)
 			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "获取仓库列表失败"})
 			return
@@ -61,7 +61,7 @@ func (h *Handler) InternalListPublicRepos() app.HandlerFunc {
 
 		client := pb.NewRepoServiceClient(conn)
 		resp, err := client.ListPublicRepos(c, &pb.ListPublicReposRequest{})
-		if err != nil || !resp.Success {
+		if err != nil {
 			slog.Error("获取公开仓库列表失败", "error", err)
 			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "获取公开仓库列表失败"})
 			return
@@ -98,7 +98,7 @@ func (h *Handler) InternalGetRepo() app.HandlerFunc {
 
 		client := pb.NewRepoServiceClient(conn)
 		resp, err := client.GetRepo(c, &pb.GetRepoRequest{RepoId: repoID, UserId: uid})
-		if err != nil || !resp.Success {
+		if err != nil {
 			slog.Error("获取仓库详情失败", "error", err, "repo_id", repoID)
 			ctx.JSON(consts.StatusNotFound, map[string]string{KeyMessage: "仓库不存在"})
 			return
@@ -247,7 +247,7 @@ func (h *Handler) triggerDeleteFileVectors(c context.Context, repoID, filePath s
 		return
 	}
 	client := pb.NewAIServiceClient(conn)
-	resp, err := client.DeleteFileVectors(c, &pb.DeleteFileVectorsRequest{
+	_, err := client.DeleteFileVectors(c, &pb.DeleteFileVectorsRequest{
 		RepoId:   repoID,
 		FilePath: filePath,
 	})
@@ -255,10 +255,7 @@ func (h *Handler) triggerDeleteFileVectors(c context.Context, repoID, filePath s
 		slog.Warn("删除向量请求失败", "file_path", filePath, "error", err)
 		return
 	}
-	if !resp.Success {
-		slog.Warn("删除向量失败", "file_path", filePath, "msg", resp.Msg)
-		return
-	}
+
 	slog.Info("文件向量已删除", "file_path", filePath)
 }
 
@@ -327,7 +324,7 @@ func (h *Handler) InternalCreateRepo() app.HandlerFunc {
 			Description: req.Description,
 			Visibility:  vis,
 		})
-		if err != nil || !resp.Success {
+		if err != nil {
 			slog.Error("创建知识库失败", "error", err)
 			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "创建知识库失败"})
 			return
@@ -372,8 +369,8 @@ func (h *Handler) InternalUpdateRepo() app.HandlerFunc {
 		} else {
 			updateReq.Visibility = pb.RepoVisibility_PRIVATE
 		}
-		resp, err := client.UpdateRepo(c, updateReq)
-		if err != nil || !resp.Success {
+		_, err := client.UpdateRepo(c, updateReq)
+		if err != nil {
 			slog.Error("更新知识库失败", "error", err)
 			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "更新知识库失败"})
 			return
@@ -447,13 +444,13 @@ func (h *Handler) InternalAddCollaborator() app.HandlerFunc {
 			return
 		}
 		client := pb.NewRepoServiceClient(conn)
-		resp, err := client.AddCollaborator(c, &pb.AddCollaboratorRequest{
+		_, err := client.AddCollaborator(c, &pb.AddCollaboratorRequest{
 			RepoId:     repoID,
 			OperatorId: uid,
 			UserId:     req.UserID,
 			Role:       role,
 		})
-		if err != nil || !resp.Success {
+		if err != nil {
 			slog.Error("添加协作者失败", "error", err)
 			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "添加协作者失败"})
 			return
@@ -479,12 +476,12 @@ func (h *Handler) InternalRemoveCollaborator() app.HandlerFunc {
 			return
 		}
 		client := pb.NewRepoServiceClient(conn)
-		resp, err := client.RemoveCollaborator(c, &pb.RemoveCollaboratorRequest{
+		_, err := client.RemoveCollaborator(c, &pb.RemoveCollaboratorRequest{
 			RepoId:     repoID,
 			OperatorId: uid,
 			UserId:     targetUserID,
 		})
-		if err != nil || !resp.Success {
+		if err != nil {
 			slog.Error("移除协作者失败", "error", err)
 			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "移除协作者失败"})
 			return
@@ -526,13 +523,13 @@ func (h *Handler) InternalUpdateCollaboratorRole() app.HandlerFunc {
 			return
 		}
 		client := pb.NewRepoServiceClient(conn)
-		resp, err := client.UpdateCollaborator(c, &pb.UpdateCollaboratorRequest{
+		_, err := client.UpdateCollaborator(c, &pb.UpdateCollaboratorRequest{
 			RepoId:     repoID,
 			OperatorId: uid,
 			UserId:     req.UserID,
 			Role:       role,
 		})
-		if err != nil || !resp.Success {
+		if err != nil {
 			slog.Error("更新协作者角色失败", "error", err)
 			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "更新协作者角色失败"})
 			return
@@ -561,7 +558,7 @@ func (h *Handler) InternalListFollowedRepos() app.HandlerFunc {
 
 		client := pb.NewRepoServiceClient(conn)
 		resp, err := client.ListFollowedRepos(c, &pb.ListFollowedReposRequest{UserId: uid})
-		if err != nil || !resp.Success {
+		if err != nil {
 			slog.Error("获取关注列表失败", "error", err)
 			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "获取关注列表失败"})
 			return
@@ -599,8 +596,8 @@ func (h *Handler) InternalFollowRepo() app.HandlerFunc {
 		}
 
 		client := pb.NewRepoServiceClient(conn)
-		resp, err := client.FollowRepo(c, &pb.FollowRepoRequest{RepoId: repoID, UserId: uid})
-		if err != nil || !resp.Success {
+		_, err := client.FollowRepo(c, &pb.FollowRepoRequest{RepoId: repoID, UserId: uid})
+		if err != nil {
 			slog.Error("关注知识库失败", "error", err, "repo_id", repoID)
 			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "关注知识库失败"})
 			return
@@ -630,8 +627,8 @@ func (h *Handler) InternalUnfollowRepo() app.HandlerFunc {
 		}
 
 		client := pb.NewRepoServiceClient(conn)
-		resp, err := client.UnfollowRepo(c, &pb.UnfollowRepoRequest{RepoId: repoID, UserId: uid})
-		if err != nil || !resp.Success {
+		_, err := client.UnfollowRepo(c, &pb.UnfollowRepoRequest{RepoId: repoID, UserId: uid})
+		if err != nil {
 			slog.Error("取消关注知识库失败", "error", err, "repo_id", repoID)
 			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "取消关注知识库失败"})
 			return

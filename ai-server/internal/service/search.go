@@ -27,8 +27,6 @@ type cachedSearchResult struct {
 
 // pbSearchResponse 避免循环导入 pb 包.
 type pbSearchResponse struct {
-	Success    bool
-	Msg        string
 	RepoIDs    []string
 	TotalPages int32
 	HasMore    bool
@@ -46,10 +44,7 @@ func (s *Service) Search(ctx context.Context, query string, page, pageSize int) 
 		pageSize = defaultPageSize
 	}
 	if query == "" {
-		return &pbSearchResponse{
-			Success: false,
-			Msg:     "搜索关键词不能为空",
-		}, nil
+		return nil, fmt.Errorf("搜索关键词不能为空")
 	}
 
 	// 1. 尝试从缓存读取
@@ -82,7 +77,6 @@ func paginateResult(cached *cachedSearchResult, cacheKey string, page, pageSize 
 
 	if start >= cached.Total {
 		return &pbSearchResponse{
-			Success:    true,
 			RepoIDs:    []string{},
 			TotalPages: int32(totalPages), //nolint:gosec // pages never exceed int32
 			HasMore:    false,
@@ -94,7 +88,6 @@ func paginateResult(cached *cachedSearchResult, cacheKey string, page, pageSize 
 	}
 
 	return &pbSearchResponse{
-		Success:    true,
 		RepoIDs:    cached.RepoIDs[start:end],
 		TotalPages: int32(totalPages), //nolint:gosec // pages never exceed int32
 		HasMore:    end < cached.Total,
@@ -107,15 +100,11 @@ func (s *Service) searchAndCache(ctx context.Context, query string, page, pageSi
 	repoIDs, err := s.Client.ListPublicRepos(ctx)
 	if err != nil {
 		slog.Error("获取公开仓库列表失败", "error", err)
-		return &pbSearchResponse{
-			Success: false,
-			Msg:     "获取仓库列表失败",
-		}, nil
+		return nil, fmt.Errorf("获取仓库列表失败")
 	}
 
 	if len(repoIDs) == 0 {
 		return &pbSearchResponse{
-			Success:    true,
 			RepoIDs:    []string{},
 			TotalPages: 0,
 			HasMore:    false,
@@ -126,10 +115,7 @@ func (s *Service) searchAndCache(ctx context.Context, query string, page, pageSi
 	vec64, err := s.Embedder.EmbedStrings(ctx, []string{query})
 	if err != nil || len(vec64) == 0 {
 		slog.Error("向量化查询失败", "error", err)
-		return &pbSearchResponse{
-			Success: false,
-			Msg:     "搜索处理失败",
-		}, nil
+		return nil, fmt.Errorf("搜索处理失败")
 	}
 
 	queryEmbedding := make([]float32, len(vec64[0]))
@@ -141,10 +127,7 @@ func (s *Service) searchAndCache(ctx context.Context, query string, page, pageSi
 	results, err := s.VectorStore.SearchCrossRepos(ctx, repoIDs, queryEmbedding, len(repoIDs)*5)
 	if err != nil {
 		slog.Error("搜索向量库失败", "error", err)
-		return &pbSearchResponse{
-			Success: false,
-			Msg:     "搜索失败",
-		}, nil
+		return nil, fmt.Errorf("搜索失败")
 	}
 
 	// 4. 按阈值过滤，去重提取匹配的 repo_id（按相似度降序排列）
@@ -189,7 +172,6 @@ func (s *Service) searchAndCache(ctx context.Context, query string, page, pageSi
 	}
 
 	return &pbSearchResponse{
-		Success:    true,
 		RepoIDs:    pageItems,
 		TotalPages: int32(totalPages), //nolint:gosec // pages never exceed int32
 		HasMore:    end < totalCount,

@@ -111,7 +111,7 @@ func (h *Handler) triggerVectorize(c context.Context, uid, repoID, filePath stri
 	}
 
 	client := pb.NewAIServiceClient(conn)
-	resp, err := client.VectorizeArticle(c, &pb.VectorizeArticleRequest{
+	_, err := client.VectorizeArticle(c, &pb.VectorizeArticleRequest{
 		UserId:   uid,
 		RepoId:   repoID,
 		FilePath: filePath,
@@ -120,10 +120,7 @@ func (h *Handler) triggerVectorize(c context.Context, uid, repoID, filePath stri
 		slog.Warn("向量化请求失败", "file_path", filePath, "error", err)
 		return
 	}
-	if !resp.Success {
-		slog.Warn("向量化请求被拒绝", "file_path", filePath, "msg", resp.Msg)
-		return
-	}
+
 	slog.Info("向量化任务已提交", "file_path", filePath)
 }
 

@@ -5,25 +5,26 @@ import (
 
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 	"github.com/gangantongxue/knowsync/repo-server/pkg/database/schema"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // CreateRepo 创建知识库.
 func (h *Handler) CreateRepo(ctx context.Context, req *pb.CreateRepoRequest) (*pb.CreateRepoResponse, error) {
-	repo, err := h.Service.CreateRepo(ctx, req.GetOwnerId(), req.GetName(), req.GetVisibility().String(), req.GetDescription())
+	repo, err := h.RepoService.CreateRepo(ctx, req.GetOwnerId(), req.GetName(), req.GetVisibility().String(), req.GetDescription())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &pb.CreateRepoResponse{
-		Success: true,
-		Repo:    marshalRepoWithFollowerCount(repo, 0),
+		Repo: marshalRepoWithFollowerCount(repo, 0),
 	}, nil
 }
 
 // GetRepo 获取知识库详情.
 func (h *Handler) GetRepo(ctx context.Context, req *pb.GetRepoRequest) (*pb.GetRepoResponse, error) {
-	repo, role, err := h.Service.GetRepo(ctx, req.GetRepoId(), req.GetUserId())
+	repo, role, err := h.RepoService.GetRepo(ctx, req.GetRepoId(), req.GetUserId())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	myRole := pb.CollaboratorRole_COLLABORATOR_ROLE_UNSPECIFIED
@@ -31,11 +32,10 @@ func (h *Handler) GetRepo(ctx context.Context, req *pb.GetRepoRequest) (*pb.GetR
 		myRole = pb.CollaboratorRole(v)
 	}
 
-	followerCount, _ := h.Service.Repository.CountFollowers(ctx, req.GetRepoId())
-	isFollowing, _ := h.Service.Repository.IsFollowing(ctx, req.GetUserId(), req.GetRepoId())
+	followerCount, _ := h.FollowService.CountFollowers(ctx, req.GetRepoId())
+	isFollowing, _ := h.FollowService.IsFollowing(ctx, req.GetRepoId(), req.GetUserId())
 
 	return &pb.GetRepoResponse{
-		Success:     true,
 		Repo:        marshalRepoWithFollowerCount(repo, followerCount),
 		MyRole:      myRole,
 		IsFollowing: isFollowing,
@@ -49,54 +49,51 @@ func (h *Handler) UpdateRepo(ctx context.Context, req *pb.UpdateRepoRequest) (*p
 		visibility = req.GetVisibility().String()
 	}
 
-	repo, err := h.Service.UpdateRepo(ctx, req.GetRepoId(), req.GetUserId(), req.GetName(), req.GetDescription(), visibility)
+	repo, err := h.RepoService.UpdateRepo(ctx, req.GetRepoId(), req.GetUserId(), req.GetName(), req.GetDescription(), visibility)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	followerCount, _ := h.Service.Repository.CountFollowers(ctx, req.GetRepoId())
+	followerCount, _ := h.FollowService.CountFollowers(ctx, req.GetRepoId())
 
 	return &pb.UpdateRepoResponse{
-		Success: true,
-		Repo:    marshalRepoWithFollowerCount(repo, followerCount),
+		Repo: marshalRepoWithFollowerCount(repo, followerCount),
 	}, nil
 }
 
 // DeleteRepo 删除知识库.
 func (h *Handler) DeleteRepo(ctx context.Context, req *pb.DeleteRepoRequest) (*pb.DeleteRepoResponse, error) {
-	if err := h.Service.DeleteRepo(ctx, req.GetRepoId(), req.GetUserId()); err != nil {
-		return nil, err
+	if err := h.RepoService.DeleteRepo(ctx, req.GetRepoId(), req.GetUserId()); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.DeleteRepoResponse{Success: true}, nil
+	return &pb.DeleteRepoResponse{}, nil
 }
 
 // ListPublicRepos 获取所有公开知识库列表.
 func (h *Handler) ListPublicRepos(ctx context.Context, _ *pb.ListPublicReposRequest) (*pb.ListPublicReposResponse, error) {
-	repos, err := h.Service.ListPublicRepos(ctx)
+	repos, err := h.RepoService.ListPublicRepos(ctx)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	pbRepos := h.marshalRepoListWithFollowers(ctx, repos)
 
 	return &pb.ListPublicReposResponse{
-		Success: true,
-		Repos:   pbRepos,
+		Repos: pbRepos,
 	}, nil
 }
 
 // ListUserRepos 获取用户的知识库列表.
 func (h *Handler) ListUserRepos(ctx context.Context, req *pb.ListUserReposRequest) (*pb.ListUserReposResponse, error) {
-	repos, err := h.Service.ListUserRepos(ctx, req.GetUserId())
+	repos, err := h.RepoService.ListUserRepos(ctx, req.GetUserId())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	pbRepos := h.marshalRepoListWithFollowers(ctx, repos)
 
 	return &pb.ListUserReposResponse{
-		Success: true,
-		Repos:   pbRepos,
+		Repos: pbRepos,
 	}, nil
 }
 
@@ -106,7 +103,7 @@ func (h *Handler) marshalRepoListWithFollowers(ctx context.Context, repos []sche
 	for i, r := range repos {
 		repoIDs[i] = r.ID
 	}
-	counts, _ := h.Service.Repository.BatchCountFollowers(ctx, repoIDs)
+	counts, _ := h.FollowService.BatchCountFollowers(ctx, repoIDs)
 
 	pbRepos := make([]*pb.Repo, 0, len(repos))
 	for _, r := range repos {

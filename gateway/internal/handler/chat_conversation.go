@@ -34,10 +34,6 @@ func (h *Handler) GetConversationList() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取会话列表失败")
 			return
 		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
-			return
-		}
 
 		conversations := make([]map[string]any, 0, len(resp.Conversations))
 		for _, c := range resp.Conversations {
@@ -88,7 +84,7 @@ func (h *Handler) MarkConversationRead() app.HandlerFunc {
 		}
 
 		client := pb.NewChatServiceClient(conn)
-		resp, err := client.MarkConversationRead(c, &pb.MarkConversationReadReq{
+		_, err := client.MarkConversationRead(c, &pb.MarkConversationReadReq{
 			UserId:           uid,
 			ConversationType: conversationType,
 			ConversationId:   conversationID,
@@ -96,10 +92,6 @@ func (h *Handler) MarkConversationRead() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC MarkConversationRead 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "标记已读失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -140,10 +132,6 @@ func (h *Handler) TogglePin() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "切换置顶失败")
 			return
 		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
-			return
-		}
 
 		response.Success(c, ctx, map[string]any{
 			"pinned": resp.Pinned,
@@ -176,7 +164,7 @@ func (h *Handler) DeleteConversation() app.HandlerFunc {
 		}
 
 		client := pb.NewChatServiceClient(conn)
-		resp, err := client.DeleteConversation(c, &pb.DeleteConversationReq{
+		_, err := client.DeleteConversation(c, &pb.DeleteConversationReq{
 			UserId:           uid,
 			ConversationType: conversationType,
 			ConversationId:   conversationID,
@@ -184,10 +172,6 @@ func (h *Handler) DeleteConversation() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC DeleteConversation 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "删除会话失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 

@@ -24,17 +24,13 @@ func (h *Handler) FollowRepo() app.HandlerFunc {
 		}
 
 		client := pb.NewRepoServiceClient(conn)
-		resp, err := client.FollowRepo(c, &pb.FollowRepoRequest{
+		_, err := client.FollowRepo(c, &pb.FollowRepoRequest{
 			RepoId: repoID,
 			UserId: uid,
 		})
 		if err != nil {
 			logGrpcError("repo_server", "FollowRepo", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "关注知识库失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -57,17 +53,13 @@ func (h *Handler) UnfollowRepo() app.HandlerFunc {
 		}
 
 		client := pb.NewRepoServiceClient(conn)
-		resp, err := client.UnfollowRepo(c, &pb.UnfollowRepoRequest{
+		_, err := client.UnfollowRepo(c, &pb.UnfollowRepoRequest{
 			RepoId: repoID,
 			UserId: uid,
 		})
 		if err != nil {
 			logGrpcError("repo_server", "UnfollowRepo", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "取消关注失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -93,10 +85,6 @@ func (h *Handler) ListFollowedRepos() app.HandlerFunc {
 		if err != nil {
 			logGrpcError("repo_server", "ListFollowedRepos", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取关注列表失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, "获取关注列表失败")
 			return
 		}
 

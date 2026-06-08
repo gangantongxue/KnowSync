@@ -1,10 +1,6 @@
 package service
 
-import (
-	"errors"
-
-	"github.com/gangantongxue/knowsync/repo-server/internal/repository"
-)
+import "errors"
 
 var (
 	// ErrPermissionDenied 权限不足错误.
@@ -14,13 +10,3 @@ var (
 	// ErrAlreadyExists 资源已存在错误.
 	ErrAlreadyExists = errors.New("已存在同名资源")
 )
-
-// Service 服务层，封装业务逻辑和权限校验.
-type Service struct {
-	Repository *repository.Repository
-}
-
-// NewService 创建服务层实例.
-func NewService(repo *repository.Repository) (*Service, error) {
-	return &Service{Repository: repo}, nil
-}

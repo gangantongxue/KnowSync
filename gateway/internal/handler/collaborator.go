@@ -51,7 +51,7 @@ func (h *Handler) AddCollaborator() app.HandlerFunc {
 		}
 
 		client := pb.NewRepoServiceClient(conn)
-		resp, err := client.AddCollaborator(c, &pb.AddCollaboratorRequest{
+		_, err := client.AddCollaborator(c, &pb.AddCollaboratorRequest{
 			RepoId:     repoID,
 			OperatorId: operatorID,
 			UserId:     req.UserID,
@@ -60,10 +60,6 @@ func (h *Handler) AddCollaborator() app.HandlerFunc {
 		if err != nil {
 			logGrpcError("repo_server", "AddCollaborator", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "添加协作者失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -106,7 +102,7 @@ func (h *Handler) UpdateCollaborator() app.HandlerFunc {
 		}
 
 		client := pb.NewRepoServiceClient(conn)
-		resp, err := client.UpdateCollaborator(c, &pb.UpdateCollaboratorRequest{
+		_, err := client.UpdateCollaborator(c, &pb.UpdateCollaboratorRequest{
 			RepoId:     repoID,
 			OperatorId: operatorID,
 			UserId:     collabUserID,
@@ -115,10 +111,6 @@ func (h *Handler) UpdateCollaborator() app.HandlerFunc {
 		if err != nil {
 			logGrpcError("repo_server", "UpdateCollaborator", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "更新协作者失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -140,7 +132,7 @@ func (h *Handler) RemoveCollaborator() app.HandlerFunc {
 		}
 
 		client := pb.NewRepoServiceClient(conn)
-		resp, err := client.RemoveCollaborator(c, &pb.RemoveCollaboratorRequest{
+		_, err := client.RemoveCollaborator(c, &pb.RemoveCollaboratorRequest{
 			RepoId:     repoID,
 			OperatorId: operatorID,
 			UserId:     collabUserID,
@@ -148,10 +140,6 @@ func (h *Handler) RemoveCollaborator() app.HandlerFunc {
 		if err != nil {
 			logGrpcError("repo_server", "RemoveCollaborator", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "移除协作者失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -179,10 +167,6 @@ func (h *Handler) ListCollaborators() app.HandlerFunc {
 		if err != nil {
 			logGrpcError("repo_server", "ListCollaborators", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取协作者列表失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, "获取协作者列表失败")
 			return
 		}
 
@@ -250,10 +234,6 @@ func (h *Handler) InviteCollaborator() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取仓库信息失败")
 			return
 		}
-		if !getRepoResp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, getRepoResp.Msg)
-			return
-		}
 		if getRepoResp.Repo.OwnerId != uid {
 			response.Error(c, ctx, 403, errcode.ErrBadReq, "只有知识库所有者可以邀请协作者")
 			return
@@ -273,10 +253,6 @@ func (h *Handler) InviteCollaborator() app.HandlerFunc {
 		if err != nil {
 			logGrpcError("chat_server", "GetFriendList", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取好友列表失败")
-			return
-		}
-		if !friendListResp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, friendListResp.Msg)
 			return
 		}
 
@@ -310,10 +286,6 @@ func (h *Handler) InviteCollaborator() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC SendPrivateMessage 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "发送邀请消息失败")
-			return
-		}
-		if !sendResp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, sendResp.Msg)
 			return
 		}
 
@@ -354,10 +326,6 @@ func (h *Handler) AcceptInvitation() app.HandlerFunc {
 		if err != nil {
 			slog.Error("gRPC GetMessageByID 调用失败", "error", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取消息失败")
-			return
-		}
-		if !getMsgResp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, getMsgResp.Msg)
 			return
 		}
 
@@ -405,7 +373,7 @@ func (h *Handler) AcceptInvitation() app.HandlerFunc {
 
 		// 添加协作者
 		repoClient := pb.NewRepoServiceClient(repoConn)
-		addResp, err := repoClient.AddCollaborator(c, &pb.AddCollaboratorRequest{
+		_, err = repoClient.AddCollaborator(c, &pb.AddCollaboratorRequest{
 			RepoId:     content.RepoID,
 			OperatorId: msg.SenderId,
 			UserId:     uid,
@@ -414,10 +382,6 @@ func (h *Handler) AcceptInvitation() app.HandlerFunc {
 		if err != nil {
 			logGrpcError("repo_server", "AddCollaborator", err)
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "添加协作者失败")
-			return
-		}
-		if !addResp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, addResp.Msg)
 			return
 		}
 

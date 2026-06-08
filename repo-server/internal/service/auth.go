@@ -10,14 +10,21 @@ import (
 // requiredRoles 为允许的角色列表，满足任一角色即通过
 // 公开知识库的 VIEWER 级别操作对非协作者也开放
 // 关注者拥有 VIEWER 权限.
-func (s *Service) CheckRepoPermission(ctx context.Context, repoID, userID string, requiredRoles ...string) error {
-	role, err := s.Repository.GetUserRole(ctx, repoID, userID)
+func CheckRepoPermission(
+	ctx context.Context,
+	repoRepo RepoRepository,
+	collabRepo CollaboratorRepository,
+	followRepo FollowRepository,
+	repoID, userID string,
+	requiredRoles ...string,
+) error {
+	role, err := collabRepo.GetUserRole(ctx, repoID, userID)
 	if err != nil {
 		if err.Error() != "record not found" {
 			slog.Error("查询用户角色失败", "repo_id", repoID, "user_id", userID, "error", err)
 			return ErrPermissionDenied
 		}
-		return s.checkPublicOrFollowPermission(ctx, repoID, userID, requiredRoles)
+		return checkPublicOrFollowPermission(ctx, repoRepo, followRepo, repoID, userID, requiredRoles)
 	}
 
 	if !isRoleSufficient(role, requiredRoles) {
@@ -27,17 +34,25 @@ func (s *Service) CheckRepoPermission(ctx context.Context, repoID, userID string
 }
 
 // checkPublicOrFollowPermission 检查非协作者是否通过公开知识库或关注关系获得权限.
-func (s *Service) checkPublicOrFollowPermission(ctx context.Context, repoID, userID string, requiredRoles []string) error {
-	repo, repoErr := s.Repository.GetRepo(ctx, repoID)
+func checkPublicOrFollowPermission(
+	ctx context.Context,
+	repoRepo RepoRepository,
+	followRepo FollowRepository,
+	repoID, userID string,
+	requiredRoles []string,
+) error {
+	repo, repoErr := repoRepo.GetRepo(ctx, repoID)
 	if repoErr != nil {
 		return ErrNotFound
 	}
 	if repo.Visibility == "PUBLIC" && isRoleSufficient("VIEWER", requiredRoles) {
 		return nil
 	}
-	following, fErr := s.Repository.IsFollowing(ctx, userID, repoID)
-	if fErr == nil && following && isRoleSufficient("VIEWER", requiredRoles) {
-		return nil
+	if followRepo != nil {
+		following, fErr := followRepo.IsFollowing(ctx, userID, repoID)
+		if fErr == nil && following && isRoleSufficient("VIEWER", requiredRoles) {
+			return nil
+		}
 	}
 	return ErrPermissionDenied
 }

@@ -5,37 +5,39 @@ import (
 	"context"
 
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // AddCollaborator 添加协作者.
 func (h *Handler) AddCollaborator(ctx context.Context, req *pb.AddCollaboratorRequest) (*pb.AddCollaboratorResponse, error) {
-	if err := h.Service.AddCollaborator(ctx, req.GetRepoId(), req.GetOperatorId(), req.GetUserId(), req.GetRole().String()); err != nil {
-		return nil, err
+	if err := h.CollabService.AddCollaborator(ctx, req.GetRepoId(), req.GetOperatorId(), req.GetUserId(), req.GetRole().String()); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.AddCollaboratorResponse{Success: true}, nil
+	return &pb.AddCollaboratorResponse{}, nil
 }
 
 // UpdateCollaborator 更新协作者角色.
 func (h *Handler) UpdateCollaborator(ctx context.Context, req *pb.UpdateCollaboratorRequest) (*pb.UpdateCollaboratorResponse, error) {
-	if err := h.Service.UpdateCollaborator(ctx, req.GetRepoId(), req.GetOperatorId(), req.GetUserId(), req.GetRole().String()); err != nil {
-		return nil, err
+	if err := h.CollabService.UpdateCollaborator(ctx, req.GetRepoId(), req.GetOperatorId(), req.GetUserId(), req.GetRole().String()); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.UpdateCollaboratorResponse{Success: true}, nil
+	return &pb.UpdateCollaboratorResponse{}, nil
 }
 
 // RemoveCollaborator 移除协作者.
 func (h *Handler) RemoveCollaborator(ctx context.Context, req *pb.RemoveCollaboratorRequest) (*pb.RemoveCollaboratorResponse, error) {
-	if err := h.Service.RemoveCollaborator(ctx, req.GetRepoId(), req.GetOperatorId(), req.GetUserId()); err != nil {
-		return nil, err
+	if err := h.CollabService.RemoveCollaborator(ctx, req.GetRepoId(), req.GetOperatorId(), req.GetUserId()); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.RemoveCollaboratorResponse{Success: true}, nil
+	return &pb.RemoveCollaboratorResponse{}, nil
 }
 
 // ListCollaborators 列出协作者列表.
 func (h *Handler) ListCollaborators(ctx context.Context, req *pb.ListCollaboratorsRequest) (*pb.ListCollaboratorsResponse, error) {
-	collaborators, err := h.Service.ListCollaborators(ctx, req.GetRepoId(), req.GetUserId())
+	collaborators, err := h.CollabService.ListCollaborators(ctx, req.GetRepoId(), req.GetUserId())
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	pbCollabs := make([]*pb.Collaborator, 0, len(collaborators))
@@ -49,7 +51,6 @@ func (h *Handler) ListCollaborators(ctx context.Context, req *pb.ListCollaborato
 	}
 
 	return &pb.ListCollaboratorsResponse{
-		Success:       true,
 		Collaborators: pbCollabs,
 	}, nil
 }

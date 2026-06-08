@@ -39,15 +39,11 @@ func (h *Handler) SendVerifyCode() app.HandlerFunc {
 		}
 
 		userClient := pb.NewUserServiceClient(conn)
-		verifyResp, err := userClient.VerifyCode(c, &pb.VerifyCodeRequest{
+		_, err := userClient.VerifyCode(c, &pb.VerifyCodeRequest{
 			Email: req.Email,
 		})
 		if err != nil {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "发送验证码失败")
-			return
-		}
-		if !verifyResp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, verifyResp.Msg)
 			return
 		}
 
@@ -71,17 +67,13 @@ func (h *Handler) ForgetPassword() app.HandlerFunc {
 		}
 
 		userClient := pb.NewUserServiceClient(conn)
-		forgetResp, err := userClient.ForgetPassword(c, &pb.ForgetPasswordRequest{
+		_, err := userClient.ForgetPassword(c, &pb.ForgetPasswordRequest{
 			Email:      req.Email,
 			Password:   req.Password,
 			VerifyCode: req.VerifyCode,
 		})
 		if err != nil {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "重置密码失败")
-			return
-		}
-		if !forgetResp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, forgetResp.Msg)
 			return
 		}
 

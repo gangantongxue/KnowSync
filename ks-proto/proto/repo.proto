@@ -43,9 +43,7 @@ message CreateRepoRequest {
 }
 
 message CreateRepoResponse {
-  bool success = 1;
-  string msg = 2;
-  Repo repo = 3;
+  Repo repo = 1;
 }
 
 message GetRepoRequest {
@@ -54,11 +52,9 @@ message GetRepoRequest {
 }
 
 message GetRepoResponse {
-  bool success = 1;
-  string msg = 2;
-  Repo repo = 3;
-  CollaboratorRole my_role = 4;
-  bool is_following = 5;
+  Repo repo = 1;
+  CollaboratorRole my_role = 2;
+  bool is_following = 3;
 }
 
 message UpdateRepoRequest {
@@ -70,9 +66,7 @@ message UpdateRepoRequest {
 }
 
 message UpdateRepoResponse {
-  bool success = 1;
-  string msg = 2;
-  Repo repo = 3;
+  Repo repo = 1;
 }
 
 message DeleteRepoRequest {
@@ -80,10 +74,7 @@ message DeleteRepoRequest {
   string user_id = 2;
 }
 
-message DeleteRepoResponse {
-  bool success = 1;
-  string msg = 2;
-}
+message DeleteRepoResponse {}
 
 message ListUserReposRequest {
   string user_id = 1;
@@ -92,13 +83,11 @@ message ListUserReposRequest {
 message ListPublicReposRequest {}
 
 message ListPublicReposResponse {
-  bool success = 1;
-  repeated Repo repos = 2;
+  repeated Repo repos = 1;
 }
 
 message ListUserReposResponse {
-  bool success = 1;
-  repeated Repo repos = 2;
+  repeated Repo repos = 1;
 }
 
 message AddCollaboratorRequest {
@@ -108,10 +97,7 @@ message AddCollaboratorRequest {
   CollaboratorRole role = 4;
 }
 
-message AddCollaboratorResponse {
-  bool success = 1;
-  string msg = 2;
-}
+message AddCollaboratorResponse {}
 
 message UpdateCollaboratorRequest {
   string repo_id = 1;
@@ -120,10 +106,7 @@ message UpdateCollaboratorRequest {
   CollaboratorRole role = 4;
 }
 
-message UpdateCollaboratorResponse {
-  bool success = 1;
-  string msg = 2;
-}
+message UpdateCollaboratorResponse {}
 
 message RemoveCollaboratorRequest {
   string repo_id = 1;
@@ -131,10 +114,7 @@ message RemoveCollaboratorRequest {
   string user_id = 3;
 }
 
-message RemoveCollaboratorResponse {
-  bool success = 1;
-  string msg = 2;
-}
+message RemoveCollaboratorResponse {}
 
 message ListCollaboratorsRequest {
   string repo_id = 1;
@@ -142,8 +122,7 @@ message ListCollaboratorsRequest {
 }
 
 message ListCollaboratorsResponse {
-  bool success = 1;
-  repeated Collaborator collaborators = 2;
+  repeated Collaborator collaborators = 1;
 }
 
 message FollowRepoRequest {
@@ -151,28 +130,21 @@ message FollowRepoRequest {
   string user_id = 2;
 }
 
-message FollowRepoResponse {
-  bool success = 1;
-  string msg = 2;
-}
+message FollowRepoResponse {}
 
 message UnfollowRepoRequest {
   string repo_id = 1;
   string user_id = 2;
 }
 
-message UnfollowRepoResponse {
-  bool success = 1;
-  string msg = 2;
-}
+message UnfollowRepoResponse {}
 
 message ListFollowedReposRequest {
   string user_id = 1;
 }
 
 message ListFollowedReposResponse {
-  bool success = 1;
-  repeated Repo repos = 2;
+  repeated Repo repos = 1;
 }
 
 service RepoService {

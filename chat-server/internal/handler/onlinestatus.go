@@ -9,7 +9,7 @@ import (
 
 // GetOnlineStatus 批量查询用户在线状态.
 func (h *Handler) GetOnlineStatus(_ context.Context, req *pb.GetOnlineStatusReq) (*pb.GetOnlineStatusResp, error) {
-	onlineUsers := h.Service.Hub.GetOnlineUsers(req.GetUserIds())
+	onlineUsers := h.Hub.GetOnlineUsers(req.GetUserIds())
 	onlineStatus := make(map[string]bool, len(req.GetUserIds()))
 	for _, userID := range req.GetUserIds() {
 		onlineStatus[userID] = false
@@ -19,8 +19,6 @@ func (h *Handler) GetOnlineStatus(_ context.Context, req *pb.GetOnlineStatusReq)
 	}
 
 	return &pb.GetOnlineStatusResp{
-		Success:      true,
-		Msg:          MsgSuccess,
 		OnlineStatus: onlineStatus,
 	}, nil
 }

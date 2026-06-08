@@ -64,10 +64,6 @@ func (h *Handler) CreateRepo() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "创建知识库失败")
 			return
 		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
-			return
-		}
 
 		if err := h.store.MakeDir(uid + "/" + resp.Repo.Id); err != nil {
 			slog.Warn("创建知识库存储目录失败", "repo_id", resp.Repo.Id, "error", err)
@@ -105,10 +101,6 @@ func (h *Handler) GetRepo() app.HandlerFunc {
 		})
 		if err != nil {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取知识库失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -162,10 +154,6 @@ func (h *Handler) UpdateRepo() app.HandlerFunc {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "更新知识库失败")
 			return
 		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
-			return
-		}
 
 		response.Success(c, ctx, map[string]any{
 			"repo": marshalRepoResponse(resp.Repo),
@@ -186,16 +174,12 @@ func (h *Handler) DeleteRepo() app.HandlerFunc {
 		}
 
 		client := pb.NewRepoServiceClient(conn)
-		resp, err := client.DeleteRepo(c, &pb.DeleteRepoRequest{
+		_, err := client.DeleteRepo(c, &pb.DeleteRepoRequest{
 			RepoId: repoID,
 			UserId: uid,
 		})
 		if err != nil {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "删除知识库失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, resp.Msg)
 			return
 		}
 
@@ -244,10 +228,6 @@ func (h *Handler) ListUserRepos() app.HandlerFunc {
 		})
 		if err != nil {
 			response.Error(c, ctx, 500, errcode.ErrBadReq, "获取知识库列表失败")
-			return
-		}
-		if !resp.Success {
-			response.Error(c, ctx, 400, errcode.ErrBadReq, "获取知识库列表失败")
 			return
 		}
 

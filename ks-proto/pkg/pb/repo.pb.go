@@ -7,12 +7,11 @@
 package pb
 
 import (
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
-
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -361,9 +360,7 @@ func (x *CreateRepoRequest) GetDescription() string {
 
 type CreateRepoResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Repo          *Repo                  `protobuf:"bytes,3,opt,name=repo,proto3" json:"repo,omitempty"`
+	Repo          *Repo                  `protobuf:"bytes,1,opt,name=repo,proto3" json:"repo,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -396,20 +393,6 @@ func (x *CreateRepoResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CreateRepoResponse.ProtoReflect.Descriptor instead.
 func (*CreateRepoResponse) Descriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *CreateRepoResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *CreateRepoResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *CreateRepoResponse) GetRepo() *Repo {
@@ -473,11 +456,9 @@ func (x *GetRepoRequest) GetUserId() string {
 
 type GetRepoResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Repo          *Repo                  `protobuf:"bytes,3,opt,name=repo,proto3" json:"repo,omitempty"`
-	MyRole        CollaboratorRole       `protobuf:"varint,4,opt,name=my_role,json=myRole,proto3,enum=proto.CollaboratorRole" json:"my_role,omitempty"`
-	IsFollowing   bool                   `protobuf:"varint,5,opt,name=is_following,json=isFollowing,proto3" json:"is_following,omitempty"`
+	Repo          *Repo                  `protobuf:"bytes,1,opt,name=repo,proto3" json:"repo,omitempty"`
+	MyRole        CollaboratorRole       `protobuf:"varint,2,opt,name=my_role,json=myRole,proto3,enum=proto.CollaboratorRole" json:"my_role,omitempty"`
+	IsFollowing   bool                   `protobuf:"varint,3,opt,name=is_following,json=isFollowing,proto3" json:"is_following,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -510,20 +491,6 @@ func (x *GetRepoResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetRepoResponse.ProtoReflect.Descriptor instead.
 func (*GetRepoResponse) Descriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *GetRepoResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *GetRepoResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *GetRepoResponse) GetRepo() *Repo {
@@ -625,9 +592,7 @@ func (x *UpdateRepoRequest) GetVisibility() RepoVisibility {
 
 type UpdateRepoResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	Repo          *Repo                  `protobuf:"bytes,3,opt,name=repo,proto3" json:"repo,omitempty"`
+	Repo          *Repo                  `protobuf:"bytes,1,opt,name=repo,proto3" json:"repo,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -660,20 +625,6 @@ func (x *UpdateRepoResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use UpdateRepoResponse.ProtoReflect.Descriptor instead.
 func (*UpdateRepoResponse) Descriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *UpdateRepoResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *UpdateRepoResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 func (x *UpdateRepoResponse) GetRepo() *Repo {
@@ -737,8 +688,6 @@ func (x *DeleteRepoRequest) GetUserId() string {
 
 type DeleteRepoResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -771,20 +720,6 @@ func (x *DeleteRepoResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use DeleteRepoResponse.ProtoReflect.Descriptor instead.
 func (*DeleteRepoResponse) Descriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *DeleteRepoResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *DeleteRepoResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 type ListUserReposRequest struct {
@@ -869,8 +804,7 @@ func (*ListPublicReposRequest) Descriptor() ([]byte, []int) {
 
 type ListPublicReposResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Repos         []*Repo                `protobuf:"bytes,2,rep,name=repos,proto3" json:"repos,omitempty"`
+	Repos         []*Repo                `protobuf:"bytes,1,rep,name=repos,proto3" json:"repos,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -905,13 +839,6 @@ func (*ListPublicReposResponse) Descriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *ListPublicReposResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
 func (x *ListPublicReposResponse) GetRepos() []*Repo {
 	if x != nil {
 		return x.Repos
@@ -921,8 +848,7 @@ func (x *ListPublicReposResponse) GetRepos() []*Repo {
 
 type ListUserReposResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Repos         []*Repo                `protobuf:"bytes,2,rep,name=repos,proto3" json:"repos,omitempty"`
+	Repos         []*Repo                `protobuf:"bytes,1,rep,name=repos,proto3" json:"repos,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -955,13 +881,6 @@ func (x *ListUserReposResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ListUserReposResponse.ProtoReflect.Descriptor instead.
 func (*ListUserReposResponse) Descriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *ListUserReposResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
 }
 
 func (x *ListUserReposResponse) GetRepos() []*Repo {
@@ -1041,8 +960,6 @@ func (x *AddCollaboratorRequest) GetRole() CollaboratorRole {
 
 type AddCollaboratorResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1075,20 +992,6 @@ func (x *AddCollaboratorResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use AddCollaboratorResponse.ProtoReflect.Descriptor instead.
 func (*AddCollaboratorResponse) Descriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *AddCollaboratorResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *AddCollaboratorResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 type UpdateCollaboratorRequest struct {
@@ -1161,8 +1064,6 @@ func (x *UpdateCollaboratorRequest) GetRole() CollaboratorRole {
 
 type UpdateCollaboratorResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1195,20 +1096,6 @@ func (x *UpdateCollaboratorResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use UpdateCollaboratorResponse.ProtoReflect.Descriptor instead.
 func (*UpdateCollaboratorResponse) Descriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *UpdateCollaboratorResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *UpdateCollaboratorResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 type RemoveCollaboratorRequest struct {
@@ -1273,8 +1160,6 @@ func (x *RemoveCollaboratorRequest) GetUserId() string {
 
 type RemoveCollaboratorResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1307,20 +1192,6 @@ func (x *RemoveCollaboratorResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use RemoveCollaboratorResponse.ProtoReflect.Descriptor instead.
 func (*RemoveCollaboratorResponse) Descriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{19}
-}
-
-func (x *RemoveCollaboratorResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *RemoveCollaboratorResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 type ListCollaboratorsRequest struct {
@@ -1377,8 +1248,7 @@ func (x *ListCollaboratorsRequest) GetUserId() string {
 
 type ListCollaboratorsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Collaborators []*Collaborator        `protobuf:"bytes,2,rep,name=collaborators,proto3" json:"collaborators,omitempty"`
+	Collaborators []*Collaborator        `protobuf:"bytes,1,rep,name=collaborators,proto3" json:"collaborators,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1411,13 +1281,6 @@ func (x *ListCollaboratorsResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ListCollaboratorsResponse.ProtoReflect.Descriptor instead.
 func (*ListCollaboratorsResponse) Descriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{21}
-}
-
-func (x *ListCollaboratorsResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
 }
 
 func (x *ListCollaboratorsResponse) GetCollaborators() []*Collaborator {
@@ -1481,8 +1344,6 @@ func (x *FollowRepoRequest) GetUserId() string {
 
 type FollowRepoResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1515,20 +1376,6 @@ func (x *FollowRepoResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use FollowRepoResponse.ProtoReflect.Descriptor instead.
 func (*FollowRepoResponse) Descriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{23}
-}
-
-func (x *FollowRepoResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *FollowRepoResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 type UnfollowRepoRequest struct {
@@ -1585,8 +1432,6 @@ func (x *UnfollowRepoRequest) GetUserId() string {
 
 type UnfollowRepoResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1619,20 +1464,6 @@ func (x *UnfollowRepoResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use UnfollowRepoResponse.ProtoReflect.Descriptor instead.
 func (*UnfollowRepoResponse) Descriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{25}
-}
-
-func (x *UnfollowRepoResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *UnfollowRepoResponse) GetMsg() string {
-	if x != nil {
-		return x.Msg
-	}
-	return ""
 }
 
 type ListFollowedReposRequest struct {
@@ -1681,8 +1512,7 @@ func (x *ListFollowedReposRequest) GetUserId() string {
 
 type ListFollowedReposResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Repos         []*Repo                `protobuf:"bytes,2,rep,name=repos,proto3" json:"repos,omitempty"`
+	Repos         []*Repo                `protobuf:"bytes,1,rep,name=repos,proto3" json:"repos,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1715,13 +1545,6 @@ func (x *ListFollowedReposResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ListFollowedReposResponse.ProtoReflect.Descriptor instead.
 func (*ListFollowedReposResponse) Descriptor() ([]byte, []int) {
 	return file_repo_proto_rawDescGZIP(), []int{27}
-}
-
-func (x *ListFollowedReposResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
 }
 
 func (x *ListFollowedReposResponse) GetRepos() []*Repo {
@@ -1761,20 +1584,16 @@ const file_repo_proto_rawDesc = "" +
 	"\n" +
 	"visibility\x18\x03 \x01(\x0e2\x15.proto.RepoVisibilityR\n" +
 	"visibility\x12 \n" +
-	"\vdescription\x18\x04 \x01(\tR\vdescription\"a\n" +
-	"\x12CreateRepoResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
-	"\x04repo\x18\x03 \x01(\v2\v.proto.RepoR\x04repo\"B\n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\"5\n" +
+	"\x12CreateRepoResponse\x12\x1f\n" +
+	"\x04repo\x18\x01 \x01(\v2\v.proto.RepoR\x04repo\"B\n" +
 	"\x0eGetRepoRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\"\xb3\x01\n" +
-	"\x0fGetRepoResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
-	"\x04repo\x18\x03 \x01(\v2\v.proto.RepoR\x04repo\x120\n" +
-	"\amy_role\x18\x04 \x01(\x0e2\x17.proto.CollaboratorRoleR\x06myRole\x12!\n" +
-	"\fis_following\x18\x05 \x01(\bR\visFollowing\"\xb2\x01\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"\x87\x01\n" +
+	"\x0fGetRepoResponse\x12\x1f\n" +
+	"\x04repo\x18\x01 \x01(\v2\v.proto.RepoR\x04repo\x120\n" +
+	"\amy_role\x18\x02 \x01(\x0e2\x17.proto.CollaboratorRoleR\x06myRole\x12!\n" +
+	"\fis_following\x18\x03 \x01(\bR\visFollowing\"\xb2\x01\n" +
 	"\x11UpdateRepoRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x12\n" +
@@ -1782,75 +1601,57 @@ const file_repo_proto_rawDesc = "" +
 	"\vdescription\x18\x04 \x01(\tR\vdescription\x125\n" +
 	"\n" +
 	"visibility\x18\x05 \x01(\x0e2\x15.proto.RepoVisibilityR\n" +
-	"visibility\"a\n" +
-	"\x12UpdateRepoResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
-	"\x04repo\x18\x03 \x01(\v2\v.proto.RepoR\x04repo\"E\n" +
+	"visibility\"5\n" +
+	"\x12UpdateRepoResponse\x12\x1f\n" +
+	"\x04repo\x18\x01 \x01(\v2\v.proto.RepoR\x04repo\"E\n" +
 	"\x11DeleteRepoRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\"@\n" +
-	"\x12DeleteRepoResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"/\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"\x14\n" +
+	"\x12DeleteRepoResponse\"/\n" +
 	"\x14ListUserReposRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"\x18\n" +
-	"\x16ListPublicReposRequest\"V\n" +
-	"\x17ListPublicReposResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12!\n" +
-	"\x05repos\x18\x02 \x03(\v2\v.proto.RepoR\x05repos\"T\n" +
-	"\x15ListUserReposResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12!\n" +
-	"\x05repos\x18\x02 \x03(\v2\v.proto.RepoR\x05repos\"\x98\x01\n" +
+	"\x16ListPublicReposRequest\"<\n" +
+	"\x17ListPublicReposResponse\x12!\n" +
+	"\x05repos\x18\x01 \x03(\v2\v.proto.RepoR\x05repos\":\n" +
+	"\x15ListUserReposResponse\x12!\n" +
+	"\x05repos\x18\x01 \x03(\v2\v.proto.RepoR\x05repos\"\x98\x01\n" +
 	"\x16AddCollaboratorRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x1f\n" +
 	"\voperator_id\x18\x02 \x01(\tR\n" +
 	"operatorId\x12\x17\n" +
 	"\auser_id\x18\x03 \x01(\tR\x06userId\x12+\n" +
-	"\x04role\x18\x04 \x01(\x0e2\x17.proto.CollaboratorRoleR\x04role\"E\n" +
-	"\x17AddCollaboratorResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"\x9b\x01\n" +
+	"\x04role\x18\x04 \x01(\x0e2\x17.proto.CollaboratorRoleR\x04role\"\x19\n" +
+	"\x17AddCollaboratorResponse\"\x9b\x01\n" +
 	"\x19UpdateCollaboratorRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x1f\n" +
 	"\voperator_id\x18\x02 \x01(\tR\n" +
 	"operatorId\x12\x17\n" +
 	"\auser_id\x18\x03 \x01(\tR\x06userId\x12+\n" +
-	"\x04role\x18\x04 \x01(\x0e2\x17.proto.CollaboratorRoleR\x04role\"H\n" +
-	"\x1aUpdateCollaboratorResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"n\n" +
+	"\x04role\x18\x04 \x01(\x0e2\x17.proto.CollaboratorRoleR\x04role\"\x1c\n" +
+	"\x1aUpdateCollaboratorResponse\"n\n" +
 	"\x19RemoveCollaboratorRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x1f\n" +
 	"\voperator_id\x18\x02 \x01(\tR\n" +
 	"operatorId\x12\x17\n" +
-	"\auser_id\x18\x03 \x01(\tR\x06userId\"H\n" +
-	"\x1aRemoveCollaboratorResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"L\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\"\x1c\n" +
+	"\x1aRemoveCollaboratorResponse\"L\n" +
 	"\x18ListCollaboratorsRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\"p\n" +
-	"\x19ListCollaboratorsResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x129\n" +
-	"\rcollaborators\x18\x02 \x03(\v2\x13.proto.CollaboratorR\rcollaborators\"E\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"V\n" +
+	"\x19ListCollaboratorsResponse\x129\n" +
+	"\rcollaborators\x18\x01 \x03(\v2\x13.proto.CollaboratorR\rcollaborators\"E\n" +
 	"\x11FollowRepoRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\"@\n" +
-	"\x12FollowRepoResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"G\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"\x14\n" +
+	"\x12FollowRepoResponse\"G\n" +
 	"\x13UnfollowRepoRequest\x12\x17\n" +
 	"\arepo_id\x18\x01 \x01(\tR\x06repoId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\"B\n" +
-	"\x14UnfollowRepoResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
-	"\x03msg\x18\x02 \x01(\tR\x03msg\"3\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"\x16\n" +
+	"\x14UnfollowRepoResponse\"3\n" +
 	"\x18ListFollowedReposRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\"X\n" +
-	"\x19ListFollowedReposResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12!\n" +
-	"\x05repos\x18\x02 \x03(\v2\v.proto.RepoR\x05repos*J\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\">\n" +
+	"\x19ListFollowedReposResponse\x12!\n" +
+	"\x05repos\x18\x01 \x03(\v2\v.proto.RepoR\x05repos*J\n" +
 	"\x0eRepoVisibility\x12\x1f\n" +
 	"\x1bREPO_VISIBILITY_UNSPECIFIED\x10\x00\x12\n" +
 	"\n" +
