@@ -4,9 +4,11 @@
 将 Go 代码编译为 Linux 平台的二进制文件，输出到 bin/ 目录
 
 用法:
-  python3 scripts/build.py              # 使用默认版本 (latest)
-  python3 scripts/build.py v1.0.0       # 指定版本号
-  python3 scripts/build.py --help       # 显示帮助
+  python scripts/build.py              # 使用默认版本 (latest)，默认架构 (amd64)
+  python scripts/build.py v1.0.0       # 指定版本号，默认架构 (amd64)
+  python scripts/build.py --arm64      # 使用 arm64 架构
+  python scripts/build.py v1.0.0 --arm64  # 指定版本号和架构
+  python scripts/build.py --help       # 显示帮助
 """
 
 import argparse
@@ -18,13 +20,16 @@ from pathlib import Path
 
 
 # 编译配置
-BUILD_TARGETS = [
-    {"goos": "linux", "goarch": "amd64", "suffix": "linux-amd64"},
-    {"goos": "linux", "goarch": "arm64", "suffix": "linux-arm64"},
-]
-
 DEFAULT_VERSION = "latest"
+DEFAULT_ARCH = "amd64"
 SERVICE_NAME = "gateway"
+
+
+# 架构映射
+ARCH_TARGETS = {
+    "amd64": {"goos": "linux", "goarch": "amd64", "suffix": "linux-amd64"},
+    "arm64": {"goos": "linux", "goarch": "arm64", "suffix": "linux-arm64"},
+}
 
 
 def get_project_root() -> Path:
@@ -125,8 +130,10 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
-  python3 scripts/build.py              # 使用默认版本 latest
-  python3 scripts/build.py v1.0.0       # 指定版本号 v1.0.0
+  python scripts/build.py              # 使用默认版本 latest，默认架构 amd64
+  python scripts/build.py v1.0.0       # 指定版本号 v1.0.0，默认架构 amd64
+  python scripts/build.py --arm64      # 使用默认版本 latest，架构 arm64
+  python scripts/build.py v1.0.0 --arm64  # 指定版本号和架构
         """
     )
     parser.add_argument(
@@ -136,6 +143,11 @@ def main():
         help=f"版本号 (默认: {DEFAULT_VERSION})"
     )
     parser.add_argument(
+        "--arm64",
+        action="store_true",
+        help="编译 arm64 架构 (默认编译 amd64)"
+    )
+    parser.add_argument(
         "--clean",
         action="store_true",
         help="编译前清理 bin 目录"
@@ -143,11 +155,13 @@ def main():
     
     args = parser.parse_args()
     version = args.version
+    arch = "arm64" if args.arm64 else DEFAULT_ARCH
     
     print(f"=" * 50)
     print(f"{SERVICE_NAME} 跨平台编译")
     print(f"=" * 50)
     print(f"版本: {version}")
+    print(f"架构: {arch}")
     print(f"Go: {get_go_version()}")
     print(f"系统: {platform.system()} {platform.machine()}")
     
@@ -163,14 +177,15 @@ def main():
     
     # 编译
     print(f"\n开始编译...")
-    success_count = 0
-    for target in BUILD_TARGETS:
-        if build_binary(target, version):
-            success_count += 1
+    target = ARCH_TARGETS[arch]
+    success = build_binary(target, version)
     
     # 结果
     print(f"\n{'=' * 50}")
-    print(f"编译完成: {success_count}/{len(BUILD_TARGETS)} 成功")
+    if success:
+        print(f"编译成功!")
+    else:
+        print(f"编译失败!")
     print(f"{'=' * 50}")
     
     # 列出输出文件
@@ -182,7 +197,7 @@ def main():
             size_mb = size / (1024 * 1024)
             print(f"  {f.name} ({size_mb:.2f} MB)")
     
-    if success_count == 0:
+    if not success:
         sys.exit(1)
 
 

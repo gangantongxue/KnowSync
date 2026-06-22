@@ -39,33 +39,13 @@ tasks:
     desc: 编译 React 前端
     silent: true
     cmds:
-      - |
-        PYTHON_CMD=""
-        if command -v python3 &> /dev/null; then
-          PYTHON_CMD="python3"
-        elif command -v python &> /dev/null; then
-          PYTHON_CMD="python"
-        else
-          echo "错误: 未找到 python3 或 python 命令"
-          exit 1
-        fi
-        $PYTHON_CMD scripts/build.py {{.CLI_ARGS}}
+      - python scripts/build.py {{.CLI_ARGS}}
 
   image:
     desc: 构建 Docker 镜像
     silent: true
     cmds:
-      - |
-        PYTHON_CMD=""
-        if command -v python3 &> /dev/null; then
-          PYTHON_CMD="python3"
-        elif command -v python &> /dev/null; then
-          PYTHON_CMD="python"
-        else
-          echo "错误: 未找到 python3 或 python 命令"
-          exit 1
-        fi
-        $PYTHON_CMD scripts/build_image.py {{.CLI_ARGS}}
+      - python scripts/build_image.py {{.CLI_ARGS}}
 
   dev:
     desc: 启动 Vite 开发服务器
@@ -77,5 +57,5 @@ tasks:
     desc: 清除编译产物
     silent: true
     cmds:
-      - rm -rf {{.BIN_DIR}}
+      - powershell -Command "if (Test-Path '{{.BIN_DIR}}') { Remove-Item -Recurse -Force '{{.BIN_DIR}}' }"
       - echo "已清除编译产物"

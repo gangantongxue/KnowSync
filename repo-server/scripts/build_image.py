@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
 Docker 镜像构建脚本
-先编译二进制文件，然后构建 Docker 镜像
+使用已编译的二进制文件构建 Docker 镜像
+
+注意: 需要先运行 build.py 编译二进制文件
 
 用法:
-  python3 scripts/build_image.py              # 使用默认版本 (latest)
-  python3 scripts/build_image.py v1.0.0       # 指定版本号
-  python3 scripts/build_image.py --help       # 显示帮助
+  python scripts/build_image.py              # 使用默认版本 (latest)
+  python scripts/build_image.py v1.0.0       # 指定版本号
+  python scripts/build_image.py --help       # 显示帮助
 """
 
 import argparse
@@ -40,20 +42,27 @@ def check_docker() -> bool:
         return False
 
 
-def run_build_script(version: str) -> bool:
-    """运行编译脚本"""
-    build_script = get_project_root() / "scripts" / "build.py"
+def check_binary_exists(version: str, platform: str) -> bool:
+    """检查二进制文件是否存在"""
+    project_root = get_project_root()
     
-    print(f"\n步骤 1: 编译二进制文件...")
-    try:
-        result = subprocess.run(
-            ["python3", str(build_script), version],
-            check=True
-        )
-        return True
-    except subprocess.CalledProcessError:
-        print("编译失败!")
+    # 确定使用哪个二进制文件
+    if "arm64" in platform or "aarch64" in platform:
+        binary_suffix = "linux-arm64"
+    else:
+        binary_suffix = "linux-amd64"
+    
+    binary_name = f"{SERVICE_NAME}-{version}-{binary_suffix}"
+    binary_path = project_root / "bin" / binary_name
+    
+    if not binary_path.exists():
+        print(f"\n错误: 未找到二进制文件 {binary_path}")
+        print(f"请先运行: python scripts/build.py {version}")
+        if "arm64" in platform:
+            print(f"或运行: python scripts/build.py {version} --arm64")
         return False
+    
+    return True
 
 
 def build_docker_image(version: str, platform: str) -> bool:
@@ -127,9 +136,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 示例:
-  python3 scripts/build_image.py              # 使用默认版本 latest
-  python3 scripts/build_image.py v1.0.0       # 指定版本号 v1.0.0
-  python3 scripts/build_image.py --platform linux/arm64 v1.0.0  # 指定平台
+  python scripts/build_image.py              # 使用默认版本 latest
+  python scripts/build_image.py v1.0.0       # 指定版本号 v1.0.0
+  python scripts/build_image.py --platform linux/arm64 v1.0.0  # 指定平台
+
+注意: 需要先运行 build.py 编译二进制文件
         """
     )
     parser.add_argument(
@@ -164,15 +175,15 @@ def main():
         print("请安装 Docker: https://docs.docker.com/get-docker/")
         sys.exit(1)
     
-    # 步骤 1: 编译
-    if not run_build_script(version):
+    # 检查二进制文件是否存在
+    if not check_binary_exists(version, args.platform):
         sys.exit(1)
     
-    # 步骤 2: 构建镜像
+    # 构建 Docker 镜像
     if not build_docker_image(version, args.platform):
         sys.exit(1)
     
-    # 步骤 3: 添加 latest 标签
+    # 添加 latest 标签
     if not args.no_latest:
         tag_latest(version)
     

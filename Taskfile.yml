@@ -15,18 +15,21 @@ tasks:
         KnowSync 构建工具
 
         可用命令:
-          task image        - 构建所有服务的 Docker 镜像
-          task up           - 启动所有服务 (docker compose)
-          task down         - 停止所有服务
-          task logs         - 查看所有服务日志
-          task clean        - 清除所有编译产物
-          task fmt          - 格式化所有 Go 代码
-          task mod          - 整理所有 Go 模块依赖
-          task modup        - 更新所有 Go 包到最新版本
-          task help         - 显示此帮助信息
+          task build       - 编译所有服务的二进制文件
+          task image       - 构建所有服务的 Docker 镜像
+          task up          - 启动所有服务 (docker compose)
+          task down        - 停止所有服务
+          task logs        - 查看所有服务日志
+          task clean       - 清除所有编译产物
+          task fmt         - 格式化所有 Go 代码
+          task mod         - 整理所有 Go 模块依赖
+          task modup       - 更新所有 Go 包到最新版本
+          task help        - 显示此帮助信息
 
         使用方法:
           task                    - 默认显示帮助信息
+          task build              - 编译所有服务（默认 amd64）
+          task build -- --arm64   - 编译所有服务（arm64 架构）
           task image              - 构建所有镜像
           task up                 - 启动所有服务
           task up -- -d           - 后台启动
@@ -37,44 +40,41 @@ tasks:
           task modup              - 更新所有 Go 包到最新版本
         EOF
 
+  build:
+    desc: 编译所有服务的二进制文件
+    silent: true
+    cmds:
+      - cmd: task build {{.CLI_ARGS}}
+        dir: user-server
+      - cmd: task build {{.CLI_ARGS}}
+        dir: repo-server
+      - cmd: task build {{.CLI_ARGS}}
+        dir: gateway
+      - cmd: task build {{.CLI_ARGS}}
+        dir: ai-server
+      - cmd: task build {{.CLI_ARGS}}
+        dir: chat-server
+      - cmd: task build {{.CLI_ARGS}}
+        dir: web
+      - echo "所有服务编译完成!"
+
   image:
     desc: 构建所有服务的 Docker 镜像
     silent: true
     cmds:
-      - |
-        echo "=================================================="
-        echo "构建 user-server 镜像..."
-        echo "=================================================="
-        cd user-server && task image
-      - |
-        echo "=================================================="
-        echo "构建 repo-server 镜像..."
-        echo "=================================================="
-        cd repo-server && task image
-      - |
-        echo "=================================================="
-        echo "构建 gateway 镜像..."
-        echo "=================================================="
-        cd gateway && task image
-      - |
-        echo "=================================================="
-        echo "构建 ai-server 镜像..."
-        echo "=================================================="
-        cd ai-server && task image
-      - |
-        echo "=================================================="
-        echo "构建 chat-server 镜像..."
-        echo "=================================================="
-        cd chat-server && task image
-      - |
-        echo "=================================================="
-        echo "构建 web 镜像..."
-        echo "=================================================="
-        cd web && task image
-      - |
-        echo "=================================================="
-        echo "所有镜像构建完成!"
-        echo "=================================================="
+      - cmd: task image
+        dir: user-server
+      - cmd: task image
+        dir: repo-server
+      - cmd: task image
+        dir: gateway
+      - cmd: task image
+        dir: ai-server
+      - cmd: task image
+        dir: chat-server
+      - cmd: task image
+        dir: web
+      - echo "所有镜像构建完成!"
 
   up:
     desc: 启动所有服务
@@ -98,46 +98,70 @@ tasks:
     desc: 清除所有编译产物
     silent: true
     cmds:
-      - cd user-server && task clean
-      - cd repo-server && task clean
-      - cd gateway && task clean
-      - cd ai-server && task clean
-      - cd chat-server && task clean
-      - cd web && task clean
+      - cmd: task clean
+        dir: user-server
+      - cmd: task clean
+        dir: repo-server
+      - cmd: task clean
+        dir: gateway
+      - cmd: task clean
+        dir: ai-server
+      - cmd: task clean
+        dir: chat-server
+      - cmd: task clean
+        dir: web
       - echo "已清除所有编译产物"
 
   fmt:
     desc: 格式化所有 Go 代码
     silent: true
     cmds:
-      - cd user-server && task fmt
-      - cd repo-server && task fmt
-      - cd gateway && task fmt
-      - cd ai-server && task fmt
-      - cd chat-server && task fmt
-      - cd ks-proto && task fmt
+      - cmd: task fmt
+        dir: user-server
+      - cmd: task fmt
+        dir: repo-server
+      - cmd: task fmt
+        dir: gateway
+      - cmd: task fmt
+        dir: ai-server
+      - cmd: task fmt
+        dir: chat-server
+      - cmd: task fmt
+        dir: ks-proto
       - echo "所有 Go 代码格式化完成"
 
   mod:
     desc: 整理所有 Go 模块依赖
     silent: true
     cmds:
-      - cd user-server && task mod
-      - cd repo-server && task mod
-      - cd gateway && task mod
-      - cd ai-server && task mod
-      - cd chat-server && task mod
-      - cd ks-proto && task mod
+      - cmd: task mod
+        dir: user-server
+      - cmd: task mod
+        dir: repo-server
+      - cmd: task mod
+        dir: gateway
+      - cmd: task mod
+        dir: ai-server
+      - cmd: task mod
+        dir: chat-server
+      - cmd: task mod
+        dir: ks-proto
       - echo "所有 Go 模块依赖整理完成"
 
   modup:
     desc: 更新所有 Go 包到最新版本
     silent: true
     cmds:
-      - cd user-server && task modup
-      - cd repo-server && task modup
-      - cd gateway && task modup
-      - cd ai-server && task modup
-      - cd chat-server && task modup
-      - cd ks-proto && task modup
+      - cmd: task modup
+        dir: user-server
+      - cmd: task modup
+        dir: repo-server
+      - cmd: task modup
+        dir: gateway
+      - cmd: task modup
+        dir: ai-server
+      - cmd: task modup
+        dir: chat-server
+      - cmd: task modup
+        dir: ks-proto
       - echo "所有 Go 包已更新到最新版本"

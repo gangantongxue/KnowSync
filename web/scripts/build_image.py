@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
 Docker 镜像构建脚本
-先编译前端，然后构建 Docker 镜像（Caddy + 静态文件）
+使用已编译的前端文件构建 Docker 镜像（Caddy + 静态文件）
+
+注意: 需要先运行 build.py 编译前端
 
 用法:
-  python3 scripts/build_image.py              # 使用默认版本 (latest)
-  python3 scripts/build_image.py v1.0.0       # 指定版本号
-  python3 scripts/build_image.py --help       # 显示帮助
+  python scripts/build_image.py              # 使用默认版本 (latest)
+  python scripts/build_image.py v1.0.0       # 指定版本号
+  python scripts/build_image.py --help       # 显示帮助
 """
 
 import argparse
@@ -33,28 +35,23 @@ def check_docker() -> bool:
         return False
 
 
-def run_build_script(version: str) -> bool:
-    build_script = get_project_root() / "scripts" / "build.py"
-    print(f"\n步骤 1: 编译前端...")
-    try:
-        subprocess.run(["python3", str(build_script), version], check=True)
-        return True
-    except subprocess.CalledProcessError:
-        print("编译失败!")
+def check_dist_exists() -> bool:
+    """检查 dist 目录是否存在"""
+    dist_dir = get_project_root() / "dist"
+    if not dist_dir.exists():
+        print(f"\n错误: 未找到 dist/ 目录")
+        print(f"请先运行: python scripts/build.py")
         return False
+    return True
 
 
 def build_docker_image(version: str, platform: str) -> bool:
     project_root = get_project_root()
     image_name = f"{IMAGE_PREFIX}/{SERVICE_NAME}:{version}"
 
-    print(f"\n步骤 2: 构建 Docker 镜像...")
+    print(f"\n构建 Docker 镜像...")
     print(f"  镜像: {image_name}")
     print(f"  平台: {platform}")
-
-    if not (project_root / "dist").exists():
-        print(f"  错误: 未找到 dist/ 目录，请先编译")
-        return False
 
     cmd = [
         "docker", "build",
@@ -81,7 +78,7 @@ def tag_latest(version: str) -> bool:
         return True
     image_name = f"{IMAGE_PREFIX}/{SERVICE_NAME}:{version}"
     latest_name = f"{IMAGE_PREFIX}/{SERVICE_NAME}:latest"
-    print(f"\n步骤 3: 添加 latest 标签...")
+    print(f"\n添加 latest 标签...")
     try:
         subprocess.run(["docker", "tag", image_name, latest_name], check=True)
         print(f"  已添加标签: {latest_name}")
@@ -109,7 +106,7 @@ def main():
         print("\n错误: 未找到 Docker")
         sys.exit(1)
 
-    if not run_build_script(args.version):
+    if not check_dist_exists():
         sys.exit(1)
 
     if not build_docker_image(args.version, args.platform):

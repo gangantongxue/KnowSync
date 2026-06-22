@@ -33,7 +33,8 @@ def check_node() -> bool:
 
 def check_npm() -> bool:
     try:
-        subprocess.run(["npm", "--version"], capture_output=True, check=True)
+        # 使用 shell=True 确保能找到 npm 命令（解决 Windows 环境变量问题）
+        subprocess.run("npm --version", shell=True, capture_output=True, check=True)
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
@@ -41,7 +42,8 @@ def check_npm() -> bool:
 
 def install_deps():
     print("\n安装依赖...")
-    result = subprocess.run(["npm", "install"], cwd=get_project_root())
+    # 使用 shell=True 确保能找到 npm 命令（解决 Windows 环境变量问题）
+    result = subprocess.run("npm install", shell=True, cwd=get_project_root())
     if result.returncode != 0:
         print("依赖安装失败!")
         sys.exit(1)
@@ -53,8 +55,10 @@ def run_build(version: str) -> bool:
     print(f"\n编译前端 (版本: {version})...")
 
     env = {"VITE_APP_VERSION": version}
+    # 使用 shell=True 确保能找到 npm 命令（解决 Windows 环境变量问题）
     result = subprocess.run(
-        ["npm", "run", "build"],
+        "npm run build",
+        shell=True,
         cwd=project_root,
         env={**__import__("os").environ, **env},
     )
