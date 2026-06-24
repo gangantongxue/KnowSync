@@ -127,3 +127,11 @@ func marshalRepoWithFollowerCount(r *schema.Repo, followerCount int64) *pb.Repo 
 		FollowerCount: followerCount,
 	}
 }
+
+// IncrementArticleCount 原子增减知识库文章计数.
+func (h *Handler) IncrementArticleCount(ctx context.Context, req *pb.IncrementArticleCountRequest) (*pb.IncrementArticleCountResponse, error) {
+	if err := h.RepoService.IncrementArticleCount(ctx, req.GetRepoId(), int(req.GetDelta())); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &pb.IncrementArticleCountResponse{}, nil
+}

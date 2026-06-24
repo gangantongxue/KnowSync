@@ -47,8 +47,9 @@ func (c *Client) doGet(ctx context.Context, path string, query url.Values) ([]by
 	}
 	if serviceToken != "" {
 		req.Header.Set("Authorization", "Bearer "+serviceToken)
+	} else {
+		req.Header.Set("X-Internal-Secret", c.internalSecret)
 	}
-	req.Header.Set("X-Internal-Secret", c.internalSecret)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -99,8 +100,9 @@ func (c *Client) doBody(ctx context.Context, method, path string, query url.Valu
 	}
 	if serviceToken != "" {
 		req.Header.Set("Authorization", "Bearer "+serviceToken)
+	} else {
+		req.Header.Set("X-Internal-Secret", c.internalSecret)
 	}
-	req.Header.Set("X-Internal-Secret", c.internalSecret)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}

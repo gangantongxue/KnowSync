@@ -169,6 +169,8 @@ func (h *Handler) InternalCreateFile() app.HandlerFunc {
 			return
 		}
 
+		h.incArticleCount(c, repoID, 1)
+
 		// 异步触发向量化
 		if isTextFile(strings.ToLower(filepath.Ext(filePath))) {
 			go h.triggerVectorize(c, ownerID, repoID, filePath)
@@ -231,6 +233,8 @@ func (h *Handler) InternalDeleteFile() app.HandlerFunc {
 			ctx.JSON(consts.StatusInternalServerError, map[string]string{KeyMessage: "删除文件失败"})
 			return
 		}
+
+		h.incArticleCount(c, repoID, -1)
 
 		// 异步删除向量
 		go h.triggerDeleteFileVectors(c, repoID, filePath)

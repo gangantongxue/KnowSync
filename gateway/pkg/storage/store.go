@@ -185,3 +185,33 @@ func (s *Store) MakeDir(subpath string) error {
 	}
 	return os.MkdirAll(fullPath, 0o750)
 }
+
+// CountFilesRecursive 递归统计指定路径下的文件数量（排除目录和 .hertz.gz 临时文件）.
+func (s *Store) CountFilesRecursive(subpath string) (int, error) {
+	fullPath, err := s.Resolve(subpath)
+	if err != nil {
+		return 0, err
+	}
+	info, err := os.Stat(fullPath)
+	if err != nil {
+		return 0, err
+	}
+	if !info.IsDir() {
+		return 1, nil
+	}
+	count := 0
+	err = filepath.Walk(fullPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		if strings.HasSuffix(info.Name(), ".hertz.gz") {
+			return nil
+		}
+		count++
+		return nil
+	})
+	return count, err
+}

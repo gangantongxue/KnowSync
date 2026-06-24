@@ -126,6 +126,15 @@ func (s *RepoService) ListPublicRepos(ctx context.Context) ([]schema.Repo, error
 	return repos, nil
 }
 
+// IncrementArticleCount 原子增减知识库文章计数.
+func (s *RepoService) IncrementArticleCount(ctx context.Context, repoID string, delta int) error {
+	if err := s.repoRepo.IncrementArticleCount(ctx, repoID, delta); err != nil {
+		slog.Error("更新文章计数失败", "repo_id", repoID, "delta", delta, "error", err)
+		return errors.New("更新文章计数失败")
+	}
+	return nil
+}
+
 // ListUserRepos 获取用户参与的所有知识库列表.
 func (s *RepoService) ListUserRepos(ctx context.Context, userID string) ([]schema.Repo, error) {
 	repoIDs, err := s.collabRepo.ListUserRepoIDs(ctx, userID)

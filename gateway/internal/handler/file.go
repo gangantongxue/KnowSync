@@ -88,6 +88,8 @@ func (h *Handler) UploadFile() app.HandlerFunc {
 			return
 		}
 
+		h.incArticleCount(c, repoID, 1)
+
 		// 异步触发向量化（仅对文本文件）
 		ext := strings.ToLower(filepath.Ext(filePath))
 		if isTextFile(ext) {
@@ -133,6 +135,22 @@ func isTextFile(ext string) bool {
 	return false
 }
 
+// incArticleCount 通过 gRPC 调用 repo-server 增减知识库文章计数.
+func (h *Handler) incArticleCount(c context.Context, repoID string, delta int32) {
+	conn := h.grpcClient.GetConn("repo_server")
+	if conn == nil {
+		slog.Warn("repo 服务连接不可用，跳过更新文章计数", "repo_id", repoID)
+		return
+	}
+	client := pb.NewRepoServiceClient(conn)
+	if _, err := client.IncrementArticleCount(c, &pb.IncrementArticleCountRequest{
+		RepoId: repoID,
+		Delta:  delta,
+	}); err != nil {
+		slog.Warn("更新文章计数失败", "repo_id", repoID, "delta", delta, "error", err)
+	}
+}
+
 // DeleteFile 删除知识库中的文件或目录
 // DELETE /api/v1/repos/:repo_id/files?path=docs/old.md.
 func (h *Handler) DeleteFile() app.HandlerFunc {
@@ -154,15 +172,20 @@ func (h *Handler) DeleteFile() app.HandlerFunc {
 		}
 
 		if info.IsDir() {
+			fileCount, _ := h.store.CountFilesRecursive(subpath)
 			if err := h.store.DeleteAll(subpath); err != nil {
 				response.Error(c, ctx, 500, errcode.ErrBadReq, "删除目录失败")
 				return
+			}
+			if fileCount > 0 {
+				h.incArticleCount(c, repoID, -int32(fileCount))
 			}
 		} else {
 			if err := h.store.Delete(subpath); err != nil {
 				response.Error(c, ctx, 500, errcode.ErrBadReq, "删除文件失败")
 				return
 			}
+			h.incArticleCount(c, repoID, -1)
 		}
 
 		response.Success(c, ctx, nil)
