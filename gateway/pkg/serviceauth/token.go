@@ -130,3 +130,8 @@ func (m *Manager) Revoke(ctx context.Context, tokenString string) error {
 func (m *Manager) RevokeByJTI(ctx context.Context, jti string) error {
 	return m.rdb.Del(ctx, redisKeyPrefix+jti).Err()
 }
+
+// ValidateInternalSecret 验证共享密钥（用于异步 worker 等无 JWT 场景）.
+func (m *Manager) ValidateInternalSecret(rawSecret string) bool {
+	return rawSecret == string(m.secret)
+}

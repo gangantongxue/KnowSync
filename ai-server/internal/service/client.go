@@ -17,19 +17,21 @@ import (
 
 // Client 外部服务客户端，所有请求均通过 Gateway 的 /internal/* 接口.
 type Client struct {
-	gatewayAddr string
-	httpClient  *http.Client
+	gatewayAddr    string
+	internalSecret string
+	httpClient     *http.Client
 }
 
 // NewClient 创建外部服务客户端.
 func NewClient(cfg *model.Config) (*Client, error) {
 	return &Client{
-		gatewayAddr: cfg.Gateway.Addr,
-		httpClient:  &http.Client{Timeout: 30 * time.Second},
+		gatewayAddr:    cfg.Gateway.Addr,
+		internalSecret: cfg.ServiceToken.Secret,
+		httpClient:     &http.Client{Timeout: 30 * time.Second},
 	}, nil
 }
 
-// doGet 向 gateway 的内部端点发送 GET 请求，自动附加 service token.
+// doGet 向 gateway 的内部端点发送 GET 请求，自动附加 service token 和共享密钥.
 func (c *Client) doGet(ctx context.Context, path string, query url.Values) ([]byte, error) {
 	serviceToken, _ := ctx.Value(tool.CtxKeyServiceToken).(string)
 
@@ -46,6 +48,7 @@ func (c *Client) doGet(ctx context.Context, path string, query url.Values) ([]by
 	if serviceToken != "" {
 		req.Header.Set("Authorization", "Bearer "+serviceToken)
 	}
+	req.Header.Set("X-Internal-Secret", c.internalSecret)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -76,7 +79,7 @@ func (c *Client) doDelete(ctx context.Context, path string, query url.Values) ([
 	return c.doBody(ctx, http.MethodDelete, path, query, nil)
 }
 
-// doBody 向 gateway 的内部端点发送带 body 的请求.
+// doBody 向 gateway 的内部端点发送带 body 的请求，自动附加 service token 和共享密钥.
 func (c *Client) doBody(ctx context.Context, method, path string, query url.Values, body []byte) ([]byte, error) {
 	serviceToken, _ := ctx.Value(tool.CtxKeyServiceToken).(string)
 
@@ -97,6 +100,7 @@ func (c *Client) doBody(ctx context.Context, method, path string, query url.Valu
 	if serviceToken != "" {
 		req.Header.Set("Authorization", "Bearer "+serviceToken)
 	}
+	req.Header.Set("X-Internal-Secret", c.internalSecret)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
