@@ -39,17 +39,7 @@ tasks:
     desc: 编译 proto 文件生成 Go 代码
     silent: true
     cmds:
-      - |
-        PYTHON_CMD=""
-        if command -v python3 &> /dev/null; then
-          PYTHON_CMD="python3"
-        elif command -v python &> /dev/null; then
-          PYTHON_CMD="python"
-        else
-          echo "错误: 未找到 python3 或 python 命令"
-          exit 1
-        fi
-        $PYTHON_CMD scripts/build_proto.py {{.PROTO_DIR}} {{.OUTPUT_DIR}}
+      - bash scripts/build_proto.sh {{.PROTO_DIR}} {{.OUTPUT_DIR}}
 
   fmt:
     desc: 格式化 proto 文件

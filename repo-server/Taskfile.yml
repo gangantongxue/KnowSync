@@ -44,13 +44,13 @@ tasks:
     desc: 跨平台编译二进制文件
     silent: true
     cmds:
-      - python scripts/build.py {{.CLI_ARGS}}
+      - bash scripts/build.sh {{.CLI_ARGS}}
 
   image:
     desc: 构建 Docker 镜像
     silent: true
     cmds:
-      - python scripts/build_image.py {{.CLI_ARGS}}
+      - bash scripts/build_image.sh {{.CLI_ARGS}}
 
   fmt:
     desc: 格式化 Go 代码

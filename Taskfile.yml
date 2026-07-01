@@ -44,36 +44,24 @@ tasks:
     desc: 编译所有服务的二进制文件
     silent: true
     cmds:
-      - cmd: task build {{.CLI_ARGS}}
-        dir: user-server
-      - cmd: task build {{.CLI_ARGS}}
-        dir: repo-server
-      - cmd: task build {{.CLI_ARGS}}
-        dir: gateway
-      - cmd: task build {{.CLI_ARGS}}
-        dir: ai-server
-      - cmd: task build {{.CLI_ARGS}}
-        dir: chat-server
-      - cmd: task build {{.CLI_ARGS}}
-        dir: web
+      - cd user-server && task build {{.CLI_ARGS}}
+      - cd repo-server && task build {{.CLI_ARGS}}
+      - cd gateway && task build {{.CLI_ARGS}}
+      - cd ai-server && task build {{.CLI_ARGS}}
+      - cd chat-server && task build {{.CLI_ARGS}}
+      - cd web && task build {{.CLI_ARGS}}
       - echo "所有服务编译完成!"
 
   image:
     desc: 构建所有服务的 Docker 镜像
     silent: true
     cmds:
-      - cmd: task image
-        dir: user-server
-      - cmd: task image
-        dir: repo-server
-      - cmd: task image
-        dir: gateway
-      - cmd: task image
-        dir: ai-server
-      - cmd: task image
-        dir: chat-server
-      - cmd: task image
-        dir: web
+      - cd user-server && task image
+      - cd repo-server && task image
+      - cd gateway && task image
+      - cd ai-server && task image
+      - cd chat-server && task image
+      - cd web && task image
       - echo "所有镜像构建完成!"
 
   up:
@@ -98,70 +86,46 @@ tasks:
     desc: 清除所有编译产物
     silent: true
     cmds:
-      - cmd: task clean
-        dir: user-server
-      - cmd: task clean
-        dir: repo-server
-      - cmd: task clean
-        dir: gateway
-      - cmd: task clean
-        dir: ai-server
-      - cmd: task clean
-        dir: chat-server
-      - cmd: task clean
-        dir: web
+      - cd user-server && task clean
+      - cd repo-server && task clean
+      - cd gateway && task clean
+      - cd ai-server && task clean
+      - cd chat-server && task clean
+      - cd web && task clean
       - echo "已清除所有编译产物"
 
   fmt:
     desc: 格式化所有 Go 代码
     silent: true
     cmds:
-      - cmd: task fmt
-        dir: user-server
-      - cmd: task fmt
-        dir: repo-server
-      - cmd: task fmt
-        dir: gateway
-      - cmd: task fmt
-        dir: ai-server
-      - cmd: task fmt
-        dir: chat-server
-      - cmd: task fmt
-        dir: ks-proto
+      - cd user-server && task fmt
+      - cd repo-server && task fmt
+      - cd gateway && task fmt
+      - cd ai-server && task fmt
+      - cd chat-server && task fmt
+      - cd ks-proto && task fmt
       - echo "所有 Go 代码格式化完成"
 
   mod:
     desc: 整理所有 Go 模块依赖
     silent: true
     cmds:
-      - cmd: task mod
-        dir: user-server
-      - cmd: task mod
-        dir: repo-server
-      - cmd: task mod
-        dir: gateway
-      - cmd: task mod
-        dir: ai-server
-      - cmd: task mod
-        dir: chat-server
-      - cmd: task mod
-        dir: ks-proto
+      - cd user-server && task mod
+      - cd repo-server && task mod
+      - cd gateway && task mod
+      - cd ai-server && task mod
+      - cd chat-server && task mod
+      - cd ks-proto && task mod
       - echo "所有 Go 模块依赖整理完成"
 
   modup:
     desc: 更新所有 Go 包到最新版本
     silent: true
     cmds:
-      - cmd: task modup
-        dir: user-server
-      - cmd: task modup
-        dir: repo-server
-      - cmd: task modup
-        dir: gateway
-      - cmd: task modup
-        dir: ai-server
-      - cmd: task modup
-        dir: chat-server
-      - cmd: task modup
-        dir: ks-proto
+      - cd user-server && task modup
+      - cd repo-server && task modup
+      - cd gateway && task modup
+      - cd ai-server && task modup
+      - cd chat-server && task modup
+      - cd ks-proto && task modup
       - echo "所有 Go 包已更新到最新版本"

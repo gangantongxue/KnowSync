@@ -39,13 +39,13 @@ tasks:
     desc: 编译 React 前端
     silent: true
     cmds:
-      - python scripts/build.py {{.CLI_ARGS}}
+      - bash scripts/build.sh {{.CLI_ARGS}}
 
   image:
     desc: 构建 Docker 镜像
     silent: true
     cmds:
-      - python scripts/build_image.py {{.CLI_ARGS}}
+      - bash scripts/build_image.sh {{.CLI_ARGS}}
 
   dev:
     desc: 启动 Vite 开发服务器
