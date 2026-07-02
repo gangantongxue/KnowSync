@@ -83,6 +83,13 @@ fi
 # 构建镜像
 IMAGE_NAME="${IMAGE_PREFIX}/${SERVICE_NAME}:${VERSION}"
 
+# 删除旧的同名镜像，防止悬空镜像
+if docker image inspect "$IMAGE_NAME" &> /dev/null; then
+    echo ""
+    echo "删除旧镜像: ${IMAGE_NAME}..."
+    docker rmi "$IMAGE_NAME" || true
+fi
+
 echo ""
 echo "构建 Docker 镜像..."
 echo "  镜像: ${IMAGE_NAME}"
@@ -103,6 +110,13 @@ if ! $NO_LATEST && [ "$VERSION" != "latest" ]; then
     LATEST_NAME="${IMAGE_PREFIX}/${SERVICE_NAME}:latest"
     echo ""
     echo "添加 latest 标签..."
+
+    # 删除旧的 latest 镜像，防止悬空镜像
+    if docker image inspect "$LATEST_NAME" &> /dev/null; then
+        echo "  删除旧镜像: ${LATEST_NAME}..."
+        docker rmi "$LATEST_NAME" || true
+    fi
+
     docker tag "$IMAGE_NAME" "$LATEST_NAME"
     echo "  已添加标签: ${LATEST_NAME}"
 fi

@@ -107,6 +107,7 @@ func (h *Handler) GetUserProfile() app.HandlerFunc {
 			KeyUser: map[string]any{
 				"id":      userResp.user.Id,
 				KeyName:   userResp.user.Name,
+				KeyEmail:  userResp.user.Email,
 				KeyAvatar: userResp.user.Avatar,
 			},
 			KeyRepos:        publicRepos,

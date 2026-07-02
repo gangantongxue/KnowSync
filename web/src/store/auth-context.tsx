@@ -28,6 +28,7 @@ interface AuthContextValue extends AuthState {
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
+  updateUser: (partial: Partial<authApi.UserInfo>) => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -100,8 +101,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'CLEAR_USER' })
   }
 
+  const updateUser = (partial: Partial<authApi.UserInfo>) => {
+    if (state.user) {
+      dispatch({ type: 'SET_USER', user: { ...state.user, ...partial } })
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ ...state, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ ...state, login, logout, refreshUser, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import ImgCrop from 'antd-img-crop'
+import { Upload } from 'antd'
 import { useAuth } from '../store/auth-context'
 import { friendApi } from '../lib/chat-api'
 import { userApi, type UserProfileData } from '../lib/user-api'
@@ -8,7 +10,7 @@ import { sendVerifyCode } from '../lib/auth'
 export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>()
   const navigate = useNavigate()
-  const { user: currentUser, logout } = useAuth()
+  const { user: currentUser, logout, updateUser } = useAuth()
 
   const [profile, setProfile] = useState<UserProfileData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -16,6 +18,8 @@ export default function UserProfile() {
 
   const [showEditModal, setShowEditModal] = useState(false)
   const [editName, setEditName] = useState('')
+  const [editAvatarFile, setEditAvatarFile] = useState<File | null>(null)
+  const [editAvatarPreview, setEditAvatarPreview] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -25,8 +29,6 @@ export default function UserProfile() {
   const [codeSending, setCodeSending] = useState(false)
   const [codeSent, setCodeSent] = useState(false)
   const [deleting, setDeleting] = useState(false)
-
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const isOwner = currentUser?.id === userId
 
@@ -44,25 +46,19 @@ export default function UserProfile() {
     loadProfile()
   }, [userId])
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !userId) return
-    try {
-      await userApi.uploadAvatar(userId, file)
-      const res = await userApi.getProfile(userId)
-      setProfile(res.data)
-    } catch (err: any) {
-      setError(err.message)
-    }
-  }
-
   const handleSaveProfile = async () => {
     if (!userId) return
     setSaving(true)
     try {
-      await userApi.updateProfile(userId, { name: editName })
+      if (editAvatarFile) {
+        await userApi.uploadAvatar(userId, editAvatarFile)
+      }
+      if (editName !== profile?.user.name) {
+        await userApi.updateProfile(userId, { name: editName })
+      }
       const res = await userApi.getProfile(userId)
       setProfile(res.data)
+      updateUser({ avatar: res.data.user.avatar, name: res.data.user.name })
       setShowEditModal(false)
     } catch (err: any) {
       setError(err.message)
@@ -166,7 +162,7 @@ export default function UserProfile() {
     if (isOwner) {
       return (
         <div className="flex justify-center gap-3 flex-wrap">
-          <button onClick={() => { setEditName(profile?.user.name || ''); setShowEditModal(true) }}
+          <button onClick={() => { setEditName(profile?.user.name || ''); setEditAvatarFile(null); setEditAvatarPreview(null); setShowEditModal(true) }}
             className="px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600">
             编辑资料
           </button>
@@ -270,6 +266,7 @@ export default function UserProfile() {
             </div>
           </div>
           <h1 className="text-xl font-bold text-gray-800 mt-4">{profile.user.name}</h1>
+          <p className="text-sm text-gray-500 mt-1">{profile.user.email}</p>
           {profile.user.bio && <p className="text-gray-500 text-sm mt-1">{profile.user.bio}</p>}
           <p className="text-xs text-gray-400 mt-1">ID: {profile.user.id}</p>
         </div>
@@ -317,19 +314,26 @@ export default function UserProfile() {
 
             {/* Avatar */}
             <div className="flex justify-center mb-4">
-              <div
-                className="w-20 h-20 rounded-full bg-gray-100 overflow-hidden cursor-pointer ring-2 ring-emerald-200 hover:ring-emerald-400"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {profile?.user.avatar ? (
-                  <img src={profile.user.avatar} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-2xl text-gray-400 font-medium">
-                    {profile?.user.name?.charAt(0) || 'U'}
+              <ImgCrop aspect={1} quality={1} modalTitle="裁剪头像">
+                <Upload
+                  showUploadList={false}
+                  beforeUpload={(file) => {
+                    setEditAvatarFile(file)
+                    setEditAvatarPreview(URL.createObjectURL(file))
+                    return false
+                  }}
+                >
+                  <div className="w-20 h-20 rounded-full bg-gray-100 overflow-hidden cursor-pointer ring-2 ring-emerald-200 hover:ring-emerald-400">
+                    {editAvatarPreview || profile?.user.avatar ? (
+                      <img src={editAvatarPreview || profile?.user.avatar} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-2xl text-gray-400 font-medium">
+                        {profile?.user.name?.charAt(0) || 'U'}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                </Upload>
+              </ImgCrop>
             </div>
 
             {/* Name */}
@@ -346,7 +350,7 @@ export default function UserProfile() {
                 className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">
                 取消
               </button>
-              <button onClick={handleSaveProfile} disabled={saving || !editName.trim()}
+              <button onClick={handleSaveProfile} disabled={saving || (editName === profile?.user.name && !editAvatarFile)}
                 className="px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600 disabled:opacity-50">
                 {saving ? '保存中...' : '保存'}
               </button>

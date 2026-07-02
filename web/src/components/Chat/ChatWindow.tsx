@@ -107,16 +107,39 @@ export default function ChatWindow(_props: ChatWindowProps) {
           </div>
         )}
         {hasMessages ? (
-          messages.filter(m => !m.hidden).map(msg => (
-            <MessageBubble
-              key={msg.id}
-              role={msg.role}
-              content={msg.content}
-              thinking={msg.thinking}
-              isStreaming={msg.isStreaming}
-              userAvatar={user?.avatar}
-            />
-          ))
+          messages.filter(m => !m.hidden).map(msg => {
+            const showThinkingPlaceholder = msg.role === 'assistant' && msg.isStreaming && !msg.content && !msg.thinking
+            if (showThinkingPlaceholder) {
+              return (
+                <div key={msg.id} className="flex gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 overflow-hidden bg-gray-200">
+                    <img src="/img/KK.jpg" alt="" className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                  </div>
+                  <div className="max-w-[70%]">
+                    <div className="px-4 py-2.5 rounded-2xl text-sm bg-gray-100 text-gray-400">
+                      kk正在思考
+                      <span className="inline-flex gap-0.5 ml-1 align-middle">
+                        <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+            return (
+              <MessageBubble
+                key={msg.id}
+                role={msg.role}
+                content={msg.content}
+                thinking={msg.thinking}
+                isStreaming={msg.isStreaming}
+                userAvatar={user?.avatar}
+              />
+            )
+          })
         ) : virtualSession ? (
           <div className="h-full flex flex-col items-center justify-center text-center text-gray-400">
             <div className="text-4xl mb-3">💡</div>
@@ -143,19 +166,6 @@ export default function ChatWindow(_props: ChatWindowProps) {
         )}
         <div ref={bottomRef} />
       </div>
-
-      {isStreaming && (
-        <div className="px-4 py-1 border-t border-gray-100 bg-gray-50">
-          <div className="flex items-center gap-2 text-gray-400 text-xs">
-            <div className="flex gap-1">
-              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-            </div>
-            <span>AI 正在思考...</span>
-          </div>
-        </div>
-      )}
 
       <div className="border-t border-gray-200 p-3">
         <div className="flex gap-2 items-end">

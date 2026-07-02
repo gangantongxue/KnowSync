@@ -104,9 +104,7 @@ export async function uploadFile<T>(
   const headers: Record<string, string> = {}
   if (token) headers['Authorization'] = `Bearer ${token}`
 
-  // Clone FormData before first request (it's consumed after use)
-  // Using cast because FormData.clone() isn't in TypeScript's DOM lib types yet
-  const formDataClone = (formData as any).clone() as FormData
+  const formDataClone = cloneFormData(formData)
 
   let res = await fetch(`${BASE_URL}/api/v1${path}`, {
     method: 'PUT',
@@ -136,6 +134,14 @@ export async function uploadFile<T>(
   }
 
   return res.json()
+}
+
+function cloneFormData(formData: FormData): FormData {
+  const cloned = new FormData()
+  formData.forEach((value, key) => {
+    cloned.append(key, value)
+  })
+  return cloned
 }
 
 export { getToken, setToken, clearToken }

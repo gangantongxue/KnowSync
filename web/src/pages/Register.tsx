@@ -9,6 +9,7 @@ export default function Register() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [verifyCode, setVerifyCode] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -29,9 +30,27 @@ export default function Register() {
     setCodeSending(false)
   }
 
+  const getPasswordStrength = (pw: string): { score: number; label: string; color: string; percent: number } => {
+    if (!pw) return { score: 0, label: '', color: '', percent: 0 }
+    let score = 0
+    if (pw.length >= 6) score++
+    if (pw.length >= 10) score++
+    if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++
+    if (/\d/.test(pw)) score++
+    if (/[^a-zA-Z0-9]/.test(pw)) score++
+    const percent = (score / 5) * 100
+    if (score <= 1) return { score, label: '弱', color: '#ef4444', percent }
+    if (score <= 3) return { score, label: '中', color: '#f59e0b', percent }
+    return { score, label: '强', color: '#10b981', percent }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    if (password !== confirmPassword) {
+      setError('两次输入的密码不一致')
+      return
+    }
     setLoading(true)
     try {
       await register(name, email, password, verifyCode, avatarFile || undefined)
@@ -51,26 +70,28 @@ export default function Register() {
         {/* 头像 */}
         <div className="flex flex-col items-center">
           <label className="block text-sm font-medium text-gray-700 mb-3 self-start">头像</label>
-          <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
-            <img src={avatarPreview} alt="avatar" className="w-full h-full object-cover"
-              onError={() => setAvatarPreview('/img/default_avatar.jpg')} />
-          </div>
-          <div className="mt-3">
-            <ImgCrop aspect={1} quality={1} modalTitle="裁剪头像">
-              <Upload
-                showUploadList={false}
-                beforeUpload={(file) => {
-                  setAvatarFile(file)
-                  setAvatarPreview(URL.createObjectURL(file))
-                  return false
-                }}
-              >
-                <span className="text-sm text-emerald-600 cursor-pointer hover:text-emerald-500">
-                  选择图片并裁剪
-                </span>
-              </Upload>
-            </ImgCrop>
-          </div>
+          <ImgCrop aspect={1} quality={1} modalTitle="裁剪头像">
+            <Upload
+              showUploadList={false}
+              beforeUpload={(file) => {
+                setAvatarFile(file)
+                setAvatarPreview(URL.createObjectURL(file))
+                return false
+              }}
+            >
+              <div className="flex flex-col items-center cursor-pointer">
+                <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
+                  <img src={avatarPreview} alt="avatar" className="w-full h-full object-cover"
+                    onError={() => setAvatarPreview('/img/default_avatar.jpg')} />
+                </div>
+                <div className="mt-3">
+                  <span className="text-sm text-emerald-600 hover:text-emerald-500">
+                    选择图片并裁剪
+                  </span>
+                </div>
+              </div>
+            </Upload>
+          </ImgCrop>
         </div>
 
         <div>
@@ -87,6 +108,29 @@ export default function Register() {
           <label className="block text-sm font-medium text-gray-700 mb-1">密码</label>
           <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-emerald-400" />
+          {password && (
+            <div className="mt-1.5">
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-300" style={{
+                    width: `${getPasswordStrength(password).percent}%`,
+                    backgroundColor: getPasswordStrength(password).color,
+                  }} />
+                </div>
+                <span className="text-xs shrink-0" style={{ color: getPasswordStrength(password).color }}>
+                  {getPasswordStrength(password).label}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">确认密码</label>
+          <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required minLength={6}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-emerald-400" />
+          {confirmPassword && password !== confirmPassword && (
+            <p className="text-red-500 text-xs mt-1">两次输入的密码不一致</p>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">验证码</label>
