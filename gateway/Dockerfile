@@ -35,4 +35,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD pgrep ${SERVICE_NAME} || exit 1
 
 # 启动命令
-ENTRYPOINT ["/app/gateway"]
+ENTRYPOINT ["sh", "-c", "umask 000 && exec /app/gateway"]

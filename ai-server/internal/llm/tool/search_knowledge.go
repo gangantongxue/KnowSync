@@ -39,7 +39,7 @@ func NewSearchKnowledge(embedd Embedder, vs VectorStore, rc RepoClient, threshol
 func (s *SearchKnowledge) Info(_ context.Context) (*schema.ToolInfo, error) {
 	return &schema.ToolInfo{
 		Name: "search_knowledge",
-		Desc: "在用户自己的知识库和公开知识库中搜索与问题相关的文章内容。通过语义理解匹配文章，返回最相关的内容片段。用户自己知识库的匹配结果会优先展示。",
+		Desc: "在用户自己的知识库和所有公开知识库（含他人的）中搜索与问题相关的文章内容。通过语义理解匹配文章，返回最相关的内容片段。用户自己知识库的匹配结果会优先展示。",
 		ParamsOneOf: schema.NewParamsOneOfByParams(map[string]*schema.ParameterInfo{
 			"query": {
 				Type:     TypeString,
@@ -108,7 +108,7 @@ func (s *SearchKnowledge) execute(ctx context.Context, paramsJSON string) (strin
 
 	if len(allRepoIDs) == 0 {
 		slog.Info("没有可搜索的仓库", "user_id", userID)
-		return noResultsJSON("未在您的知识库中找到相关文章，将根据自身知识回答"), nil
+		return noResultsJSON("未在自己的知识库和公开知识库中找到相关文章，将根据自身知识回答"), nil
 	}
 
 	// 3. 向量化搜索关键词
@@ -156,7 +156,7 @@ func (s *SearchKnowledge) execute(ctx context.Context, paramsJSON string) (strin
 
 	if len(matched) == 0 {
 		slog.Info("知识库搜索结果均低于阈值", "query", params.Query, "threshold", s.threshold, "total_results", len(results))
-		return noResultsJSON("未在您的知识库中找到相关文章，将根据自身知识回答"), nil
+		return noResultsJSON("未在自己的知识库和公开知识库中找到相关文章，将根据自身知识回答"), nil
 	}
 
 	// 5. 格式化结果

@@ -28,7 +28,22 @@ func (h *Handler) GetRepoTree() app.HandlerFunc {
 		repoID := ctx.Param("repo_id")
 		dirPath := ctx.Query("path")
 
-		subpath := filepath.Join(uid, repoID, dirPath)
+		conn := h.grpcClient.GetConn("repo_server")
+		if conn == nil {
+			response.Error(c, ctx, 500, errcode.ErrBadReq, "服务连接失败")
+			return
+		}
+		client := pb.NewRepoServiceClient(conn)
+		resp, err := client.GetRepo(c, &pb.GetRepoRequest{
+			RepoId: repoID,
+			UserId: uid,
+		})
+		if err != nil {
+			response.Error(c, ctx, 404, errcode.ErrNotFound, "知识库不存在")
+			return
+		}
+
+		subpath := filepath.Join(resp.Repo.OwnerId, repoID, dirPath)
 		entries, err := h.store.ListDir(subpath)
 		if err != nil {
 			response.Error(c, ctx, 404, errcode.ErrNotFound, "目录不存在")
