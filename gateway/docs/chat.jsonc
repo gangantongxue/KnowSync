@@ -1,0 +1,1856 @@
+{
+  // KnowSync 网关 - 聊天服务 HTTP API 接口文档
+  // 基础路径（所有接口均以此开头）: /api/v1
+  //
+  // 统一响应格式:
+  //   code    - 业务状态码，200 表示成功，非 200 表示各类错误
+  //   message - 提示信息
+  //   data    - 响应数据（成功时携带），可能为 null
+
+  "base_url": "/api/v1",
+
+  "response_schema": {
+    "code":    { "type": "integer", "desc": "业务状态码，200 成功，非 200 失败" },
+    "message": { "type": "string",  "desc": "提示信息" },
+    "data":    { "type": "object",  "desc": "响应数据，失败时为 null" }
+  },
+
+  "error_codes": {
+    "200":    { "desc": "成功" },
+    "40000":  { "desc": "请求参数错误" },
+    "40100":  { "desc": "未授权，令牌无效或已过期" },
+    "40300":  { "desc": "权限不足" },
+    "40400":  { "desc": "资源不存在" },
+    "42900":  { "desc": "请求频率过快" }
+  },
+
+  "apis": [
+
+    //==============================================================================
+    // 一、好友相关（/friends/*）
+    //==============================================================================
+
+    //==============================================================================
+    // 发送好友申请
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/friends/requests",
+      "auth_required": true,
+      "description": "发送好友申请，接收方将收到待处理的好友请求",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "body": {
+          "receiver_id": { "type": "string", "required": true, "desc": "接收方用户 ID" },
+          "remark":      { "type": "string", "required": false, "desc": "申请附言" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "发送成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 已发送过申请 / 已是好友",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 获取收到的好友申请列表
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/friends/requests/received",
+      "auth_required": true,
+      "description": "获取当前用户收到的所有好友申请，按更新时间倒序",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "cursor":   { "type": "integer", "required": false, "in": "query", "desc": "游标（上次返回的最后一条 created_at 时间戳），首次查询不传" },
+          "limit":    { "type": "integer", "required": false, "in": "query", "desc": "每页条数（默认 20）" },
+          "status":   { "type": "string",  "required": false, "in": "query", "desc": "过滤状态: pending / accepted / rejected（不传返回全部）" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "requests": {
+                  "type": "array",
+                  "desc": "好友申请列表",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "id":          { "type": "string", "desc": "申请 ID" },
+                      "sender_id":   { "type": "string", "desc": "发送方用户 ID" },
+                      "receiver_id": { "type": "string", "desc": "接收方用户 ID" },
+                      "status":      { "type": "string", "desc": "状态: pending / accepted / rejected" },
+                      "remark":      { "type": "string", "desc": "申请附言" },
+                      "created_at":  { "type": "integer", "desc": "发送时间戳" },
+                      "updated_at":  { "type": "integer", "desc": "处理时间戳" }
+                    }
+                  }
+                },
+                "has_more": { "type": "boolean", "desc": "是否还有更多数据" }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 获取发出的好友申请列表
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/friends/requests/sent",
+      "auth_required": true,
+      "description": "获取当前用户发出的所有好友申请",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "cursor":   { "type": "integer", "required": false, "in": "query", "desc": "游标（上次返回的最后一条 created_at 时间戳），首次查询不传" },
+          "limit":    { "type": "integer", "required": false, "in": "query", "desc": "每页条数（默认 20）" },
+          "status":   { "type": "string",  "required": false, "in": "query", "desc": "过滤状态: pending / accepted / rejected（不传返回全部）" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "requests": {
+                  "type": "array",
+                  "desc": "好友申请列表",
+                  "items": {
+                    "$ref": "#/definitions/friend_request"
+                  }
+                },
+                "has_more": { "type": "boolean", "desc": "是否还有更多数据" }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 接受好友申请
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/friends/requests/:request_id/accept",
+      "auth_required": true,
+      "description": "接受好友申请，双方建立好友关系",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "request_id": { "type": "string", "required": true, "in": "path", "desc": "好友申请 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "接受成功，已建立好友关系",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 申请状态非 pending",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "404": {
+          "desc": "申请不存在",
+          "body": {
+            "code":    { "type": "integer", "desc": "40400" },
+            "message": { "type": "string",  "desc": "申请不存在" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 拒绝好友申请
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/friends/requests/:request_id/reject",
+      "auth_required": true,
+      "description": "拒绝好友申请",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "request_id": { "type": "string", "required": true, "in": "path", "desc": "好友申请 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "已拒绝",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 申请状态非 pending",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "404": {
+          "desc": "申请不存在",
+          "body": {
+            "code":    { "type": "integer", "desc": "40400" },
+            "message": { "type": "string",  "desc": "申请不存在" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 获取好友列表
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/friends",
+      "auth_required": true,
+      "description": "获取当前用户的所有好友列表",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "friends": {
+                  "type": "array",
+                  "desc": "好友列表",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "user_id":         { "type": "string", "desc": "好友用户 ID" },
+                      "remark":          { "type": "string", "desc": "好友备注" },
+                      "last_message_at": { "type": "integer", "desc": "最后消息时间戳" },
+                      "pinned":          { "type": "boolean", "desc": "是否置顶" },
+                      "created_at":      { "type": "integer", "desc": "成为好友的时间戳" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 删除好友
+    //==============================================================================
+
+    {
+      "method": "DELETE",
+      "path": "/friends/:friend_id",
+      "auth_required": true,
+      "description": "删除好友关系（仅删除自己这一侧的关系）",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "friend_id": { "type": "string", "required": true, "in": "path", "desc": "好友用户 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "删除成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 修改好友备注
+    //==============================================================================
+
+    {
+      "method": "PUT",
+      "path": "/friends/:friend_id/remark",
+      "auth_required": true,
+      "description": "修改好友备注名称",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "friend_id": { "type": "string", "required": true, "in": "path", "desc": "好友用户 ID" }
+        },
+        "body": {
+          "remark": { "type": "string", "required": true, "desc": "新的备注名称" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "修改成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 搜索用户
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/users/search",
+      "auth_required": true,
+      "description": "搜索用户（按用户名或邮箱模糊搜索），用于添加好友",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "keyword": { "type": "string", "required": true, "in": "query", "desc": "搜索关键词（用户名或邮箱）" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "users": {
+                  "type": "array",
+                  "desc": "匹配的用户列表",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "id":     { "type": "string", "desc": "用户 ID" },
+                      "name":   { "type": "string", "desc": "用户名" },
+                      "email":  { "type": "string", "desc": "邮箱" },
+                      "avatar": { "type": "string", "desc": "头像 URL" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "关键词为空",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "关键词不能为空" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 二、消息相关（/messages/*）
+    //==============================================================================
+
+    //==============================================================================
+    // 发送私聊消息
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/messages/private",
+      "auth_required": true,
+      "description": "发送私聊消息给指定用户",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "body": {
+          "receiver_id": { "type": "string", "required": true, "desc": "接收方用户 ID" },
+          "content_type": { "type": "string", "required": true, "desc": "消息类型: text / image / file" },
+          "content":      { "type": "string", "required": true, "desc": "消息内容" },
+          "reply_to_id":  { "type": "string", "required": false, "desc": "回复的消息 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "发送成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "message": {
+                  "type": "object",
+                  "desc": "已发送的消息",
+                  "fields": {
+                    "id":                { "type": "string",  "desc": "消息 ID" },
+                    "conversation_type": { "type": "string",  "desc": "会话类型: private" },
+                    "conversation_id":   { "type": "string",  "desc": "会话 ID" },
+                    "seq_id":            { "type": "integer", "desc": "消息序列号" },
+                    "sender_id":         { "type": "string",  "desc": "发送方用户 ID" },
+                    "content_type":      { "type": "string",  "desc": "消息类型" },
+                    "content":           { "type": "string",  "desc": "消息内容" },
+                    "reply_to_id":       { "type": "string",  "desc": "回复的消息 ID" },
+                    "created_at":        { "type": "integer", "desc": "发送时间戳" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 非好友关系",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 发送群聊消息
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/messages/group",
+      "auth_required": true,
+      "description": "发送群聊消息到指定群组",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "body": {
+          "group_id":     { "type": "string", "required": true, "desc": "群组 ID" },
+          "content_type": { "type": "string", "required": true, "desc": "消息类型: text / image / file" },
+          "content":      { "type": "string", "required": true, "desc": "消息内容" },
+          "reply_to_id":  { "type": "string", "required": false, "desc": "回复的消息 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "发送成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "message": {
+                  "type": "object",
+                  "desc": "已发送的消息",
+                  "fields": {
+                    "id":                { "type": "string",  "desc": "消息 ID" },
+                    "conversation_type": { "type": "string",  "desc": "会话类型: group" },
+                    "conversation_id":   { "type": "string",  "desc": "会话 ID（群组 ID）" },
+                    "seq_id":            { "type": "integer", "desc": "消息序列号" },
+                    "sender_id":         { "type": "string",  "desc": "发送方用户 ID" },
+                    "content_type":      { "type": "string",  "desc": "消息类型" },
+                    "content":           { "type": "string",  "desc": "消息内容" },
+                    "reply_to_id":       { "type": "string",  "desc": "回复的消息 ID" },
+                    "created_at":        { "type": "integer", "desc": "发送时间戳" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 非群成员",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 获取消息列表（游标分页）
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/messages",
+      "auth_required": true,
+      "description": "获取指定会话的消息历史记录，按 SeqID 降序，游标分页",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "conversation_type": { "type": "string", "required": true,  "in": "query", "desc": "会话类型: private / group" },
+          "conversation_id":   { "type": "string", "required": true,  "in": "query", "desc": "会话 ID" },
+          "cursor":            { "type": "integer", "required": false, "in": "query", "desc": "游标（上次返回的最小 seq_id），首次查询不传" },
+          "limit":             { "type": "integer", "required": false, "in": "query", "desc": "每页条数（默认 50）" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "messages": {
+                  "type": "array",
+                  "desc": "消息列表",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "id":                { "type": "string",  "desc": "消息 ID" },
+                      "conversation_type": { "type": "string",  "desc": "会话类型" },
+                      "conversation_id":   { "type": "string",  "desc": "会话 ID" },
+                      "seq_id":            { "type": "integer", "desc": "消息序列号" },
+                      "sender_id":         { "type": "string",  "desc": "发送方用户 ID" },
+                      "content_type":      { "type": "string",  "desc": "消息类型" },
+                      "content":           { "type": "string",  "desc": "消息内容" },
+                      "extra":             { "type": "object",  "desc": "扩展数据" },
+                      "reply_to_id":       { "type": "string",  "desc": "回复的消息 ID" },
+                      "status":            { "type": "string",  "desc": "消息状态: normal / recalled" },
+                      "created_at":        { "type": "integer", "desc": "发送时间戳" }
+                    }
+                  }
+                },
+                "has_more": { "type": "boolean", "desc": "是否还有更多数据" }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 撤回消息
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/messages/:message_id/recall",
+      "auth_required": true,
+      "description": "撤回已发送的消息（仅自己发送的消息可撤回，超过 2 分钟不可撤回）",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "message_id": { "type": "string", "required": true, "in": "path", "desc": "消息 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "撤回成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 消息已过期不可撤回 / 不是消息发送者",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "404": {
+          "desc": "消息不存在",
+          "body": {
+            "code":    { "type": "integer", "desc": "40400" },
+            "message": { "type": "string",  "desc": "消息不存在" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 转发消息
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/messages/forward",
+      "auth_required": true,
+      "description": "将一条或多条消息转发到其他会话",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "body": {
+          "message_ids": {
+            "type": "array",
+            "required": true,
+            "desc": "要转发的消息 ID 列表",
+            "items": { "type": "string" }
+          },
+          "target_conversation_type": { "type": "string", "required": true, "desc": "目标会话类型: private / group" },
+          "target_conversation_id":   { "type": "string", "required": true, "desc": "目标会话 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "转发成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 获取未读消息数
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/messages/unread-count",
+      "auth_required": true,
+      "description": "获取所有会话的未读消息总数",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "total_unread": { "type": "integer", "desc": "所有会话的未读消息总数" },
+                "details": {
+                  "type": "array",
+                  "desc": "各会话未读数详情",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "conversation_type": { "type": "string", "desc": "会话类型" },
+                      "conversation_id":   { "type": "string", "desc": "会话 ID" },
+                      "unread_count":      { "type": "integer", "desc": "未读消息数" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 三、群组相关（/groups/*）
+    //==============================================================================
+
+    //==============================================================================
+    // 创建群组
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/groups",
+      "auth_required": true,
+      "description": "创建群组，创建者自动成为群主（owner）",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "body": {
+          "name":   { "type": "string", "required": true,  "desc": "群组名称" },
+          "avatar": { "type": "string", "required": false, "desc": "群头像 URL" },
+          "member_ids": {
+            "type": "array",
+            "required": false,
+            "desc": "初始成员用户 ID 列表（可选）",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "创建成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "group": {
+                  "type": "object",
+                  "desc": "群组信息",
+                  "fields": {
+                    "id":         { "type": "string", "desc": "群组 ID" },
+                    "name":       { "type": "string", "desc": "群组名称" },
+                    "avatar":     { "type": "string", "desc": "群头像 URL" },
+                    "owner_id":   { "type": "string", "desc": "群主用户 ID" },
+                    "member_count": { "type": "integer", "desc": "成员数量" },
+                    "created_at": { "type": "integer", "desc": "创建时间戳" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 获取用户群组列表
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/groups",
+      "auth_required": true,
+      "description": "获取当前用户加入的所有群组列表",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "groups": {
+                  "type": "array",
+                  "desc": "群组列表",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "id":           { "type": "string",  "desc": "群组 ID" },
+                      "name":         { "type": "string",  "desc": "群组名称" },
+                      "avatar":       { "type": "string",  "desc": "群头像 URL" },
+                      "owner_id":     { "type": "string",  "desc": "群主用户 ID" },
+                      "my_role":      { "type": "string",  "desc": "我的角色: owner / admin / member" },
+                      "pinned":       { "type": "boolean", "desc": "是否置顶" },
+                      "created_at":   { "type": "integer", "desc": "创建时间戳" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 获取群组详情
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/groups/:group_id",
+      "auth_required": true,
+      "description": "获取指定群组的详细信息",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "group_id": { "type": "string", "required": true, "in": "path", "desc": "群组 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "group": {
+                  "type": "object",
+                  "desc": "群组信息",
+                  "fields": {
+                    "id":           { "type": "string",  "desc": "群组 ID" },
+                    "name":         { "type": "string",  "desc": "群组名称" },
+                    "avatar":       { "type": "string",  "desc": "群头像 URL" },
+                    "owner_id":     { "type": "string",  "desc": "群主用户 ID" },
+                    "my_role":      { "type": "string",  "desc": "我的角色" },
+                    "member_count": { "type": "integer", "desc": "成员数量" },
+                    "created_at":   { "type": "integer", "desc": "创建时间戳" },
+                    "updated_at":   { "type": "integer", "desc": "更新时间戳" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "404": {
+          "desc": "群组不存在或非群成员",
+          "body": {
+            "code":    { "type": "integer", "desc": "40400" },
+            "message": { "type": "string",  "desc": "群组不存在" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 更新群组信息
+    //==============================================================================
+
+    {
+      "method": "PUT",
+      "path": "/groups/:group_id",
+      "auth_required": true,
+      "description": "更新群组名称或头像（仅群主和管理员可操作）",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "group_id": { "type": "string", "required": true, "in": "path", "desc": "群组 ID" }
+        },
+        "body": {
+          "name":   { "type": "string", "required": false, "desc": "新群组名称" },
+          "avatar": { "type": "string", "required": false, "desc": "新群头像 URL" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "更新成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "403": {
+          "desc": "权限不足（非群主/管理员）",
+          "body": {
+            "code":    { "type": "integer", "desc": "40300" },
+            "message": { "type": "string",  "desc": "权限不足" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 退出群组
+    //==============================================================================
+
+    {
+      "method": "DELETE",
+      "path": "/groups/:group_id",
+      "auth_required": true,
+      "description": "退出群组（群主需先转让所有权）",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "group_id": { "type": "string", "required": true, "in": "path", "desc": "群组 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "退出成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "群主不可直接退出，需转让",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "群主不可直接退出" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 添加群成员
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/groups/:group_id/members",
+      "auth_required": true,
+      "description": "添加新成员到群组（仅群主和管理员可操作）",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "group_id": { "type": "string", "required": true, "in": "path", "desc": "群组 ID" }
+        },
+        "body": {
+          "user_ids": {
+            "type": "array",
+            "required": true,
+            "desc": "要添加的用户 ID 列表",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "添加成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 用户已在群中",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "403": {
+          "desc": "权限不足",
+          "body": {
+            "code":    { "type": "integer", "desc": "40300" },
+            "message": { "type": "string",  "desc": "权限不足" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 移除群成员
+    //==============================================================================
+
+    {
+      "method": "DELETE",
+      "path": "/groups/:group_id/members/:user_id",
+      "auth_required": true,
+      "description": "将指定成员移出群组（仅群主和管理员可操作）",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "group_id": { "type": "string", "required": true, "in": "path", "desc": "群组 ID" },
+          "user_id":  { "type": "string", "required": true, "in": "path", "desc": "要移除的成员用户 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "移除成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 不能移除群主",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "403": {
+          "desc": "权限不足",
+          "body": {
+            "code":    { "type": "integer", "desc": "40300" },
+            "message": { "type": "string",  "desc": "权限不足" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 获取群成员列表
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/groups/:group_id/members",
+      "auth_required": true,
+      "description": "获取群组的所有成员列表",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "group_id": { "type": "string", "required": true, "in": "path", "desc": "群组 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "members": {
+                  "type": "array",
+                  "desc": "成员列表",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "user_id": { "type": "string", "desc": "用户 ID" },
+                      "name":    { "type": "string", "desc": "用户名" },
+                      "avatar":  { "type": "string", "desc": "头像 URL" },
+                      "role":    { "type": "string", "desc": "角色: owner / admin / member" },
+                      "joined_at": { "type": "integer", "desc": "加入时间戳" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 转让群主
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/groups/:group_id/transfer",
+      "auth_required": true,
+      "description": "将群主权限转让给其他成员（仅群主可操作）",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "group_id": { "type": "string", "required": true, "in": "path", "desc": "群组 ID" }
+        },
+        "body": {
+          "new_owner_id": { "type": "string", "required": true, "desc": "新群主的用户 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "转让成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 目标用户非群成员",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "403": {
+          "desc": "权限不足（非群主）",
+          "body": {
+            "code":    { "type": "integer", "desc": "40300" },
+            "message": { "type": "string",  "desc": "权限不足" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 设置管理员
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/groups/:group_id/admins",
+      "auth_required": true,
+      "description": "将群成员提升为管理员（仅群主可操作）",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "group_id": { "type": "string", "required": true, "in": "path", "desc": "群组 ID" }
+        },
+        "body": {
+          "user_id": { "type": "string", "required": true, "desc": "要设为管理员的用户 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "设置成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 用户已是管理员",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "403": {
+          "desc": "权限不足（非群主）",
+          "body": {
+            "code":    { "type": "integer", "desc": "40300" },
+            "message": { "type": "string",  "desc": "权限不足" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 移除管理员
+    //==============================================================================
+
+    {
+      "method": "DELETE",
+      "path": "/groups/:group_id/admins/:user_id",
+      "auth_required": true,
+      "description": "将管理员降级为普通成员（仅群主可操作）",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "group_id": { "type": "string", "required": true, "in": "path", "desc": "群组 ID" },
+          "user_id":  { "type": "string", "required": true, "in": "path", "desc": "要移除管理员权限的用户 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "操作成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误 / 用户不是管理员",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "403": {
+          "desc": "权限不足（非群主）",
+          "body": {
+            "code":    { "type": "integer", "desc": "40300" },
+            "message": { "type": "string",  "desc": "权限不足" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 四、会话相关（/conversations/*）
+    //==============================================================================
+
+    //==============================================================================
+    // 获取会话列表
+    //==============================================================================
+
+    {
+      "method": "GET",
+      "path": "/conversations",
+      "auth_required": true,
+      "description": "获取当前用户的所有会话列表（私聊 + 群聊），按最后消息时间倒序",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "查询成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "conversations": {
+                  "type": "array",
+                  "desc": "会话列表",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "type":             { "type": "string",  "desc": "会话类型: private / group" },
+                      "id":               { "type": "string",  "desc": "会话 ID" },
+                      "name":             { "type": "string",  "desc": "会话名称（私聊为对方用户名，群聊为群名）" },
+                      "avatar":           { "type": "string",  "desc": "会话头像 URL" },
+                      "last_message": {
+                        "type": "object",
+                        "desc": "最后一条消息摘要",
+                        "fields": {
+                          "content":    { "type": "string",  "desc": "消息内容" },
+                          "sender_id":  { "type": "string",  "desc": "发送方用户 ID" },
+                          "created_at": { "type": "integer", "desc": "发送时间戳" }
+                        }
+                      },
+                      "unread_count": { "type": "integer", "desc": "未读消息数" },
+                      "pinned":       { "type": "boolean", "desc": "是否置顶" },
+                      "updated_at":   { "type": "integer", "desc": "最后更新时间戳" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 标记会话已读
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/conversations/:type/:id/read",
+      "auth_required": true,
+      "description": "标记指定会话的所有消息为已读",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "type": { "type": "string", "required": true, "in": "path", "desc": "会话类型: private / group" },
+          "id":   { "type": "string", "required": true, "in": "path", "desc": "会话 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "标记成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 置顶/取消置顶会话
+    //==============================================================================
+
+    {
+      "method": "POST",
+      "path": "/conversations/:type/:id/pin",
+      "auth_required": true,
+      "description": "切换指定会话的置顶状态（已置顶则取消，未置顶则置顶）",
+      "request": {
+        "content_type": "application/json",
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "type": { "type": "string", "required": true, "in": "path", "desc": "会话类型: private / group" },
+          "id":   { "type": "string", "required": true, "in": "path", "desc": "会话 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "操作成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data": {
+              "type": "object",
+              "fields": {
+                "pinned": { "type": "boolean", "desc": "操作后的置顶状态" }
+              }
+            }
+          }
+        },
+        "400": {
+          "desc": "参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 删除会话
+    //==============================================================================
+
+    {
+      "method": "DELETE",
+      "path": "/conversations/:type/:id",
+      "auth_required": true,
+      "description": "删除指定会话（仅删除当前用户的会话记录，不影响消息）",
+      "request": {
+        "headers": {
+          "Authorization": { "type": "string", "required": true, "desc": "Bearer {access_token}" }
+        },
+        "params": {
+          "type": { "type": "string", "required": true, "in": "path", "desc": "会话类型: private / group" },
+          "id":   { "type": "string", "required": true, "in": "path", "desc": "会话 ID" }
+        }
+      },
+      "responses": {
+        "200": {
+          "desc": "删除成功",
+          "body": {
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "400": {
+          "desc": "参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        },
+        "401": {
+          "desc": "未授权",
+          "body": {
+            "code":    { "type": "integer", "desc": "40100" },
+            "message": { "type": "string",  "desc": "未授权" },
+            "data":    { "type": "null",    "desc": "null" }
+          }
+        }
+      }
+    },
+
+    //==============================================================================
+    // 五、WebSocket 实时通信
+    //==============================================================================
+
+    //==============================================================================
+    // WebSocket 连接
+    //==============================================================================
+
+    {
+      "method": "WEBSOCKET",
+      "path": "/ws",
+      "auth_required": true,
+      "transport": "websocket",
+      "description": "WebSocket 实时连接，用于消息推送、在线状态等实时通信",
+      "ws_server": "chat-server:50055",
+      "request": {
+        "connection": {
+          "url": "ws://<host>:50055/ws?token={access_token}",
+          "params": {
+            "token": { "type": "string", "required": true, "in": "query", "desc": "JWT access_token，作为认证凭据" }
+          }
+        }
+      },
+      "events": {
+        "incoming": [
+          {
+            "event": "ping",
+            "desc": "客户端心跳（建议每 30 秒发送一次）"
+          }
+        ],
+        "outgoing": [
+          {
+            "event": "new_message",
+            "desc": "新消息推送",
+            "data": {
+              "type": "object",
+              "fields": {
+                "message": { "$ref": "#/definitions/message" }
+              }
+            }
+          },
+          {
+            "event": "friend_request",
+            "desc": "收到新好友申请",
+            "data": {
+              "type": "object",
+              "fields": {
+                "request_id": { "type": "string", "desc": "申请 ID" },
+                "sender_id":  { "type": "string", "desc": "发送方用户 ID" }
+              }
+            }
+          },
+          {
+            "event": "friend_request_accepted",
+            "desc": "好友申请被接受",
+            "data": {
+              "type": "object",
+              "fields": {
+                "friend_id": { "type": "string", "desc": "对方用户 ID" }
+              }
+            }
+          },
+          {
+            "event": "online_status",
+            "desc": "好友在线状态变更",
+            "data": {
+              "type": "object",
+              "fields": {
+                "user_id": { "type": "string", "desc": "用户 ID" },
+                "online":  { "type": "boolean", "desc": "是否在线" }
+              }
+            }
+          },
+          {
+            "event": "message_recalled",
+            "desc": "消息被撤回",
+            "data": {
+              "type": "object",
+              "fields": {
+                "message_id":       { "type": "string", "desc": "被撤回的消息 ID" },
+                "conversation_type": { "type": "string", "desc": "会话类型" },
+                "conversation_id":   { "type": "string", "desc": "会话 ID" }
+              }
+            }
+          }
+        ]
+      },
+      "responses": {
+        "101": {
+          "desc": "WebSocket 连接升级成功"
+        },
+        "401": {
+          "desc": "Token 无效或过期，连接拒绝"
+        }
+      }
+    }
+  ],
+
+  //==============================================================================
+  // 公共定义
+  //==============================================================================
+
+  "definitions": {
+    "friend_request": {
+      "type": "object",
+      "desc": "好友申请信息",
+      "fields": {
+        "id":          { "type": "string", "desc": "申请 ID" },
+        "sender_id":   { "type": "string", "desc": "发送方用户 ID" },
+        "receiver_id": { "type": "string", "desc": "接收方用户 ID" },
+        "status":      { "type": "string", "desc": "状态: pending / accepted / rejected" },
+        "remark":      { "type": "string", "desc": "申请附言" },
+        "created_at":  { "type": "integer", "desc": "发送时间戳" },
+        "updated_at":  { "type": "integer", "desc": "处理时间戳" }
+      }
+    },
+    "message": {
+      "type": "object",
+      "desc": "消息信息",
+      "fields": {
+        "id":                { "type": "string", "desc": "消息 ID" },
+        "conversation_type": { "type": "string", "desc": "会话类型: private / group" },
+        "conversation_id":   { "type": "string", "desc": "会话 ID" },
+        "seq_id":            { "type": "integer", "desc": "消息序列号" },
+        "sender_id":         { "type": "string", "desc": "发送方用户 ID" },
+        "content_type":      { "type": "string", "desc": "消息类型" },
+        "content":           { "type": "string", "desc": "消息内容" },
+        "extra":             { "type": "object", "desc": "扩展数据" },
+        "reply_to_id":       { "type": "string", "desc": "回复的消息 ID" },
+        "status":            { "type": "string", "desc": "消息状态: normal / recalled" },
+        "created_at":        { "type": "integer", "desc": "发送时间戳" }
+      }
+    }
+  }
+}

@@ -3,24 +3,24 @@
   // 基础路径（所有接口均以此开头）: /api/v1
   //
   // 统一响应格式:
-  //   code    - 业务状态码，0 表示成功，非 0 表示各类错误
+  //   code    - 业务状态码，200 表示成功，非 200 表示各类错误
   //   message - 提示信息
   //   data    - 响应数据（成功时携带），可能为 null
 
   "base_url": "/api/v1",
 
   "response_schema": {
-    "code":    { "type": "integer", "desc": "业务状态码，0 成功，非 0 失败" },
+    "code":    { "type": "integer", "desc": "业务状态码，200 成功，非 200 失败" },
     "message": { "type": "string",  "desc": "提示信息" },
     "data":    { "type": "object",  "desc": "响应数据，失败时为 null" }
   },
 
   "error_codes": {
-    "0":     { "desc": "成功" },
-    "400": { "desc": "请求参数错误" },
-    "401": { "desc": "未授权，令牌无效或已过期" },
-    "404": { "desc": "资源不存在" },
-    "429": { "desc": "请求频率过快" }
+    "200":   { "desc": "成功" },
+    "40000": { "desc": "请求参数错误" },
+    "40100": { "desc": "未授权，令牌无效或已过期" },
+    "40400": { "desc": "资源不存在" },
+    "42900": { "desc": "请求频率过快" }
   },
 
   "apis": [
@@ -51,8 +51,8 @@
         "200": {
           "desc": "注册成功",
           "body": {
-            "code":     { "type": "integer", "desc": "0" },
-            "message":  { "type": "string",  "desc": "提示信息" },
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
             "data": {
               "type": "object",
               "desc": "用户信息",
@@ -95,8 +95,8 @@
         "200": {
           "desc": "登录成功",
           "body": {
-            "code":    { "type": "integer", "desc": "0" },
-            "message": { "type": "string",  "desc": "登录成功" },
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
             "data": {
               "type": "object",
               "desc": "令牌信息",
@@ -105,6 +105,14 @@
                 "refresh_token": { "type": "string", "desc": "刷新令牌（用于续期 access_token，长期有效，默认 30 天）" }
               }
             }
+          }
+        },
+        "400": {
+          "desc": "参数错误",
+          "body": {
+            "code":    { "type": "integer", "desc": "40000" },
+            "message": { "type": "string",  "desc": "错误描述" },
+            "data":    { "type": "null",    "desc": "null" }
           }
         },
         "401": {
@@ -139,8 +147,8 @@
         "200": {
           "desc": "登出成功",
           "body": {
-            "code":    { "type": "integer", "desc": "0" },
-            "message": { "type": "string",  "desc": "登出成功" },
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
             "data":    { "type": "null",    "desc": "null" }
           }
         },
@@ -173,8 +181,8 @@
         "200": {
           "desc": "刷新成功，返回新的令牌对",
           "body": {
-            "code":    { "type": "integer", "desc": "0" },
-            "message": { "type": "string",  "desc": "令牌刷新成功" },
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
             "data": {
               "type": "object",
               "desc": "新的令牌对",
@@ -220,8 +228,8 @@
         "200": {
           "desc": "查询成功",
           "body": {
-            "code":    { "type": "integer", "desc": "0" },
-            "message": { "type": "string",  "desc": "查询成功" },
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
             "data": {
               "type": "object",
               "desc": "用户信息",
@@ -286,8 +294,8 @@
         "200": {
           "desc": "更新成功",
           "body": {
-            "code":    { "type": "integer", "desc": "0" },
-            "message": { "type": "string",  "desc": "更新成功" },
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
             "data": {
               "type": "object",
               "desc": "更新后的用户信息",
@@ -343,8 +351,8 @@
         "200": {
           "desc": "头像设置成功，返回头像 URL",
           "body": {
-            "code":    { "type": "integer", "desc": "0" },
-            "message": { "type": "string",  "desc": "头像设置成功" },
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
             "data": {
               "type": "object",
               "desc": "头像信息",
@@ -399,8 +407,8 @@
         "200": {
           "desc": "账户注销成功",
           "body": {
-            "code":    { "type": "integer", "desc": "0" },
-            "message": { "type": "string",  "desc": "账户注销成功" },
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
             "data":    { "type": "null",    "desc": "null" }
           }
         },
@@ -445,8 +453,8 @@
         "200": {
           "desc": "验证码发送成功",
           "body": {
-            "code":    { "type": "integer", "desc": "0" },
-            "message": { "type": "string",  "desc": "验证码已发送" },
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
             "data":    { "type": "null",    "desc": "null" }
           }
         },
@@ -489,8 +497,8 @@
         "200": {
           "desc": "密码重置成功",
           "body": {
-            "code":    { "type": "integer", "desc": "0" },
-            "message": { "type": "string",  "desc": "密码重置成功" },
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
             "data":    { "type": "null",    "desc": "null" }
           }
         },
@@ -530,8 +538,8 @@
         "200": {
           "desc": "密码修改成功",
           "body": {
-            "code":    { "type": "integer", "desc": "0" },
-            "message": { "type": "string",  "desc": "密码修改成功" },
+            "code":    { "type": "integer", "desc": "200" },
+            "message": { "type": "string",  "desc": "success" },
             "data":    { "type": "null",    "desc": "null" }
           }
         },
