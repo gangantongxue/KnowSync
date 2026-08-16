@@ -47,7 +47,7 @@ interface ChatState {
   friends: Friend[]
   searchResults: SearchUserInfo[]
   searchQuery: string
-  wsConnected: boolean
+  sseConnected: boolean
   unreadCounts: Record<string, number>
   totalUnread: number
   userCache: Record<string, UserInfo>
@@ -67,7 +67,7 @@ type ChatAction =
   | { type: 'SET_FRIEND_REQUESTS'; requests: FriendRequest[] }
   | { type: 'SET_FRIENDS'; friends: Friend[] }
   | { type: 'SET_SEARCH_RESULTS'; users: SearchUserInfo[]; query: string }
-  | { type: 'SET_WS_CONNECTED'; connected: boolean }
+  | { type: 'SET_SSE_CONNECTED'; connected: boolean }
   | { type: 'SET_UNREAD_COUNTS'; counts: Record<string, number> }
   | { type: 'SET_TOTAL_UNREAD'; total: number }
   | { type: 'SET_USER_CACHE'; cache: Record<string, UserInfo> }
@@ -118,8 +118,8 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
       return { ...state, friends: action.friends }
     case 'SET_SEARCH_RESULTS':
       return { ...state, searchResults: action.users, searchQuery: action.query }
-    case 'SET_WS_CONNECTED':
-      return { ...state, wsConnected: action.connected }
+    case 'SET_SSE_CONNECTED':
+      return { ...state, sseConnected: action.connected }
     case 'SET_UNREAD_COUNTS':
       return { ...state, unreadCounts: action.counts }
     case 'SET_TOTAL_UNREAD':
@@ -152,8 +152,8 @@ interface ChatContextValue extends ChatState {
   loadConversation: (convType: string, convId: string) => void
   markConversationRead: (convType: string, convId: string) => Promise<void>
   togglePin: (convType: string, convId: string) => Promise<void>
-  handleWsMessage: (event: { type: string; data: any }) => void
-  setWsConnected: (connected: boolean) => void
+  handlePushEvent: (event: { type: string; data: any }) => void
+  setSseConnected: (connected: boolean) => void
   loadUserProfiles: (userIds: string[]) => Promise<void>
   getUserDisplayName: (userId: string) => string
   getUserAvatar: (userId: string) => string
@@ -174,7 +174,7 @@ export function MessageProvider({ children }: { children: ReactNode }) {
     friends: [],
     searchResults: [],
     searchQuery: '',
-    wsConnected: false,
+    sseConnected: false,
     unreadCounts: {},
     totalUnread: 0,
     userCache: {},
@@ -376,7 +376,7 @@ export function MessageProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const handleWsMessage = useCallback((event: { type: string; data: any }) => {
+  const handlePushEvent = useCallback((event: { type: string; data: any }) => {
     switch (event.type) {
       case 'new_message': {
         const msg = event.data as Message
@@ -409,8 +409,8 @@ export function MessageProvider({ children }: { children: ReactNode }) {
     }
   }, [loadFriendRequests, loadFriends])
 
-  const setWsConnected = useCallback((connected: boolean) => {
-    dispatch({ type: 'SET_WS_CONNECTED', connected })
+  const setSseConnected = useCallback((connected: boolean) => {
+    dispatch({ type: 'SET_SSE_CONNECTED', connected })
   }, [])
 
   const loadUserProfiles = useCallback(async (userIds: string[]) => {
@@ -458,8 +458,8 @@ export function MessageProvider({ children }: { children: ReactNode }) {
       loadConversation,
       markConversationRead,
       togglePin: togglePinFn,
-      handleWsMessage,
-      setWsConnected,
+      handlePushEvent,
+      setSseConnected,
       loadUserProfiles,
       getUserDisplayName,
       getUserAvatar,

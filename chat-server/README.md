@@ -1,11 +1,11 @@
 # chat-server — 社交聊天与即时通讯服务
 
-社交聊天微服务，提供好友关系管理、好友申请、私聊/群聊消息、WebSocket 实时推送、在线状态等即时通讯功能。
+社交聊天微服务，提供好友关系管理、好友申请、私聊/群聊消息、SSE 实时推送、在线状态等即时通讯功能。
 
 ## 技术栈
 
 - **RPC 框架**：gRPC（端口 50054）
-- **WebSocket**：gorilla/websocket（端口 50055）
+- **SSE 推送**：Server-Sent Events（端口 50055）
 - **ORM**：GORM + MySQL 8.0+
 - **缓存**：go-redis/v9（在线状态、消息发布订阅）
 - **认证**：golang-jwt/v5（验证 access_token）
@@ -23,7 +23,7 @@ chat-server/
 │   ├── service/            # 业务逻辑层
 │   ├── repository/         # 数据访问层
 │   │   └── postgres/       # PostgreSQL 适配（预留）
-│   └── ws/                 # WebSocket 连接管理（连接池、消息路由）
+│   └── push/               # 推送连接管理（Hub、SSE 客户端）
 ├── pkg/
 │   ├── config/             # 配置结构体
 │   ├── database/           # GORM 连接与迁移
@@ -55,10 +55,10 @@ chat-server/
 - 管理员/成员管理（添加/移除/角色变更）
 - 群组角色：owner（群主）、admin（管理员）、member（成员）
 
-### WebSocket 实时推送
-- JWT access_token 作为查询参数认证
+### SSE 实时推送
+- JWT access_token 作为查询参数认证（EventSource 无法自定义请求头）
 - 实时推送新消息、好友申请、在线状态变更
-- 连接管理：连接池维护，心跳检测
+- 连接管理：Hub 连接池维护，30s 心跳注释行保活并续期 Redis 在线状态
 
 ### 会话管理（Conversation）
 - 私聊/群聊统一会话列表
@@ -75,7 +75,7 @@ chat-server/
 | 配置项 | 环境变量 | 说明 |
 |--------|---------|------|
 | `server.port` | `KNOWSYNC_CHAT_SERVER_SERVER_PORT` | gRPC 端口（默认 50054） |
-| `ws.port` | `KNOWSYNC_CHAT_SERVER_WS_PORT` | WebSocket 端口（默认 50055） |
+| `sse.port` | `KNOWSYNC_CHAT_SERVER_SSE_PORT` | SSE 推送端口（默认 50055） |
 | `mysql.dsn` | `KNOWSYNC_CHAT_SERVER_MYSQL_DSN` | MySQL 连接字符串 |
 | `redis.addr` | `KNOWSYNC_CHAT_SERVER_REDIS_ADDR` | Redis 地址 |
 | `jwt.public_key_path` | `KNOWSYNC_CHAT_SERVER_JWT_PUBLIC_KEY_PATH` | RSA 公钥路径（验证令牌） |
@@ -97,10 +97,14 @@ docker compose up chat-server
 
 对外接口通过网关暴露 HTTP API，详见 [gateway/docs/chat.jsonc](../gateway/docs/chat.jsonc)。
 
-## WebSocket
+## SSE
 
 ```
-ws://<host>:50055/ws?token=<jwt_access_token>
+http(s)://<host>:50055/sse?token=<jwt_access_token>
 ```
 
-连接成功后服务端推送消息事件，客户端按约定格式处理。
+连接建立后服务端立即返回 `: connected` 确认行，此后以默认事件（message）推送
+`data: {"type": "...", "data": {...}}` JSON 事件，事件类型包括：
+`new_message`、`message_recalled`、`friend_request`、`friend_accepted`。
+每 30s 发送 `: ping` 注释行保活并刷新 Redis 在线状态 TTL。
+前端通过 Caddy `/sse*` 反向代理访问，页面打开即保持全局长连接。

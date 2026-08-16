@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/gangantongxue/knowsync/chat-server/internal/push"
 	"github.com/gangantongxue/knowsync/chat-server/internal/repository"
-	"github.com/gangantongxue/knowsync/chat-server/internal/ws"
 	"github.com/gangantongxue/knowsync/chat-server/pkg/database/schema"
 	"gorm.io/gorm"
 )
@@ -15,11 +15,11 @@ import (
 // GroupService 群组业务服务.
 type GroupService struct {
 	Repo *repository.Repository
-	Hub  *ws.Hub
+	Hub  *push.Hub
 }
 
 // NewGroupService 创建群组服务.
-func NewGroupService(repo *repository.Repository, hub *ws.Hub) *GroupService {
+func NewGroupService(repo *repository.Repository, hub *push.Hub) *GroupService {
 	return &GroupService{Repo: repo, Hub: hub}
 }
 

@@ -32,7 +32,7 @@ redis:
 grpc:
   port: 50054
 
-ws:
+sse:
   port: 50055
 
 jwt:

@@ -5,7 +5,6 @@ go 1.26.0
 require (
 	github.com/gangantongxue/knowsync/ks-proto v0.0.0-00010101000000-000000000000
 	github.com/golang-jwt/jwt/v5 v5.3.1
-	github.com/gorilla/websocket v1.5.3
 	github.com/orandin/slog-gorm v1.4.0
 	github.com/redis/go-redis/v9 v9.20.0
 	github.com/rs/xid v1.6.0

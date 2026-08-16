@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/gangantongxue/knowsync/chat-server/internal/push"
 	"github.com/gangantongxue/knowsync/chat-server/internal/repository"
-	"github.com/gangantongxue/knowsync/chat-server/internal/ws"
 	"github.com/gangantongxue/knowsync/chat-server/pkg/database/schema"
 	"gorm.io/gorm"
 )
@@ -16,11 +16,11 @@ import (
 // FriendService 好友业务服务.
 type FriendService struct {
 	Repo *repository.Repository
-	Hub  *ws.Hub
+	Hub  *push.Hub
 }
 
 // NewFriendService 创建好友服务.
-func NewFriendService(repo *repository.Repository, hub *ws.Hub) *FriendService {
+func NewFriendService(repo *repository.Repository, hub *push.Hub) *FriendService {
 	return &FriendService{Repo: repo, Hub: hub}
 }
 

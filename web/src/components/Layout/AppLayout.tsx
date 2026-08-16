@@ -1,13 +1,16 @@
 import { useEffect } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../store/auth-context'
+import { useMessageStore } from '../../store/message-store'
 import { useRepo } from '../../store/repo-context'
+import sseClient from '../../lib/sse-client'
 import TopBar from './TopBar'
 import Sidebar from './Sidebar'
 
 export default function AppLayout() {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading, user } = useAuth()
   const { loadRepos } = useRepo()
+  const { handlePushEvent, setSseConnected, loadConversations, loadFriendRequests } = useMessageStore()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -20,6 +23,27 @@ export default function AppLayout() {
   useEffect(() => {
     loadRepos()
   }, [loadRepos])
+
+  // 全局 SSE 连接：登录后立即建立（不限页面），token/用户变化时重建，退出登录时断开。
+  // 新消息、撤回、好友申请等事件全部经由该连接推送。
+  useEffect(() => {
+    if (!isAuthenticated || isLoading) return
+    const token = localStorage.getItem('access_token')
+    if (!token) return
+
+    sseClient.connect(token, (event) => {
+      handlePushEvent(event)
+    })
+    setSseConnected(true)
+    // 全局初始化未读数与好友申请，支撑 TopBar 红点的初始状态
+    loadConversations()
+    loadFriendRequests()
+
+    return () => {
+      sseClient.disconnect()
+      setSseConnected(false)
+    }
+  }, [isAuthenticated, isLoading, user, handlePushEvent, setSseConnected, loadConversations, loadFriendRequests])
 
   const isInsideRepo = /^\/repos\/[^/]/.test(location.pathname)
   const isSearchRoute = location.pathname.startsWith('/search')

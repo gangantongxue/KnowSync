@@ -1,51 +1,17 @@
-import { useState, useEffect, useRef } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../store/auth-context'
-import { messageApi, friendApi } from '../../lib/chat-api'
+import { useMessageStore } from '../../store/message-store'
 
 export default function TopBar() {
   const navigate = useNavigate()
-  const location = useLocation()
   const { user } = useAuth()
+  const { totalUnread, friendRequests } = useMessageStore()
   const [query, setQuery] = useState('')
-  const [hasNotification, setHasNotification] = useState(false)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  useEffect(() => {
-    const isMessagesPage = location.pathname.startsWith('/messages')
-    if (isMessagesPage) return
-
-    const fetchStatus = async () => {
-      try {
-        const [unreadResp, friendResp] = await Promise.all([
-          messageApi.getUnreadCount(),
-          friendApi.getReceivedRequests(),
-        ])
-        const counts = unreadResp.data?.counts || {}
-        const totalUnread = Object.values(counts).reduce((a, b) => a + b, 0)
-        const pendingRequests = (friendResp.data?.friend_requests || []).filter(r => r.status === 'pending').length
-        const total = totalUnread + pendingRequests
-
-        if (total > 0) {
-          setHasNotification(true)
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current)
-            intervalRef.current = null
-          }
-        }
-      } catch { /* ignore */ }
-    }
-
-    setHasNotification(false)
-    fetchStatus()
-    intervalRef.current = setInterval(fetchStatus, 30000)
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
-    }
-  }, [location.pathname])
+  // 红点实时驱动：存在未读消息或待处理好友申请时显示，所有页面一致。
+  // 未读数由全局 SSE 事件更新，无需轮询
+  const hasNotification = totalUnread > 0 || friendRequests.some(r => r.status === 'pending')
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()

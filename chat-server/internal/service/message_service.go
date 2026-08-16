@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gangantongxue/knowsync/chat-server/internal/push"
 	"github.com/gangantongxue/knowsync/chat-server/internal/repository"
-	"github.com/gangantongxue/knowsync/chat-server/internal/ws"
 	"github.com/gangantongxue/knowsync/chat-server/pkg/database/schema"
 	"gorm.io/gorm"
 )
@@ -18,11 +18,11 @@ import (
 // MessageService 消息业务服务.
 type MessageService struct {
 	Repo *repository.Repository
-	Hub  *ws.Hub
+	Hub  *push.Hub
 }
 
 // NewMessageService 创建消息服务.
-func NewMessageService(repo *repository.Repository, hub *ws.Hub) *MessageService {
+func NewMessageService(repo *repository.Repository, hub *push.Hub) *MessageService {
 	return &MessageService{Repo: repo, Hub: hub}
 }
 

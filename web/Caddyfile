@@ -5,14 +5,16 @@ localhost {
     reverse_proxy /api/* gateway:8080
     reverse_proxy /files/* gateway:8080
 
-    handle /ws* {
-        reverse_proxy chat-server:50055
+    handle /sse* {
+        reverse_proxy chat-server:50055 {
+            flush_interval -1
+        }
     }
 
     @static {
         not path /api/*
         not path /files/*
-        not path /ws*
+        not path /sse*
     }
     handle @static {
         try_files {path} /index.html

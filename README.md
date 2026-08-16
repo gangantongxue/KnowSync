@@ -44,14 +44,14 @@ knowsync/
             ├── gRPC → user-server(:50051) ←→ MySQL + Redis
             ├── gRPC → repo-server(:50052) ←→ MySQL
             ├── gRPC → ai-server(:50053)   ←→ MySQL + Redis + Chromem-go
-            └── gRPC → chat-server(:50054) ←→ MySQL + Redis + WebSocket(:50055)
+            └── gRPC → chat-server(:50054) ←→ MySQL + Redis + SSE推送(:50055)
 ```
 
 各服务职责：
 - **user-server**：用户注册/登录、JWT 令牌管理、邮箱验证码、密码管理
 - **repo-server**：知识库 CRUD、文件/文章节点树管理、协作者权限控制
 - **ai-server**：流式 AI 对话、语义搜索、文章向量化、会话管理
-- **chat-server**：好友关系、私聊/群聊消息、WebSocket 实时推送、在线状态
+- **chat-server**：好友关系、私聊/群聊消息、SSE 实时推送、在线状态
 - **gateway**：HTTP 网关，无业务逻辑，仅转换 HTTP → gRPC 并处理认证
 
 ## 快速启动

@@ -2,8 +2,8 @@
 package handler
 
 import (
+	"github.com/gangantongxue/knowsync/chat-server/internal/push"
 	"github.com/gangantongxue/knowsync/chat-server/internal/service"
-	"github.com/gangantongxue/knowsync/chat-server/internal/ws"
 	"github.com/gangantongxue/knowsync/ks-proto/pkg/pb"
 )
 
@@ -14,7 +14,7 @@ type Handler struct {
 	ConversationService *service.ConversationService
 	FriendService       *service.FriendService
 	GroupService        *service.GroupService
-	Hub                 *ws.Hub
+	Hub                 *push.Hub
 }
 
 // NewHandler 创建 gRPC 处理器.
@@ -23,7 +23,7 @@ func NewHandler(
 	convSvc *service.ConversationService,
 	friendSvc *service.FriendService,
 	groupSvc *service.GroupService,
-	hub *ws.Hub,
+	hub *push.Hub,
 ) *Handler {
 	return &Handler{
 		MessageService:      msgSvc,

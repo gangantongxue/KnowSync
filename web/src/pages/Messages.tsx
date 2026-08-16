@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useMessageStore } from '../store/message-store'
 import { useAuth } from '../store/auth-context'
-import wsClient from '../lib/ws-client'
 import ConversationList from '../components/Messages/ConversationList'
 import MessageArea from '../components/Messages/MessageArea'
 import MessageInput from '../components/Messages/MessageInput'
@@ -12,34 +11,13 @@ export default function Messages() {
   const { conversationType, conversationId } = useParams()
   const { user } = useAuth()
   const {
-    loadConversations, loadMessages, handleWsMessage, setWsConnected,
-    recallMessage, markConversationRead,
+    loadMessages, recallMessage, markConversationRead,
   } = useMessageStore()
   const [replyTo, setReplyTo] = useState<Message | null>(null)
   const [mentionTrigger, setMentionTrigger] = useState(0)
   const [mentionUserId, setMentionUserId] = useState('')
-  const handleWsMessageRef = useRef(handleWsMessage)
-  handleWsMessageRef.current = handleWsMessage
 
-  useEffect(() => {
-    if (!user) return
-    const token = localStorage.getItem('access_token')
-    if (!token) return
-
-    wsClient.connect(token, (event) => {
-      handleWsMessageRef.current(event)
-    })
-    setWsConnected(true)
-
-    return () => {
-      wsClient.disconnect()
-      setWsConnected(false)
-    }
-  }, [user, setWsConnected])
-
-  useEffect(() => {
-    loadConversations()
-  }, [loadConversations])
+  // 全局 SSE 连接由 AppLayout 维护，此处无需再建立 WS
 
   useEffect(() => {
     if (conversationType && conversationId) {

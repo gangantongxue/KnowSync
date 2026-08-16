@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/gangantongxue/knowsync/chat-server/internal/push"
 	"github.com/gangantongxue/knowsync/chat-server/internal/repository"
-	"github.com/gangantongxue/knowsync/chat-server/internal/ws"
 	"github.com/gangantongxue/knowsync/chat-server/pkg/database/schema"
 	"gorm.io/gorm"
 )
@@ -15,11 +15,11 @@ import (
 // ConversationService 会话业务服务.
 type ConversationService struct {
 	Repo *repository.Repository
-	Hub  *ws.Hub
+	Hub  *push.Hub
 }
 
 // NewConversationService 创建会话服务.
-func NewConversationService(repo *repository.Repository, hub *ws.Hub) *ConversationService {
+func NewConversationService(repo *repository.Repository, hub *push.Hub) *ConversationService {
 	return &ConversationService{Repo: repo, Hub: hub}
 }
 

@@ -15,7 +15,7 @@ type Config struct {
 	Database model.DatabaseCfg `yaml:"database" mapstructure:"database"`
 	Redis    model.RedisCfg    `yaml:"redis" mapstructure:"redis"`
 	GRPC     model.GRPCCfg     `yaml:"grpc" mapstructure:"grpc"`
-	WS       model.WSCfg       `yaml:"ws" mapstructure:"ws"`
+	SSE      model.SSECfg      `yaml:"sse" mapstructure:"sse"`
 	JWT      model.JWTCfg      `yaml:"jwt" mapstructure:"jwt"`
 }
 
